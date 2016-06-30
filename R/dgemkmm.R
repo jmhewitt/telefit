@@ -1,0 +1,13 @@
+#' Evaluate kron(A,B) * C without storing kron(A,B)
+#' 
+#' Evaluate kron(A,B) * C without storing kron(A,B)
+#' 
+#' @useDynLib telefit
+#'
+#' 
+
+dgemkmm = function(A, B, C) {
+  
+  .Call("_dgemkmm", PACKAGE = 'telefit', 
+        as.matrix(A), as.matrix(B), as.matrix(C))
+}
