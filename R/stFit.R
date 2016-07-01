@@ -44,5 +44,10 @@ stFit = function(X, Y, Z, coords.local, coords.remote, Lambda, nu_y, nu_r, ay,
   message('Total time (min): ', signif(ptm[3]/60, 3))
   message('Samples per second: ', signif(maxIt/ptm[3],3))
   
-  res
+  reslist = list(
+    parameters = list(samples = res)
+  )
+  class(reslist) = 'stFit'
+  
+  reslist
 }

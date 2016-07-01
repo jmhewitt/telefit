@@ -24,7 +24,7 @@ stRecoverAlpha = function( stFit, X, Y, Z, coords.local, coords.remote, nu_y,
                            nu_r, burn, prob=.95, miles=T, ncores=1, 
                            summaryOnly=T  ) {
   
-  maxIt = length(stFit$ll)
+  maxIt = length(stFit$parameters$samples$ll)
   nAlphas = length(burn:maxIt)
   
   n = nrow(coords.local)
@@ -83,7 +83,7 @@ stRecoverAlpha = function( stFit, X, Y, Z, coords.local, coords.remote, nu_y,
     # correct the estimate so that each rep will return <2GB of data since that
     # is currently the limit of data that mclapply can transfer. also subtract
     # a few samples to account for the summary data that gets returned too
-    chunkSize = min(chunkSize, floor(2 / (nrow(Y)*nrow(Z)*8/1024^3) - 5))
+    chunkSize = max(min(chunkSize, floor(2 / (nrow(Y)*nrow(Z)*8/1024^3) - 5)), 1)
   }
   
   
@@ -94,9 +94,12 @@ stRecoverAlpha = function( stFit, X, Y, Z, coords.local, coords.remote, nu_y,
     inds = unlist(inds)            
     
     .Call("_compositionAlpha", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, 
-          Dz, nu_y, nu_r, stFit$beta[inds,], stFit$sigmasq_y[inds], 
-          stFit$rho_y[inds], stFit$rho_r[inds], stFit$sigmasq_r[inds], 
-          stFit$sigmasq_eps[inds], 0, summaryOnly)
+          Dz, nu_y, nu_r, stFit$parameters$samples$beta[inds,], 
+          stFit$parameters$samples$sigmasq_y[inds], 
+          stFit$parameters$samples$rho_y[inds], 
+          stFit$parameters$samples$rho_r[inds], 
+          stFit$parameters$samples$sigmasq_r[inds], 
+          stFit$parameters$samples$sigmasq_eps[inds], 0, summaryOnly)
   }
   
   # remove unwanted information

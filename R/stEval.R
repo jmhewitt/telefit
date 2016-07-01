@@ -20,6 +20,7 @@ stEval = function(forecast, Y) {
     fcst$pred$resid = Y[,t] - fcst$pred$y
     fcst$err$mspe = mean(fcst$pred$resid^2)
     fcst$err$ppl = sum(fcst$pred$resid^2)/2 + sum(fcst$pred$se^2)
+    fcst$err$cor = cor(fcst$pred$y, Y[,t])
     
     forecast[[t]] = fcst
   }

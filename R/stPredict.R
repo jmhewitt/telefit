@@ -33,11 +33,12 @@ stPredict = function(stFit, coords.local, X, Z, yearLabs, ncores=1) {
     z = Z[,t]
     
     # predict mean
-    y.local = x %*% colMeans(stFit$beta)
+    y.local = x %*% colMeans(stFit$parameters$samples$beta)
     y.remote = dgemkmm(I.ns, t(z), stFit$alpha$summary$alpha)
     
     # compute standard errors
-    se = sqrt(mean(stFit$sigmasq_y * (1+stFit$sigmasq_eps)) + 
+    se = sqrt(mean(stFit$parameters$samples$sigmasq_y * 
+                     (1+stFit$parameters$samples$sigmasq_eps)) + 
               2*diag(dgemkmm(I.ns, t(z), t(stFit$alpha$covBetaAlpha)) %*% t(x)) + 
               apply(stFit$alpha$ZVar, 3, function(A) { t(z) %*% A %*% z}))
     
