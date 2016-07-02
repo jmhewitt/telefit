@@ -489,7 +489,7 @@ class STModel {
 			
 			
 			//
-			// adjust tuning
+			// adjust tuning (following a method presented in Andrieu and Thoms (2008))
 			//
 			
 			adaptSize = C / sqrt( (double) (it + 1));

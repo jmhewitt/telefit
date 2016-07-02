@@ -7,10 +7,13 @@
 stFit(X, Y, Z, coords.local, coords.remote, Lambda, nu_y, nu_r, ay, by, ar, br,
   ary, bry, arr, brr, aeps = 2, beps = 1, rho_y_sd = 0.07,
   rho_r_sd = 0.15, eps_sd = 0.09, sigmasq_r_sd = 0.1, maxIt,
-  returnll = T, miles = T, C = 1, RWrate = 0.44)
+  returnll = T, miles = T, C = 1, RWrate = 0.44, localOnly = F)
 }
 \arguments{
 \item{rho_y_sd}{Initial sd for rho_y RW updates}
+
+\item{localOnly}{TRUE to fit the model without the teleconnection effects
+(typically for evaluating impact of teleconnection effects)}
 
 \item{nugget}{Spatial covariance nugget.}
 }
