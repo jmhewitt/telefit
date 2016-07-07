@@ -11,7 +11,7 @@
 #' @return a ggplot object with the density plots
 #' 
 
-plot.density = function(stFit, burn=1, text.size=36, axis.text.size=24) {
+densityplot = function(stFit, burn=1, text.size=36, axis.text.size=24) {
   
   # extract posterior samples
   res.df = data.frame(stFit$parameters$samples)

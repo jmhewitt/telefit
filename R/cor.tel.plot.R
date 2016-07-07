@@ -25,7 +25,7 @@
 #' 
 #' 
 
-plot.cor.tel = function(cor.tel, coord.Y, lon.W, lon.E, lat.S, lat.N, 
+cor.tel.plot = function(cor.tel, coord.Y, lon.W, lon.E, lat.S, lat.N, 
                         signif=F, boxsize=NULL ) {
   
   require(dplyr)

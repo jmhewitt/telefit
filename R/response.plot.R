@@ -17,7 +17,7 @@
 #' 
 #' 
 
-plot.response = function(Y, boxsize=NULL ) {
+response.plot = function(Y, boxsize=NULL ) {
   
   require(dplyr)
   
