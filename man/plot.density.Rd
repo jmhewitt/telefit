@@ -4,7 +4,8 @@
 \alias{plot.density}
 \title{Creates a density plot of the sampled parameters}
 \usage{
-plot.density(stFit, burn = 1, text.size = 36, axis.text.size = 24)
+\method{plot}{density}(stFit, burn = 1, text.size = 36,
+  axis.text.size = 24)
 }
 \arguments{
 \item{stFit}{return object from telefit::stFit}

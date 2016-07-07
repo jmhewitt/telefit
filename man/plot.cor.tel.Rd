@@ -4,8 +4,8 @@
 \alias{plot.cor.tel}
 \title{Plots teleconnection correlation maps}
 \usage{
-plot.cor.tel(cor.tel, coord.Y, lon.W, lon.E, lat.S, lat.N, signif = F,
-  boxsize = NULL)
+\method{plot}{cor.tel}(cor.tel, coord.Y, lon.W, lon.E, lat.S, lat.N,
+  signif = F, boxsize = NULL)
 }
 \arguments{
 \item{cor.tel}{an output object from cor.tel}

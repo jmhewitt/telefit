@@ -62,7 +62,9 @@ plot.cor.tel = function(cor.tel, coord.Y, lon.W, lon.E, lat.S, lat.N,
     geom_point(aes(x=lon.Y, y=lat.Y),
                data = data.frame(lon.Y = lon_, lat.Y = lat_),
                inherit.aes = F, col=2) +
-    scale_fill_gradient2(low = "#3679bd", high = '#bd3636') +
+    scale_fill_gradient2(low = "#0571b0", high = '#ca0020') +
+    scale_x_continuous(trans = lon_trans()) +
+    scale_y_continuous(trans = lat_trans()) +
     xlab('Longitude') +
     ylab('Latitude') + 
     geom_path() +

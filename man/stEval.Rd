@@ -4,9 +4,14 @@
 \alias{stEval}
 \title{Basic evaluation of fit}
 \usage{
-stEval(forecast, Y)
+stEval(forecast, Y, clim)
+}
+\arguments{
+\item{clim}{the climatology for the location in Y}
 }
 \description{
-Basic evaluation of fit
+Provides basic measures for evalutating the fit.  Includes Brier skill score
+against the climatology, MSPE, PPL, overall correlation, and a computation
+of the coverage probabilities for confidence intervals
 }
 
