@@ -2,11 +2,14 @@
 % Please edit documentation in R/stSimulate.R
 \name{stSimulate}
 \alias{stSimulate}
-\title{Compute forecasts based on posterior samples}
+\title{Simulate the spatio-temporal teleconnection model}
 \usage{
-stSimulate(stFit, coords.local, X, Z, yearLabs, nu_y, miles = T, ncores = 1)
+stSimulate(X = NULL, Z = NULL, coords.s = NULL, coords.r = NULL,
+  cov.s = NULL, cov.r = NULL, alpha = NULL, beta = NULL, nt, ns, nr, p,
+  miles = T)
 }
 \description{
-Compute forecasts based on posterior samples
+This function will let you provide as much information as you'd like, but 
+will fill in the gaps as needed
 }
 

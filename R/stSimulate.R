@@ -1,98 +1,123 @@
-#' Compute forecasts based on posterior samples
+#' Simulate the spatio-temporal teleconnection model
 #'
+#' This function will let you provide as much information as you'd like, but 
+#' will fill in the gaps as needed
 #'
 #'
 #' @export
 #' 
-#' @importFrom doMC registerDoMC
-#' @import doRNG
-#' @importFrom foreach foreach
+#' @importFrom foreach foreach "%do%"
 #' @importFrom fields rdist.earth
 #' @importFrom mvtnorm rmvnorm
 #' 
-#'
-#' 
 #' 
 
-stSimulate = function(stFit, coords.local, X, Z, yearLabs, nu_y, miles=T, 
-                     ncores=1) {
+stSimulate = function( X=NULL, Z=NULL, coords.s=NULL, coords.r=NULL, cov.s=NULL,
+                       cov.r=NULL, alpha=NULL, beta=NULL, nt, ns, nr, p, 
+                       miles=T ) {
   
-  registerDoMC(ncores)
-  mcoptions = list(preschedule=FALSE)
   
-  n = nrow(coords.local)  
-  nt = ncol(Z)
-  Dy = rdist.earth(coords.local, miles=miles)
+  # default covariance parameters
   
-  maxIt = length(stFit$ll)
-  burn = maxIt - nrow(stFit$alpha$samples) + 1
-  
-  I.ns = diag(n)
-  
-  # process each timepoint
-  Y = foreach(t=1:nt, .combine='c') %do% {
+  if(is.null(cov.s))
+    cov.s = list()
+  if(is.null(cov.s$var))
+    cov.s$var = 1
+  if(is.null(cov.s$range))
+    cov.s$range = 1
+  if(is.null(cov.s$smoothness))
+    cov.s$smoothness = 2
+  if(is.null(cov.s$nugget))
+    cov.s$nugget = 0
     
-    # extract covariates for this timepoint
-    x = X[,,t]
-    z = Z[,t]
-    
-    # draw posterior samples
-    y = foreach(it=burn:(maxIt-1), .combine='c', 
-                .options.multicore=mcoptions) %dorng% {
-      
-      # compute posterior sample mean and variance
-      xb = x %*% stFit$beta[it,]
-      za = kronecker(I.ns, t(z)) %*% stFit$alpha$samples[it-burn+1,]
-      
-      # create posterior sample object
-      r = list(
-        local = t(xb),
-        remote = t(za),
-        y = rmvnorm( 1, mean = xb + za,
-                     sigma = maternCov(Dy, stFit$sigmasq_y[it],
-                                       stFit$rho_y[it], nu_y, 
-                                       stFit$sigmasq_y[it]*stFit$sigmasq_eps[it]) )
-      )
-      
-      # remote unwanted information
-      attr(r, 'rng') = NULL
-      
-      # return posterior sample
-      list(r)
+  if(is.null(cov.r))
+    cov.r = list()
+  if(is.null(cov.r$var))
+    cov.r$var = 1
+  if(is.null(cov.r$range))
+    cov.r$range = 1
+  if(is.null(cov.r$smoothness))
+    cov.r$smoothness = 2
+  
+  
+  # simulate locations
+  
+  if(is.null(coords.s)) {
+    coords.s = matrix(runif(2*ns), ncol=2)
+  } else 
+    ns = nrow(coords.s)
+  
+  if(is.null(coords.r)) { 
+    coords.r = matrix(-runif(2*nr), ncol=2)
+  } else
+    nr = nrow(coords.r)
+  
+  
+  # build covariance matrices
+  
+  Dy = rdist.earth(coords.s, miles=miles)
+  Dz = rdist.earth(coords.r, miles=miles)
+  
+  Sigma = maternCov( Dy, scale = cov.s$var, range = cov.s$range, 
+                     smoothness = cov.s$smoothness, 
+                     nugget = cov.s$smoothness * cov.s$nugget )
+  
+  R = maternCov( Dz, scale = cov.r$var, range = cov.r$range, 
+                     smoothness = cov.r$smoothness, nugget = 0 )
+  
+  Sigma.chol = chol(Sigma, pivot=T)
+  Sigma.chol = t(Sigma.chol[, order(attr(Sigma.chol, 'pivot'))])
+  
+  
+  # simulate covariate data
+  
+  if(is.null(Z)) {
+    Z = matrix(rnorm(nr*nt), ncol=nt)
+  } else
+    nt = ncol(Z)
+  
+  if(is.null(X)) {
+    X = foreach(t = 1:nt, .combine='abind3') %do% { 
+      cbind( 1, matrix( rnorm(ns*(p-1)), ncol=p-1 ) )
     }
-    
-    # remote unwanted information
-    attr(y, 'rng') = NULL
-    
-    # extract data into data frames
-    y.sample = foreach(r=y, .combine='rbind', 
-                       .options.multicore=mcoptions) %dopar% { r$y }
-    local.sample = foreach(r=y, .combine='rbind',
-                           .options.multicore=mcoptions) %dopar% { r$local }
-    remote.sample = foreach(r=y, .combine='rbind', 
-                            .options.multicore=mcoptions) %dopar% { r$remote }
-    
-    # compute means and variances; put data into plottable frame
-    pred = data.frame(
-      y = colMeans(y.sample),
-      y.local = colMeans(local.sample),
-      y.remote = colMeans(remote.sample),
-      se = apply(y.sample, 2, sd),
-      lon = coords.local[,1],
-      lat = coords.local[,2]
-    )
-    
-    # return posterior samples for this timepoint
-    list(list(
-      samples = list(
-        y = y.sample,
-        local = local.sample,
-        remote = remote.sample
-      ),
-      pred = pred,
-      yrLab = yearLabs[t]
-    ))
+  } else
+    p = ncol(X)
+
+  
+  # simulate parameters
+  
+  if(is.null(alpha))
+    alpha = rmatnorm(1, R, Sigma)
+  
+  if(is.null(beta))
+    beta = rnorm(p)
+  
+  
+  # simulate response data
+  
+  Y = foreach(t = 1:nt, .combine='cbind') %do% {
+    Zta = apply(alpha, 2, function(a) { t(Z[,t]) %*% a })
+    X[,,t] %*% beta + Zta + Sigma.chol %*% rnorm(ns)
   }
   
- Y 
+  
+  # package and return data
+  
+  res = list(
+    tLabs = 1:nt,
+    coords.s = coords.s,
+    coords.r = coords.r,
+    X = X,
+    Y = Y,
+    Z = Z,
+    X.lab = 'X',
+    Y.lab = 'Y',
+    Z.lab = 'Z',
+    beta = beta,
+    alpha = as.numeric(alpha)
+  )
+  
+  class(res) = 'stData'
+  
+  res
 }

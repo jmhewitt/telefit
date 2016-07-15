@@ -43,14 +43,17 @@ void maternArray( vec & d, double scale, double range,
 				 double smoothness, double nugget ) {
 	
 	double cst = pow(2.0, 1.0 - smoothness) / R::gammafn(smoothness);
+	double cstInv = 1.0 / cst;
 	
 	// compute elementwise correlations
 	int n = d.size();
 	for(int i=0; i<n; i++) {
-		
-		double v = d.at(i) / range;
-		d.at(i) = pow(v, smoothness) * R::bessel_k(v, smoothness, 1.0);
-		
+		if(d.at(i)==0) {
+			d.at(i) = cstInv;
+		} else {
+			double v = d.at(i) / range;
+			d.at(i) = pow(v, smoothness) * R::bessel_k(v, smoothness, 1.0);
+		}
 	}
 	
 	// scale to covariances and add nugget

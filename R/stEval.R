@@ -16,6 +16,8 @@ stEval = function(forecast, Y, clim) {
   
   nt = ncol(Y)
   
+  clim.resid = c()
+  
   for(t in 1:nt) {
     fcst = forecast[[t]]
     
@@ -35,14 +37,30 @@ stEval = function(forecast, Y, clim) {
     
     # brier skill score if climatology was provided for reference forecast
     if(!is.null(clim)) {
-      mspe.ref = mean((Y[,t] - clim)^2)
+      resid = Y[,t] - clim
+      clim.resid = c(clim.resid, resid)
+      mspe.ref = mean(resid^2)
       fcst$err$bss = 1 - fcst$err$mspe / mspe.ref
     }
-    
-    
     
     forecast[[t]] = fcst
   }
  
+  # collect all predictions and residuals
+  Y = as.numeric(Y)
+  Y.hat = as.numeric(sapply(forecast, function(f) { f$pred$Y }))
+  resid = as.numeric(sapply(forecast, function(f) { f$pred$resid }))
+  se = as.numeric(sapply(forecast, function(f) { f$pred$se }))
+  coverages = as.numeric(sapply(forecast, function(f) { f$pred$covered }))
+  
+  # add overall error evaluations
+  attr(forecast, 'err.mspe') = mean(resid^2)
+  attr(forecast, 'err.ppl') = sum(resid^2)/2 + sum(se^2)
+  attr(forecast, 'err.r2') = 1 - var(resid)/var(Y)
+  attr(forecast, 'err.cor') = cor(Y.hat, Y)
+  attr(forecast, 'err.coverage') = mean(coverages, na.rm = T)
+  attr(forecast, 'err.bss') = 1 - mean(resid^2) / mean(clim.resid^2)
+  
+  
   forecast
 }

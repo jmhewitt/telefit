@@ -40,5 +40,7 @@ cor.tel = function( Y, Z, coords.local, coords.remote, ncores=1,
                                paste, collapse=', ')
   }
   
+  class(res) = 'cor.tel'
+  
   res
 }
