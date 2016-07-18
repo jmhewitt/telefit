@@ -4,18 +4,59 @@
 \alias{stFit}
 \title{Fits the spatial teleconnection model}
 \usage{
-stFit(X, Y, Z, coords.local, coords.remote, Lambda, nu_y, nu_r, ay, by, ar, br,
-  ary, bry, arr, brr, aeps = 2, beps = 1, rho_y_sd = 0.07,
-  rho_r_sd = 0.15, eps_sd = 0.09, sigmasq_r_sd = 0.1, maxIt,
-  returnll = T, miles = T, C = 1, RWrate = 0.44, localOnly = F)
+stFit(stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
+  Z = stData$Z, coords.s = stData$coords.s, coords.r = stData$coords.r,
+  rw.initsd = NULL, returnll = T, miles = T, C = 1, alpha = 0.44,
+  localOnly = F)
 }
 \arguments{
-\item{rho_y_sd}{Initial sd for rho_y RW updates}
+\item{stData}{Object with class 'stData' containing data needed to fit this 
+model. The data need only be manually entered if not using a stData object.}
+
+\item{priors}{A list containing parameters for the prior distributions. The
+list needs to contain the following values:
+  \describe{
+    \item{Lambda}{ prior covariance matrix for local coefficients}
+    
+    \item{cov.s}{ list(smoothness=double, range=c(min, max), 
+      variance=c(shape, rate), nugget=c(shape, rate)) }
+      
+    \item{cov.r}{ list(smoothness=double, range=c(min, max), 
+      variance=c(shape, rate)) }
+  }}
+
+\item{maxIt}{number of iterations to run the MCMC chain for}
+
+\item{X}{[ns, p, nt] array of design matrices with local covariates}
+
+\item{Y}{[ns, nt] matrix with response data}
+
+\item{Z}{[nr, nt] matrix with remote covariates}
+
+\item{coords.s}{matrix with coordinates where responses were 
+observed (lon, lat)}
+
+\item{coords.r}{matrix with coordinates where remote covariates
+were observed (lon, lat)}
+
+\item{rw.initsd}{A list containing initial standard deviation parameters for
+the MCMC parameters requiring random walk updates:
+  \describe{
+    \item{cov.s}{ list(range=double, nugget=double) }
+    \item{cov.r}{ list(range=double, variance=double) }
+  }}
+
+\item{returnll}{TRUE to compute the model log-likelihood at each iteration}
+
+\item{miles}{TRUE if covariance matrix distances should be in miles, FALSE 
+for kilometers}
+
+\item{C}{scaling factor used in adapting random walk proposal variances.}
+
+\item{alpha}{target acceptance rate for random walk proposals.}
 
 \item{localOnly}{TRUE to fit the model without the teleconnection effects
 (typically for evaluating impact of teleconnection effects)}
-
-\item{nugget}{Spatial covariance nugget.}
 }
 \description{
 Fits the teleconnection model with L = Sigma

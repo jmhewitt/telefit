@@ -13,8 +13,8 @@
 #' 
 
 stSimulate = function( X=NULL, Z=NULL, coords.s=NULL, coords.r=NULL, cov.s=NULL,
-                       cov.r=NULL, alpha=NULL, beta=NULL, nt, ns, nr, p, 
-                       miles=T ) {
+                       cov.r=NULL, alpha=NULL, beta=NULL, nt=NULL, ns=NULL, 
+                       nr=NULL, p=NULL, miles=T ) {
   
   
   # default covariance parameters

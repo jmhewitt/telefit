@@ -1,4 +1,4 @@
-#' Formatting for longitude scales
+#' Formatting for longitude scales in ggplot spatial maps
 #'
 #' @importFrom scales trans_new
 #' 
@@ -16,7 +16,7 @@ lon_trans = function() {
 }
 
 
-#' Formatting for latidue scales
+#' Formatting for longitude scales in ggplot spatial maps
 #'
 #' @importFrom scales trans_new
 #' 

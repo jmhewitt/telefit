@@ -7,9 +7,6 @@
 #' @importFrom abind abind
 #' @param ... Any number of matrices of equal dimension to stack together into
 #'  a 3d matrix
-#'
-#'
-#' 
 #' 
 
 abind3 = function(...) {

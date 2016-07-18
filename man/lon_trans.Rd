@@ -2,11 +2,11 @@
 % Please edit documentation in R/latlon_trans.R
 \name{lon_trans}
 \alias{lon_trans}
-\title{Formatting for longitude scales}
+\title{Formatting for longitude scales in ggplot spatial maps}
 \usage{
 lon_trans()
 }
 \description{
-Formatting for longitude scales
+Formatting for longitude scales in ggplot spatial maps
 }
 
