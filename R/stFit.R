@@ -105,7 +105,9 @@ stFit = function( stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
   message('Samples per second: ', signif(maxIt/ptm[3],3))
   
   reslist = list(
-    parameters = list(samples = res)
+    parameters = list(samples = res),
+    priors = priors,
+    miles = miles
   )
   
   class(reslist) = 'stFit'

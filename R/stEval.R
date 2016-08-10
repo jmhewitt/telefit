@@ -15,6 +15,13 @@
 stEval = function(forecast, Y, clim) {
   
   nt = ncol(Y)
+  if(is.null(nt)) {
+    nt = 1
+    Y = matrix(Y, ncol=1)
+  }
+  
+  if(class(forecast)=='stPredict')
+    forecast = list(forecast)
   
   clim.resid = c()
   
@@ -62,5 +69,8 @@ stEval = function(forecast, Y, clim) {
   attr(forecast, 'err.bss') = 1 - mean(resid^2) / mean(clim.resid^2)
   
   
-  forecast
+  if(nt==1)
+    forecast[[1]]
+  else
+    forecast
 }

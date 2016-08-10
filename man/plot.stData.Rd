@@ -5,7 +5,8 @@
 \title{Plot stData objects}
 \usage{
 \method{plot}{stData}(stData, type = "response", t = NULL, boxsize = NULL,
-  p = NULL, map = "world", region = ".", coord.s = NULL)
+  p = NULL, map = "world", region = ".", coord.s = NULL, zlim = NULL,
+  lab.teleconnection = expression(alpha))
 }
 \arguments{
 \item{stData}{Object of class stData to plot.}
@@ -36,6 +37,10 @@ all subregions. See documentation for map for more details.}
 \item{coord.s}{if plot type is 'teleconnection', specifies the longitude and 
 latitude of local coordinate for which to plot teleconnection effects. if 
 NULL, the middle local coordinate will be plotted.}
+
+\item{zlim}{c(min, max) vector that specifies the colorscale limits}
+
+\item{lab.teleconnection}{label used for fill scale in teleconnection plot}
 }
 \value{
 a ggplot object with the specified map

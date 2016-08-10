@@ -4,8 +4,18 @@
 \alias{stPredict}
 \title{Compute forecasts based on posterior samples}
 \usage{
-stPredict(stFit, coords.local, X, Z, yearLabs, ncores = 1, localOnly = F,
-  conf = 0.95)
+stPredict(stFit, stData, ncores = 1, localOnly = F, conf = 0.95,
+  coords.s = stData$coords.s, X = stData$X, Z = stData$Z,
+  tLabs = stData$tLabs)
+}
+\arguments{
+\item{stFit}{object of class stFit that includes estimated teleconnection 
+effects.  This information will be used to make predictions}
+
+\item{stData}{object of class stData that includes information needed for 
+making forecasts.  If response data is included, this function will 
+automatically run stEval using the empirical climatology as the reference
+forecast}
 }
 \description{
 Compute forecasts based on posterior samples

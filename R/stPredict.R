@@ -11,11 +11,17 @@
 #' @importFrom mvtnorm rmvnorm
 #' 
 #'
-#' 
+#' @param stFit object of class stFit that includes estimated teleconnection 
+#'  effects.  This information will be used to make predictions
+#' @param stData object of class stData that includes information needed for 
+#'  making forecasts.  If response data is included, this function will 
+#'  automatically run stEval using the empirical climatology as the reference
+#'  forecast
 #' 
 
-stPredict = function(stFit, coords.local, X, Z, yearLabs, ncores=1, 
-                     localOnly=F, conf = .95) {
+stPredict = function( stFit, stData, ncores = 1, localOnly=F, conf = .95,
+                      coords.s = stData$coords.s, X = stData$X, 
+                      Z = stData$Z, tLabs = stData$tLabs ) {
   
   # get critical value for forming approximate normal confidence intervals
   zcrit = qnorm((1-conf)/2, lower.tail = F)
@@ -23,18 +29,26 @@ stPredict = function(stFit, coords.local, X, Z, yearLabs, ncores=1,
   registerDoMC(ncores)
   mcoptions = list(preschedule=FALSE)
   
-  n = nrow(coords.local)
+  n = nrow(coords.s)
   nt = dim(X)[3]
+  nt = ifelse(is.na(nt), 1, nt)
   
   I.ns = diag(n)
   
   # process each timepoint
-  Y = foreach(t = 1:nt, .combine='c') %do% {
+  Y = foreach(t = 1:nt) %do% {
     
     # extract covariates for this timepoint
-    x = X[,,t]
-    if(!localOnly)
-      z = Z[,t]
+    if(nt==1)
+      x = X[,]
+    else
+      x = X[,,t]
+    if(!localOnly) {
+      if(nt==1)
+        z = Z
+      else
+        z = Z[,t]
+    }
     
     # predict mean
     y.local = x %*% colMeans(stFit$parameters$samples$beta)
@@ -62,8 +76,8 @@ stPredict = function(stFit, coords.local, X, Z, yearLabs, ncores=1,
         se = se,
         Y.lwr = y.local - zcrit * se,
         Y.upr = y.local + zcrit * se,
-        lon = coords.local[,1],
-        lat = coords.local[,2]
+        lon = coords.s[,1],
+        lat = coords.s[,2]
       )
     } else {
       pred = data.frame(
@@ -73,20 +87,30 @@ stPredict = function(stFit, coords.local, X, Z, yearLabs, ncores=1,
         se = se,
         Y.lwr = y.local + y.remote - zcrit * se,
         Y.upr = y.local + y.remote + zcrit * se,
-        lon = coords.local[,1],
-        lat = coords.local[,2]
+        lon = coords.s[,1],
+        lat = coords.s[,2]
       )
     }
     
     
     
-    # return results
-    list(list(
+    # package and return results
+    r = list(
       pred = pred,
-      yrLab = yearLabs[t]
-    ))
+      yrLab = tLabs[t]
+    )
+    class(r) = 'stPredict'
+    
+    r
   }
   
+  if(!is.null(stData$Y)) {
+    if(is.null(ncol(stData$Y)))
+      Y = stEval(Y, stData$Y, stData$Y)
+    else 
+      Y = stEval(Y, stData$Y, rowMeans(stData$Y))
+  }
+    
   
- Y 
+    Y
 }

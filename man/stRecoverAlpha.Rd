@@ -2,18 +2,47 @@
 % Please edit documentation in R/stRecoverAlpha.R
 \name{stRecoverAlpha}
 \alias{stRecoverAlpha}
-\title{Matern covariance}
+\title{Estimate teleconnection effects}
 \usage{
-stRecoverAlpha(stFit, X, Y, Z, coords.local, coords.remote, nu_y, nu_r, burn,
-  prob = 0.95, miles = T, ncores = 1, summaryOnly = T)
+stRecoverAlpha(stFit, stData, burn, ncores = 1, prob = 0.95,
+  summaryOnly = T, X = stData$X, Y = stData$Y, Z = stData$Z,
+  coords.s = stData$coords.s, coords.r = stData$coords.r)
 }
 \arguments{
+\item{stFit}{Object with class 'stFit' containing posterior parameter samples
+needed to composition sample the teleconnection effects. The data needed 
+from stFit need only be manually entered if not using a stData object.}
+
+\item{stData}{Object with class 'stData' containing data needed to fit this 
+model. The data need only be manually entered if not using a stData object.}
+
+\item{burn}{number of posterior samples to burn before drawing composition
+samples}
+
+\item{ncores}{Since the teleconnection effects can be sampled in parallel,
+this parameter lets users specify the number of cores to use to sample 
+teleconnection effects}
+
+\item{prob}{confidence level for approximate confidence intervals of 
+teleconnection effects}
+
 \item{summaryOnly}{Only return alpha estimates and key variances; do not 
 return all posterior samples.}
+
+\item{X}{[ns, p, nt] array of design matrices with local covariates}
+
+\item{Y}{[ns, nt] matrix with response data}
+
+\item{Z}{[nr, nt] matrix with remote covariates}
+
+\item{coords.s}{matrix with coordinates where responses were 
+observed (lon, lat)}
+
+\item{coords.r}{matrix with coordinates where remote covariates
+were observed (lon, lat)}
 }
 \description{
-This function evaluates the Matern covariance function for the elements of 
-a spatial distance matrix, d---i.e., a symmetric matrix with 0's along its
-main diagonal.
+This method uses composition sampling from the posterior parameter estimates
+and can be executed in parallel.
 }
 

@@ -29,6 +29,8 @@
 #' @param coord.s if plot type is 'teleconnection', specifies the longitude and 
 #'  latitude of local coordinate for which to plot teleconnection effects. if 
 #'  NULL, the middle local coordinate will be plotted.
+#' @param zlim c(min, max) vector that specifies the colorscale limits
+#' @param lab.teleconnection label used for fill scale in teleconnection plot
 #' 
 #' @return a ggplot object with the specified map
 #'
@@ -36,7 +38,8 @@
 #' 
 
 plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,  
-                        map='world', region='.', coord.s=NULL ) {
+                        map='world', region='.', coord.s=NULL, zlim=NULL,
+                        lab.teleconnection = expression(alpha) ) {
 
   if(is.null(t))
     t=stData$tLabs[1]
@@ -81,7 +84,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
       filter(lon.Y==coord.s[1], lat.Y==coord.s[2]) %>% 
       mutate(lon.Y=lon.Z, lat.Y=lat.Z )
     
-    lab.col = expression(alpha)
+    lab.col = lab.teleconnection
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   }
   
@@ -134,15 +137,23 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   else
     tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y, width=boxsize, height=boxsize)
   
+  if(is.null(zlim))
+    fillscale = scale_fill_gradient2(lab.col,
+                                     low = scheme.col$low, 
+                                     mid = scheme.col$mid, 
+                                     high = scheme.col$high)
+  else
+    fillscale = scale_fill_gradient2(lab.col,
+                                     low = scheme.col$low, 
+                                     mid = scheme.col$mid, 
+                                     high = scheme.col$high,
+                                     limits = zlim)
   # build base plot
   worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
     geom_tile(tile.aes, data = Y  %>% 
                 mutate(lon.Y = ifelse(lon.Y<=0, lon.Y, lon.Y-360)), 
               inherit.aes = F) +
-    scale_fill_gradient2(lab.col,
-                         low = scheme.col$low, 
-                         mid = scheme.col$mid, 
-                         high = scheme.col$high) +
+    fillscale +
     scale_x_continuous(trans = lon_trans()) +
     scale_y_continuous(trans = lat_trans()) +
     xlab('Longitude') +

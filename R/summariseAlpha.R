@@ -9,10 +9,10 @@
 #' 
 #' 
 
-summariseAlpha = function( alpha, burn, prob=.95, coords.local, coords.remote ) {
+summariseAlpha = function( alpha, burn, prob=.95, coords.s, coords.r ) {
   
-  n = nrow(coords.local)
-  r = nrow(coords.remote)
+  n = nrow(coords.s)
+  r = nrow(coords.r)
   
   # compute approximate normal intervals and significance
   z = qnorm((1-prob)/2, lower.tail = F)
@@ -34,9 +34,9 @@ summariseAlpha = function( alpha, burn, prob=.95, coords.local, coords.remote ) 
     lower = lower,
     upper = upper,
     signif = sig,
-    lon.Z = coords.remote[,1],
-    lat.Z = coords.remote[,2],
-    lon.Y = rep(coords.local[,1], rep(r,n)),
-    lat.Y = rep(coords.local[,2], rep(r,n))
+    lon.Z = coords.r[,1],
+    lat.Z = coords.r[,2],
+    lon.Y = rep(coords.s[,1], rep(r,n)),
+    lat.Y = rep(coords.s[,2], rep(r,n))
   )
 }
