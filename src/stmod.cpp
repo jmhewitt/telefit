@@ -451,7 +451,7 @@ class STModel {
 			// RW sigmasq_eps
 			//
 			
-			 step = 'e';
+			step = 'e';
 			
 			// MH sample and update
 			gibbsProposed.sigmasq_eps = mcstat::logProposal(gibbsCur.sigmasq_eps,

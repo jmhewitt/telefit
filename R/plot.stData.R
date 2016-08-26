@@ -47,6 +47,9 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   if(is.null(p))
     p=2
   
+  if(class(stData$Y)!='matrix')
+    stData$Y = matrix(stData$Y, nrow = nrow(stData$coords.s))
+  
   # extract dataset to plot
   match.opts = c('response', 'covariate', 'remote', 'teleconnection')
   type = match.opts[pmatch(type, match.opts)]

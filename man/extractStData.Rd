@@ -4,7 +4,7 @@
 \alias{extractStData}
 \title{Basic extraction of SpatialGridDataFrame data for teleconnection analysis}
 \usage{
-extractStData(X, Y, Z, t, D.s, D.r, mask.s = NULL, mask.r = NULL,
+extractStData(X, Y, Z, t = NULL, D.s, D.r, mask.s = NULL, mask.r = NULL,
   aggfact.s = NULL, aggfact.r = NULL, intercept = T,
   type.s = "response", type.r = "response", X.lab = NULL, Y.lab = NULL,
   Z.lab = NULL)
@@ -22,7 +22,8 @@ mask.r must
 also be lists so that this function can know which regions to extract from
 each SpatialGridDataFrame}
 
-\item{t}{Column indexes in X, Y, and Z from which to extract data}
+\item{t}{Timepoint from which to extract data from X, Y, and Z.  If NULL,
+then all timepoints will be used.}
 
 \item{D.s}{c(xmin, xmax, ymin, ymax) region from which to extract data from 
 X and Y}

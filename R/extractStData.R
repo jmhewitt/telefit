@@ -15,7 +15,8 @@
 #'  mask.r must
 #'  also be lists so that this function can know which regions to extract from
 #'  each SpatialGridDataFrame
-#' @param t Column indexes in X, Y, and Z from which to extract data
+#' @param t Timepoint from which to extract data from X, Y, and Z.  If NULL,
+#'  then all timepoints will be used.
 #' @param D.s c(xmin, xmax, ymin, ymax) region from which to extract data from 
 #'  X and Y
 #' @param D.r c(xmin, xmax, ymin, ymax) region from which to extract data from Z
@@ -39,19 +40,20 @@
 #'  @param Z.lab name for Z data (optional)
 #'  
 
-extractStData = function( X, Y, Z, t, D.s, D.r, mask.s = NULL, mask.r = NULL,
+extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NULL,
                           aggfact.s = NULL, aggfact.r = NULL, intercept = T,
                           type.s = 'response', type.r = 'response',
                           X.lab = NULL, Y.lab = NULL, Z.lab = NULL ) {
-  
-  # fix things so that t is the names, and not the indexes of data to extract
-  
+                  
   # convert local bounds to extent object
   D.s = extent(D.s)
   
-  # save time labels before they are transformed
-  tLabs = names(Y)[t]
-  
+  # save time labels before they are converted to column indices
+  if(is.null(t)) {
+    t = names(Y)
+  }
+  tLabs = t
+  t = match(t, names(Y))
   
   # extract local data
   
@@ -95,9 +97,10 @@ extractStData = function( X, Y, Z, t, D.s, D.r, mask.s = NULL, mask.r = NULL,
   Z.mat = foreach(z = Z, .combine = 'rbind') %do% { matrix(z@data@values[, t], 
                                                            ncol = length(t)) }
 
+  # extract response data
+  Y.mat = Y@data@values[,t]
   
   # extract coordinates
-  
   coords.s = coordinates(Y)
   coords.r = foreach(z = Z, .combine = 'rbind') %do% { coordinates(z) }
   
@@ -105,6 +108,12 @@ extractStData = function( X, Y, Z, t, D.s, D.r, mask.s = NULL, mask.r = NULL,
   complete.data = complete.cases(Z.mat)
   Z.mat = matrix(Z.mat[complete.data,], ncol=length(t))
   coords.r = coords.r[complete.data,]
+  
+  # remove local coordinates that have NA data
+  complete.data = complete.cases(X.mat[,,1])
+  X.mat = X.mat[complete.data,,]
+  Y.mat = matrix(Y.mat[complete.data,], ncol=length(t))
+  coords.s = coords.s[complete.data,]
   
   
   # build return object
@@ -114,7 +123,7 @@ extractStData = function( X, Y, Z, t, D.s, D.r, mask.s = NULL, mask.r = NULL,
     coords.s = coords.s,
     coords.r = coords.r,
     X = X.mat,
-    Y = Y@data@values[,t],
+    Y = Y.mat,
     Z = Z.mat
   )
   

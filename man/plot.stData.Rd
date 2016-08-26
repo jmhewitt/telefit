@@ -4,7 +4,7 @@
 \alias{plot.stData}
 \title{Plot stData objects}
 \usage{
-\method{plot}{stData}(stData, type = "response", t = NULL, boxsize = NULL,
+plot.stData(stData, type = "response", t = NULL, boxsize = NULL,
   p = NULL, map = "world", region = ".", coord.s = NULL, zlim = NULL,
   lab.teleconnection = expression(alpha))
 }

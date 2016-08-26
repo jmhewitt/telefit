@@ -4,7 +4,7 @@
 \alias{stPredict}
 \title{Compute forecasts based on posterior samples}
 \usage{
-stPredict(stFit, stData, ncores = 1, localOnly = F, conf = 0.95,
+stPredict(stFit, stData, ncores = 1, conf = 0.95,
   coords.s = stData$coords.s, X = stData$X, Z = stData$Z,
   tLabs = stData$tLabs)
 }

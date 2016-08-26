@@ -107,7 +107,8 @@ stFit = function( stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
   reslist = list(
     parameters = list(samples = res),
     priors = priors,
-    miles = miles
+    miles = miles,
+    localOnly = localOnly
   )
   
   class(reslist) = 'stFit'

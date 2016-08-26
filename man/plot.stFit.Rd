@@ -4,9 +4,9 @@
 \alias{plot.stFit}
 \title{Plot stData objects}
 \usage{
-\method{plot}{stFit}(stFit, type = "density", boxsize = NULL,
-  stData = NULL, map = "world", region = ".", coord.s = NULL,
-  zlim = NULL, text.size = NULL, axis.text.size = NULL, burn = 1)
+plot.stFit(stFit, type = "density", boxsize = NULL, stData = NULL,
+  map = "world", region = ".", coord.s = NULL, zlim = NULL,
+  text.size = NULL, axis.text.size = NULL, burn = 1)
 }
 \arguments{
 \item{stFit}{Object of class stFit to plot.}
