@@ -4,9 +4,9 @@
 \alias{plot.stData}
 \title{Plot stData objects}
 \usage{
-plot.stData(stData, type = "response", t = NULL, boxsize = NULL,
+\method{plot}{stData}(stData, type = "response", t = NULL, boxsize = NULL,
   p = NULL, map = "world", region = ".", coord.s = NULL, zlim = NULL,
-  lab.teleconnection = expression(alpha))
+  lab.teleconnection = expression(alpha), fill.lab.width = 20)
 }
 \arguments{
 \item{stData}{Object of class stData to plot.}
@@ -41,6 +41,8 @@ NULL, the middle local coordinate will be plotted.}
 \item{zlim}{c(min, max) vector that specifies the colorscale limits}
 
 \item{lab.teleconnection}{label used for fill scale in teleconnection plot}
+
+\item{fill.lab.width}{line width for fill scale label}
 }
 \value{
 a ggplot object with the specified map

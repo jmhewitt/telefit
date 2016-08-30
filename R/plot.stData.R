@@ -7,6 +7,7 @@
 #' 
 #' @import ggplot2
 #' @import dplyr
+#' @importFrom stringr str_wrap
 #' 
 #' @param boxsize size of grid boxes plotted
 #' @param t timepoint to plot.  Will automatically plot the first timepoint if
@@ -31,6 +32,7 @@
 #'  NULL, the middle local coordinate will be plotted.
 #' @param zlim c(min, max) vector that specifies the colorscale limits
 #' @param lab.teleconnection label used for fill scale in teleconnection plot
+#' @param fill.lab.width line width for fill scale label
 #' 
 #' @return a ggplot object with the specified map
 #'
@@ -39,7 +41,8 @@
 
 plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,  
                         map='world', region='.', coord.s=NULL, zlim=NULL,
-                        lab.teleconnection = expression(alpha) ) {
+                        lab.teleconnection = expression(alpha),
+                        fill.lab.width = 20 ) {
 
   if(is.null(t))
     t=stData$tLabs[1]
@@ -140,17 +143,22 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   else
     tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y, width=boxsize, height=boxsize)
   
-  if(is.null(zlim))
+  # wrap fill label
+  lab.col = str_wrap(lab.col, width=fill.lab.width)
+  
+  if(is.null(zlim)) {
     fillscale = scale_fill_gradient2(lab.col,
                                      low = scheme.col$low, 
                                      mid = scheme.col$mid, 
                                      high = scheme.col$high)
-  else
+  } else {
     fillscale = scale_fill_gradient2(lab.col,
                                      low = scheme.col$low, 
                                      mid = scheme.col$mid, 
                                      high = scheme.col$high,
                                      limits = zlim)
+  }
+    
   # build base plot
   worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
     geom_tile(tile.aes, data = Y  %>% 

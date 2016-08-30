@@ -4,7 +4,7 @@
 \alias{plot.stPredict}
 \title{Plot stPredict objects}
 \usage{
-plot.stPredict(stPredict, type = "prediction", boxsize = NULL,
+\method{plot}{stPredict}(stPredict, type = "prediction", boxsize = NULL,
   map = "world", region = ".", zlim = NULL, t = NULL)
 }
 \arguments{

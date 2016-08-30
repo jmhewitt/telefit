@@ -59,6 +59,7 @@ plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
   
   
   # build plots
+  ret = NULL
   if( type=='traceplot' ) {
     ret = ggplot(res.plottable, aes(x=Iteration, y=Value)) +
       geom_line() +

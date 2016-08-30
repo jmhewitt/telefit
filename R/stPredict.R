@@ -103,15 +103,6 @@ stPredict = function( stFit, stData, ncores = 1, conf = .95,
   }
   
 
-  # evaluate performance if response data is given
-  if(!is.null(stData$Y)) {
-    if(is.null(ncol(stData$Y)))
-      Y = stEval(Y, stData$Y, stData$Y)
-    else 
-      Y = stEval(Y, stData$Y, rowMeans(stData$Y))
-  }
-    
-  
   ret = list(
     pred = Y,
     coord.s = stData$coords.s,
@@ -120,6 +111,14 @@ stPredict = function( stFit, stData, ncores = 1, conf = .95,
     Y.lab = stData$Y.lab
   )
   class(ret) = 'stPredict'
+  
+  # evaluate performance if response data is given
+  if(!is.null(stData$Y)) {
+    if(is.null(ncol(stData$Y)))
+      ret = stEval(ret, stData$Y, stData$Y)
+    else 
+      ret = stEval(ret, stData$Y, rowMeans(stData$Y))
+  }
   
   ret
 }
