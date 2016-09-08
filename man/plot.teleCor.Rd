@@ -10,7 +10,7 @@
 \arguments{
 \item{teleCor}{object of class teleCor, containing pointwise correlations}
 
-\item{signif}{if TRUE, then cor.tel must have a column labeled 'signif' that
+\item{signif}{if TRUE, then teleCor must have a column labeled 'signif' that
 indicates which correlations are significant.  These correlations will be
 printed in bold, and the rest will be printed more lightly}
 

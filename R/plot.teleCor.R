@@ -9,7 +9,7 @@
 #' @importFrom dplyr mutate filter "%>%"
 #' 
 #' @param teleCor object of class teleCor, containing pointwise correlations
-#' @param signif if TRUE, then cor.tel must have a column labeled 'signif' that
+#' @param signif if TRUE, then teleCor must have a column labeled 'signif' that
 #'  indicates which correlations are significant.  These correlations will be
 #'  printed in bold, and the rest will be printed more lightly
 #' @param coord.s specifies the longitude and 
@@ -44,6 +44,11 @@ plot.teleCor = function( teleCor, signif=F, coord.s=NULL, boxsize=NULL,
   cor.frame = data.frame( cor = teleCor$cor[coord.s.ind,],
                           lon.Z = teleCor$coords.r[,1],
                           lat.Z = teleCor$coords.r[,2] )
+  
+  # add information about significant teleconnections
+  if(signif) {
+    cor.frame = cbind(cor.frame, signif = teleCor$signif[coord.s.ind,])
+  }
     
   # set basic plotting theme
   lab.col = expression(rho)

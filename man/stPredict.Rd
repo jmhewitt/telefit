@@ -6,7 +6,7 @@
 \usage{
 stPredict(stFit, stData, ncores = 1, conf = 0.95,
   coords.s = stData$coords.s, X = stData$X, Z = stData$Z,
-  tLabs = stData$tLabs)
+  tLabs = stData$tLabs, burn = 1)
 }
 \arguments{
 \item{stFit}{object of class stFit that includes estimated teleconnection 
@@ -16,6 +16,8 @@ effects.  This information will be used to make predictions}
 making forecasts.  If response data is included, this function will 
 automatically run stEval using the empirical climatology as the reference
 forecast}
+
+\item{burn}{Number of posterior samples to ignore}
 }
 \description{
 Compute forecasts based on posterior samples

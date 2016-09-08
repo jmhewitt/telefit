@@ -116,14 +116,26 @@ stRecoverAlpha = function( stFit, stData, burn, ncores=1, prob=.95,
                            .options.multicore=mcoptions ) %dorng% {
     inds = unlist(inds)            
     
-    .Call("_compositionAlpha", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, 
-          Dz, stFit$priors$cov.s$smoothness, stFit$priors$cov.r$smoothness, 
-          stFit$parameters$samples$beta[inds,], 
-          stFit$parameters$samples$sigmasq_y[inds], 
-          stFit$parameters$samples$rho_y[inds], 
-          stFit$parameters$samples$rho_r[inds], 
-          stFit$parameters$samples$sigmasq_r[inds], 
-          stFit$parameters$samples$sigmasq_eps[inds], 0, summaryOnly)
+    if(stFit$varying) {
+      .Call("_stvCompositionAlpha", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, 
+            Dz, stFit$priors$cov.s$smoothness, stFit$priors$cov.r$smoothness, 
+            stFit$parameters$samples$beta[inds,], 
+            stFit$parameters$samples$sigmasq_y[inds], 
+            stFit$parameters$samples$rho_y[inds], 
+            stFit$parameters$samples$rho_r[inds], 
+            stFit$parameters$samples$sigmasq_r[inds], 
+            stFit$parameters$samples$sigmasq_eps[inds], 0, summaryOnly)
+    } else {
+      .Call("_compositionAlpha", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, 
+            Dz, stFit$priors$cov.s$smoothness, stFit$priors$cov.r$smoothness, 
+            stFit$parameters$samples$beta[inds,], 
+            stFit$parameters$samples$sigmasq_y[inds], 
+            stFit$parameters$samples$rho_y[inds], 
+            stFit$parameters$samples$rho_r[inds], 
+            stFit$parameters$samples$sigmasq_r[inds], 
+            stFit$parameters$samples$sigmasq_eps[inds], 0, summaryOnly)
+    }
+    
   }
   
   # remove unwanted information

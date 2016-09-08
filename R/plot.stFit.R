@@ -1,4 +1,4 @@
-#' Plot stData objects
+#' Plot stFit objects
 #'
 #' This function provides basic plotting for telefit package data.
 #' 
@@ -15,9 +15,9 @@
 #'  will include us state outlines.
 #' @param region name of subregions to include. Defaults to . which includes 
 #'  all subregions. See documentation for map for more details.
-#' @param type Either 'traceplot', 'density', 'pairs', or 'teleconnection' 
-#'  to specify which part of stFit to plot. Note that the value for type can
-#'  be an abbreviation since partial matching is used during plotting.
+#' @param type Either 'traceplot', 'density', 'pairs', 'teleconnection',
+#'  or 'beta' to specify which part of stFit to plot. Note that the value for
+#'  type can be an abbreviation since partial matching is used during plotting.
 #' @param stFit Object of class stFit to plot.
 #' @param coord.s if plot type is 'teleconnection', specifies the longitude and 
 #'  latitude of local coordinate for which to plot estimated teleconnection 
@@ -28,6 +28,10 @@
 #' @param burn number of observations to exclude from graph
 #' @param stData Object of class stData to provide coordinate and related
 #'  information for plotting estimated teleconnection effects
+#' @param signif.telecon if TRUE, will highlight significant teleconnection
+#'  effects when type=='teleconnection'
+#' @param p If stFit was fit with spatially varying coefficients, p specifies 
+#'  the index of the spatially varying coefficient to plot
 #' 
 #' @return a ggplot object with the specified map
 #'
@@ -36,16 +40,22 @@
 
 plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
                        map='world', region='.', coord.s=NULL, zlim=NULL,
-                       text.size=NULL, axis.text.size=NULL, burn = 1) {
+                       text.size=NULL, axis.text.size=NULL, burn = 1,
+                       signif.telecon = F, p = 1 ) {
 
   # determine which type of plot is requested
-  match.opts = c('traceplot', 'density', 'pairs', 'teleconnection')
+  match.opts = c('traceplot', 'density', 'pairs', 'teleconnection', 'beta')
   type = match.opts[pmatch(type, match.opts)]
   
   # extract posterior samples if necessary
   if( type %in% c('traceplot', 'density', 'pairs') ) {
     # extract posterior samples
-    res.df = data.frame(stFit$parameters$samples)
+    if(stFit$varying) {
+      res.df = data.frame(stFit$parameters$samples) %>% 
+        select(-contains("beta"), -contains("T"))
+    } else {
+      res.df = data.frame(stFit$parameters$samples)
+    }
     maxIt = nrow(res.df)
     
     # discard burned samples
@@ -79,11 +89,46 @@ plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
       stop('stData object required for plotting estimated teleconnection effects.')
     }
     
-    stData$alpha = stFit$alpha$summary$alpha
-    ret = plot.stData(stData, 'tele', boxsize = boxsize, map = map, region = region,
-               coord.s = coord.s, zlim = zlim, 
-               lab.teleconnection = expression(hat(alpha))) + 
-      ggtitle('Estimated teleconnection effects')
+    if(signif.telecon) {
+      teleCor = list(
+        cor = matrix(stFit$alpha$summary$alpha, nrow = nrow(stData$coords.s),
+                     byrow = T),
+        coords.s = stData$coords.s,
+        coords.r = stData$coords.r,
+        signif = matrix(stFit$alpha$summary$signif, nrow = nrow(stData$coords.s),
+                        byrow = T)
+      )
+      class(teleCor) = 'teleCor'
+      
+      ret = plot.teleCor(teleCor, signif = T, coord.s = coord.s, 
+                         boxsize = boxsize, map = map, region = region, 
+                         zlim = zlim )
+      
+    } else {
+      stData$alpha = stFit$alpha$summary$alpha
+      ret = plot.stData(stData, 'tele', boxsize = boxsize, map = map, 
+                        region = region, coord.s = coord.s, zlim = zlim, 
+                        lab.teleconnection = expression(hat(alpha))) + 
+        ggtitle('Estimated teleconnection effects')
+    }
+    
+  } else if( type=='beta' ) {
+    if(is.null(stData)) {
+      stop('stData object required for plotting estimated spatially varying coefficients.')
+    }
+    
+    # extract coefficient estimates
+    betaH = colMeans(stFit$parameters$samples$beta[-(1:burn),
+        seq(from = p, to = prod(dim(stData$X)[1:2]), by = ncol(stData$X) )])
+    
+    # put estimates into plottable structure
+    stData$Y[,1] = betaH
+    stData$Y.lab = 'Coefficient'
+    
+    # build plot
+    ret = plot.stData(stData, 'response') + 
+      ggtitle('Estimated spatially varying coefficient')
+    
   }
   
   

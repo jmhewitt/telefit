@@ -16,6 +16,7 @@ namespace mcstat {
 	
 	// evaluate kron(A,B) * C without storing kron(A,B)
 	mat dgemkmm(mat A, mat B, mat C);
+	mat dsemkmm(mat A, mat B, SpMat<double> C);
 	
 	
 	//
@@ -73,6 +74,33 @@ namespace mcstat {
 	// sample a multivariate normal r.v.
 	inline vec mvrnorm(const vec & mu, const mat & sigma) {
 		return mu + chol(sigma, "lower") * randn<vec>(sigma.n_rows, 1);
+	}
+	
+	// sample a wishart matrix using bartlett's decompostion
+	inline mat rwishart(mat V, int n) {
+		// Params:
+		//  n - degrees of freedom
+		//  V - (symmetric) scale matrix
+		
+		int p = V.n_rows;
+		mat A = mat(p, p, fill::zeros);
+		
+		// fill diagonal
+		for(int i=0; i<p; i++)
+			A(i,i) = sqrt(R::rchisq(n-i));
+		
+		// fill lower-triangular portion of matrix
+		for(int i=1; i<p; i++)
+			for(int j=0; j<i; j++)
+				A(i,j) = R::rnorm(0,1);
+		
+		mat C = chol(V, "lower") * trimatl(A);
+		return C * C.t();
+	}
+	
+	// sample an inverse wishart matrix
+	inline mat rinvwishart(mat V, int n) {
+		return inv_sympd( rwishart(inv_sympd(V), n) );
 	}
 	
 	

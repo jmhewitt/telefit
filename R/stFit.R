@@ -21,7 +21,11 @@
 #' @param priors A list containing parameters for the prior distributions. The
 #'  list needs to contain the following values:
 #'    \describe{
-#'      \item{Lambda}{ prior covariance matrix for local coefficients}
+#'      \item{beta} { list(Lambda=matrix) specifying the prior covariance matrix
+#'        for the local effects if varying==F; otherwise 
+#'        list(Psi=matrix, nu=double) specifying the Inverse wishart prior 
+#'        distribution for the spatially varying coefficient process if 
+#'        varying==T.   }
 #'      
 #'      \item{cov.s}{ list(smoothness=double, range=c(min, max), 
 #'        variance=c(shape, rate), nugget=c(shape, rate)) }
@@ -41,13 +45,15 @@
 #'  for kilometers
 #' @param C scaling factor used in adapting random walk proposal variances.
 #' @param alpha target acceptance rate for random walk proposals.
+#' @param varying TRUE to fit the model with spatially varying local coefficients
 #' 
 
 
 stFit = function( stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y, 
                   Z = stData$Z, coords.s = stData$coords.s, 
                   coords.r = stData$coords.r, rw.initsd = NULL, 
-                  returnll=T, miles=T, C=1, alpha=.44, localOnly = F ) {
+                  returnll = T, miles = T, C=1, alpha=.44, localOnly = F,
+                  varying = T ) {
   
   n = dim(X)[1]
   p = dim(X)[2]
@@ -74,7 +80,7 @@ stFit = function( stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
                 priors$cov.s$smoothness, priors$cov.s$variance[1], 
                 priors$cov.s$variance[2], priors$cov.s$range[1], 
                 priors$cov.s$range[2], priors$cov.s$nugget[1], 
-                priors$cov.s$nugget[2], priors$Lambda, rw.initsd$cov.s$range, 
+                priors$cov.s$nugget[2], priors$beta$Lambda, rw.initsd$cov.s$range, 
                 rw.initsd$cov.s$nugget, maxIt, returnll, errDump, C, alpha)
     
     ptm = proc.time() - ptm
@@ -86,16 +92,30 @@ stFit = function( stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
     
     ptm = proc.time()
     
-    res = .Call("_stfit", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, Dz, 
-                priors$cov.s$smoothness, priors$cov.r$smoothness, 
-                priors$cov.s$variance[1], priors$cov.s$variance[2], 
-                priors$cov.r$variance[1], priors$cov.r$variance[2], 
-                priors$cov.s$range[1], priors$cov.s$range[2],
-                priors$cov.r$range[1], priors$cov.r$range[2],
-                priors$cov.s$nugget[1], priors$cov.s$nugget[2], priors$Lambda,
-                rw.initsd$cov.s$range, rw.initsd$cov.r$range, 
-                rw.initsd$cov.s$nugget, rw.initsd$cov.r$variance, maxIt, 
-                returnll, errDump, C, alpha)
+    if(varying) {
+      res = .Call("_stvfit", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, Dz, 
+                  priors$cov.s$smoothness, priors$cov.r$smoothness, 
+                  priors$cov.s$variance[1], priors$cov.s$variance[2], 
+                  priors$cov.r$variance[1], priors$cov.r$variance[2], 
+                  priors$cov.s$range[1], priors$cov.s$range[2],
+                  priors$cov.r$range[1], priors$cov.r$range[2],
+                  priors$cov.s$nugget[1], priors$cov.s$nugget[2], priors$beta$Psi,
+                  rw.initsd$cov.s$range, rw.initsd$cov.r$range, 
+                  rw.initsd$cov.s$nugget, rw.initsd$cov.r$variance, maxIt, 
+                  returnll, errDump, C, alpha, priors$beta$nu)
+      
+    } else {
+      res = .Call("_stfit", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, Dz, 
+                  priors$cov.s$smoothness, priors$cov.r$smoothness, 
+                  priors$cov.s$variance[1], priors$cov.s$variance[2], 
+                  priors$cov.r$variance[1], priors$cov.r$variance[2], 
+                  priors$cov.s$range[1], priors$cov.s$range[2],
+                  priors$cov.r$range[1], priors$cov.r$range[2],
+                  priors$cov.s$nugget[1], priors$cov.s$nugget[2], priors$beta$Lambda,
+                  rw.initsd$cov.s$range, rw.initsd$cov.r$range, 
+                  rw.initsd$cov.s$nugget, rw.initsd$cov.r$variance, maxIt, 
+                  returnll, errDump, C, alpha)
+    }
     
     ptm = proc.time() - ptm
   }
@@ -108,7 +128,8 @@ stFit = function( stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
     parameters = list(samples = res),
     priors = priors,
     miles = miles,
-    localOnly = localOnly
+    localOnly = localOnly,
+    varying = varying
   )
   
   class(reslist) = 'stFit'

@@ -7,7 +7,7 @@
 stFit(stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
   Z = stData$Z, coords.s = stData$coords.s, coords.r = stData$coords.r,
   rw.initsd = NULL, returnll = T, miles = T, C = 1, alpha = 0.44,
-  localOnly = F)
+  localOnly = F, varying = T)
 }
 \arguments{
 \item{stData}{Object with class 'stData' containing data needed to fit this 
@@ -16,7 +16,11 @@ model. The data need only be manually entered if not using a stData object.}
 \item{priors}{A list containing parameters for the prior distributions. The
 list needs to contain the following values:
   \describe{
-    \item{Lambda}{ prior covariance matrix for local coefficients}
+    \item{beta} { list(Lambda=matrix) specifying the prior covariance matrix
+      for the local effects if varying==F; otherwise 
+      list(Psi=matrix, nu=double) specifying the Inverse wishart prior 
+      distribution for the spatially varying coefficient process if 
+      varying==T.   }
     
     \item{cov.s}{ list(smoothness=double, range=c(min, max), 
       variance=c(shape, rate), nugget=c(shape, rate)) }
@@ -57,6 +61,8 @@ for kilometers}
 
 \item{localOnly}{TRUE to fit the model without the teleconnection effects
 (typically for evaluating impact of teleconnection effects)}
+
+\item{varying}{TRUE to fit the model with spatially varying local coefficients}
 }
 \description{
 Fits the teleconnection model with L = Sigma

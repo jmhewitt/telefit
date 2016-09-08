@@ -7,6 +7,7 @@
 #' @importFrom doMC registerDoMC
 #' @import doRNG
 #' @import foreach
+#' @import Matrix
 #' @importFrom fields rdist.earth
 #' @importFrom mvtnorm rmvnorm
 #' 
@@ -17,14 +18,17 @@
 #'  making forecasts.  If response data is included, this function will 
 #'  automatically run stEval using the empirical climatology as the reference
 #'  forecast
+#' @param burn Number of posterior samples to ignore
 #' 
 
 stPredict = function( stFit, stData, ncores = 1, conf = .95,
                       coords.s = stData$coords.s, X = stData$X, 
-                      Z = stData$Z, tLabs = stData$tLabs ) {
+                      Z = stData$Z, tLabs = stData$tLabs,
+                      burn = 1) {
   
-  # extract localOnly
+  # extract localOnly and varying
   localOnly = stFit$localOnly
+  varying = stFit$varying
     
   # get critical value for forming approximate normal confidence intervals
   zcrit = qnorm((1-conf)/2, lower.tail = F)
@@ -38,6 +42,9 @@ stPredict = function( stFit, stData, ncores = 1, conf = .95,
   
   I.ns = diag(n)
   
+  # mean beta estimate
+  betaH = colMeans(stFit$parameters$samples$beta[-(1:burn),])
+  
   # process each timepoint
   Y = foreach(t = 1:nt) %dopar% {
 
@@ -46,6 +53,13 @@ stPredict = function( stFit, stData, ncores = 1, conf = .95,
       x = X[,]
     } else {
       x = X[,,t]
+    }
+    
+    if(varying) {
+      # convert to sparse spatially varying format
+      x = t(sparseMatrix(i = 1:prod(dim(x)),
+                         j = rep(1:nrow(x), rep(ncol(x),nrow(x))),
+                         x = as.numeric(t(x))))
     }
       
     if(!localOnly) {
@@ -57,7 +71,7 @@ stPredict = function( stFit, stData, ncores = 1, conf = .95,
     }
 
     # predict mean
-    y.local = x %*% colMeans(stFit$parameters$samples$beta)
+    y.local = as.numeric(x %*% betaH)
     if(!localOnly)
       y.remote = dgemkmm(I.ns, t(z), stFit$alpha$summary$alpha)
 
@@ -105,9 +119,10 @@ stPredict = function( stFit, stData, ncores = 1, conf = .95,
 
   ret = list(
     pred = Y,
-    coord.s = stData$coords.s,
+    coord.s = coords.s,
     localOnly = localOnly,
-    tLabs = stData$tLabs,
+    varying = varying,
+    tLabs = tLabs,
     Y.lab = stData$Y.lab
   )
   class(ret) = 'stPredict'
