@@ -14,6 +14,9 @@ summariseAlpha = function( alpha, burn, prob=.95, coords.s, coords.r ) {
   n = nrow(coords.s)
   r = nrow(coords.r)
   
+  if(is.null(alpha$est))
+    alpha$est = alpha$alpha
+  
   # compute approximate normal intervals and significance
   z = qnorm((1-prob)/2, lower.tail = F)
   lower = alpha$est - alpha$sd*z
