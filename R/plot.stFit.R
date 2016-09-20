@@ -89,6 +89,8 @@ plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
       stop('stData object required for plotting estimated teleconnection effects.')
     }
     
+    coord.s = unlist(coord.s)
+    
     if(signif.telecon) {
       teleCor = list(
         cor = matrix(stFit$alpha$summary$alpha, nrow = nrow(stData$coords.s),
@@ -108,7 +110,7 @@ plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
       stData$alpha = stFit$alpha$summary$alpha
       ret = plot.stData(stData, 'tele', boxsize = boxsize, map = map, 
                         region = region, coord.s = coord.s, zlim = zlim, 
-                        lab.teleconnection = expression(hat(alpha))) + 
+                        lab.teleconnection = 'alpha') + 
         ggtitle('Estimated teleconnection effects')
     }
     

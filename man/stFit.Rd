@@ -16,11 +16,11 @@ model. The data need only be manually entered if not using a stData object.}
 \item{priors}{A list containing parameters for the prior distributions. The
 list needs to contain the following values:
   \describe{
-    \item{beta} { list(Lambda=matrix) specifying the prior covariance matrix
-      for the local effects if varying==F; otherwise 
+    \item{beta}{ list(Lambda=matrix) specifying the prior covariance matrix
+      for the local effects if varying==F, otherwise 
       list(Psi=matrix, nu=double) specifying the Inverse wishart prior 
       distribution for the spatially varying coefficient process if 
-      varying==T.   }
+      varying==T. }
     
     \item{cov.s}{ list(smoothness=double, range=c(min, max), 
       variance=c(shape, rate), nugget=c(shape, rate)) }

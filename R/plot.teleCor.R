@@ -37,6 +37,7 @@ plot.teleCor = function( teleCor, signif=F, coord.s=NULL, boxsize=NULL,
     coord.s = teleCor$coords.s[round(n/2),]
   
   # identify the index of the local coordinate to be plotted
+  coord.s = unlist(coord.s)
   coord.s.ind = which( coord.s[1] == teleCor$coords.s[,1] &
                        coord.s[2] == teleCor$coords.s[,2] )
   
