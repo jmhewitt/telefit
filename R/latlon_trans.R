@@ -8,7 +8,6 @@ lon_trans = function() {
   trans_new( name = 'lon', transform = function(x){x}, 
              inverse = function(x){x}, 
              format = function(x) {
-               print(x)
                # map longitudes onto a 0-360 degree scale (1-179 E, 181-359 W)
                x = x %% 360
                # identify western longitudes
