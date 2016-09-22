@@ -2,7 +2,7 @@
 #'
 #' @export
 #'
-#' @importFrom foreach foreach "%do%"
+#' @import foreach
 #' 
 #' @param X 3 dimensional array of matrices to extract to long format
 #' @param coords Spatial coordinates associated with the data (longitude in first column)

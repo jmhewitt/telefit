@@ -6,7 +6,7 @@
 #'
 #' @export
 #' 
-#' @importFrom foreach foreach "%do%"
+#' @import foreach
 #' @importFrom fields rdist.earth
 #' @importFrom mvtnorm rmvnorm
 #' 

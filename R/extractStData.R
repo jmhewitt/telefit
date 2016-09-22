@@ -2,9 +2,10 @@
 #'
 #' @export
 #' 
+#' @import foreach
+#' 
 #' @importFrom sp coordinates
 #' @importFrom raster extent
-#' @importFrom foreach foreach "%do%"
 #' 
 #' @param X SpatialGridDataFrame with local covariates.  If X is a list, each
 #'  SpatialGridDataFrame will be included as one covariate.

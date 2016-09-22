@@ -6,7 +6,7 @@
 #' @export
 #' 
 #' @import ggplot2
-#' @importFrom dplyr mutate filter "%>%"
+#' @import dplyr
 #' 
 #' @param teleCor object of class teleCor, containing pointwise correlations
 #' @param signif if TRUE, then teleCor must have a column labeled 'signif' that

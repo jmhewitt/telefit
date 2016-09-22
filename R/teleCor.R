@@ -3,7 +3,7 @@
 #'
 #' @export
 #'
-#' @importFrom foreach foreach "%dopar%" "%do%"
+#' @import foreach
 #' @importFrom doMC registerDoMC
 #' 
 #' @param Y [ny x nt]
