@@ -51,8 +51,8 @@ plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
   if( type %in% c('traceplot', 'density', 'pairs') ) {
     # extract posterior samples
     if(stFit$varying) {
-      res.df = data.frame(stFit$parameters$samples) %>% 
-        select(-contains("beta"), -contains("T"))
+      listInd = which(!(names(stFit$parameters$samples) %in% c('beta', 'T')))
+      res.df = data.frame(stFit$parameters$samples[listInd])
     } else {
       res.df = data.frame(stFit$parameters$samples)
     }
