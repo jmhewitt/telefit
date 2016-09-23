@@ -4,7 +4,7 @@
 \alias{summary.stPredict}
 \title{Plot stPredict objects}
 \usage{
-summary.stPredict(stPredict, t = NULL, digits = NULL)
+\method{summary}{stPredict}(stPredict, t = NULL, digits = NULL)
 }
 \arguments{
 \item{stPredict}{Object of class stPredict to summarise}

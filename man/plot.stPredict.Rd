@@ -5,13 +5,14 @@
 \title{Plot stPredict objects}
 \usage{
 \method{plot}{stPredict}(stPredict, type = "prediction", boxsize = NULL,
-  map = "world", region = ".", zlim = NULL, t = NULL)
+  map = "world", region = ".", zlim = NULL, t = NULL, stFit = NULL,
+  stData = NULL, coord.s = NULL, signif.telecon = F)
 }
 \arguments{
 \item{stPredict}{Object of class stPredict to plot.}
 
 \item{type}{Either 'prediction', 'residual', 'observed', 'standard_error' (or 'se'), 
-'local', 'remote', or 'correlation'
+'local', 'remote', 'correlation', or 'teleconnection'
 to specify which part of stPredict to plot. Note that the value for type can
 be an abbreviation since partial matching is used during plotting. 'truth'
 and 'residual' plots are only available if the model has been evaluted and
@@ -30,6 +31,19 @@ all subregions. See documentation for map for more details.}
 
 \item{t}{timepoint to plot.  Will automatically plot the first timepoint if
 t=NULL.}
+
+\item{stFit}{Object of class stFit to provide related
+information and structures for plotting estimated teleconnection effects}
+
+\item{stData}{Object of class stData to provide coordinate and related
+information for plotting estimated teleconnection effects}
+
+\item{coord.s}{if plot type is 'teleconnection', specifies the longitude and 
+latitude of local coordinate for which to plot estimated teleconnection 
+effects. if NULL, the middle local coordinate will be plotted.}
+
+\item{signif.telecon}{if TRUE, will highlight significant teleconnection
+effects when type=='teleconnection'}
 }
 \value{
 a ggplot object with the specified map

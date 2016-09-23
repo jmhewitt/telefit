@@ -8,7 +8,7 @@
 #' @importFrom doMC registerDoMC
 #' @import doRNG
 #' @importFrom itertools ichunk
-#' @importFrom foreach foreach "%dopar%"
+#' @import foreach
 #' @importFrom fields rdist.earth
 #' 
 #' @useDynLib telefit
@@ -60,44 +60,6 @@ stRecoverAlpha = function( stFit, stData, burn, ncores=1, prob=.95,
   registerDoMC(ncores)
   mcoptions = list(preschedule=FALSE)
   
-  # initialize composition sample object
-  alpha = list()
-  
-  
-  mergeAlpha = function(x, y) {
-    if(is.null(y)) {
-      x
-    } else {
-      # use parallel algorithms for merging means, variances, etc.
-      
-      ZVar = x$ZVar
-      r = nrow(ZVar)
-      for(i in 1:dim(ZVar)[3]) {
-        rStart = (i-1) * r + 1
-        rEnd =  rStart + r - 1
-        ZVar[,,i] = mergeCovmat(x$ZVar[,,i], y$ZVar[,,i],
-                                (x$est[,rStart:rEnd]), (x$est[,rStart:rEnd]),
-                                (y$est[,rStart:rEnd]), (y$est[,rStart:rEnd]),
-                                x$nsamples, y$nsamples)
-      }
-      
-      z = list(
-        est = mergeMean(x$est, y$est, x$nsamples, y$nsamples),
-        sd = sqrt(mergeVar(x$sd^2, y$sd^2, x$est, y$est, x$nsamples, y$nsamples)),
-        covBetaAlpha = mergeCovmat(x$covBetaAlpha, y$covBetaAlpha,
-                                   t(x$beta), t(x$est), t(y$beta), t(y$est),
-                                   x$nsamples, y$nsamples),
-        ZVar = ZVar,
-        beta = mergeMean(x$beta, y$beta, x$nsamples, y$nsamples),
-        nsamples = x$nsamples + y$nsamples,
-        samples = rbind(x$samples, y$samples)
-      )
-      
-      z
-    }
-  }
-  
-  
   # estimate chunksize that will minimize number of function calls
   chunkSize = ceiling((maxIt-burn+1)/ncores)
   
@@ -111,22 +73,23 @@ stRecoverAlpha = function( stFit, stData, burn, ncores=1, prob=.95,
   # make sure that no chunks have fewer than 5 elements
   
   # draw composition samples
-  alpha = foreach( inds = ichunk(burn:maxIt, chunkSize = chunkSize),
-                           .combine = mergeAlpha,
+  composition = foreach( inds = ichunk(burn:maxIt, chunkSize = chunkSize),
+                           .combine = mergeComposition,
                            .options.multicore=mcoptions ) %dorng% {
     inds = unlist(inds)            
     
     if(stFit$varying) {
-      .Call("_stvCompositionAlpha", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, 
+      .Call("_stvcomposition", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, 
             Dz, stFit$priors$cov.s$smoothness, stFit$priors$cov.r$smoothness, 
             stFit$parameters$samples$beta[inds,], 
             stFit$parameters$samples$sigmasq_y[inds], 
             stFit$parameters$samples$rho_y[inds], 
             stFit$parameters$samples$rho_r[inds], 
             stFit$parameters$samples$sigmasq_r[inds], 
-            stFit$parameters$samples$sigmasq_eps[inds], 0, summaryOnly)
+            stFit$parameters$samples$sigmasq_eps[inds], 0, summaryOnly, 
+            NULL, NULL, T, F)
     } else {
-      .Call("_compositionAlpha", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, 
+      .Call("_composition", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, 
             Dz, stFit$priors$cov.s$smoothness, stFit$priors$cov.r$smoothness, 
             stFit$parameters$samples$beta[inds,], 
             stFit$parameters$samples$sigmasq_y[inds], 
@@ -135,26 +98,26 @@ stRecoverAlpha = function( stFit, stData, burn, ncores=1, prob=.95,
             stFit$parameters$samples$sigmasq_r[inds], 
             stFit$parameters$samples$sigmasq_eps[inds], 0, summaryOnly)
     }
-    
   }
   
   # remove unwanted information
-  attr(alpha, 'rng') = NULL
-  alpha$beta = NULL
+  attr(composition, 'rng') = NULL
+  composition$alpha$beta = NULL
   if(summaryOnly)
-    alpha$samples = NULL
+    composition$alpha$samples = NULL
   
   # convert results away from unnecessary matrix format
-  alpha$est = as.numeric(alpha$est)
-  alpha$sd = as.numeric(alpha$sd)
+  composition$alpha$est = as.numeric(composition$alpha$est)
+  composition$alpha$sd = as.numeric(composition$alpha$sd)
   
   # compute approximate intervals, etc.
-  alpha$summary = summariseAlpha(alpha, burn, prob, coords.s, coords.r)
+  composition$alpha$summary = summariseAlpha(composition$alpha, burn, prob, 
+                                             coords.s, coords.r)
   
   # remove information redundant with the summary
-  alpha$est = NULL
-  alpha$sd = NULL
+  composition$alpha$est = NULL
+  composition$alpha$sd = NULL
   
-  stFit$alpha = alpha
+  stFit$alpha = composition$alpha
   stFit   
 }

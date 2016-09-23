@@ -23,11 +23,11 @@ class STVModel {
 	double one;
 	
 	// dimensions
-	int p, r, ns, nt, N, nsp, ns_minusOne, nsnu_t;
+	int p, r, ns, nt, N, nsp, ns_minusOne, nsnu_t, nt0, N0;
 	
 	// data
-	SpMat<double> X;
-	mat Z, Dy, Dz;
+	SpMat<double> X, Xnew;
+	mat Z, Dy, Dz, Znew;
 	vec Y;
 	
 	// priors
@@ -206,9 +206,6 @@ class STVModel {
 	
 	
 	
-	
-	
-	
 	public:
 	
 	// sampler output
@@ -217,9 +214,15 @@ class STVModel {
 	vec sigmasq_y_samples, rho_y_samples, rho_r_samples, sigmasq_r_samples,
 		sigmasq_eps_samples, ll_samples;
 	
-	// secondary sampler output
+	// composition sample output
 	mat alpha_samples;
+	cube fcst_samples, local_samples, remote_samples, noise_samples;
 	
+	
+	
+	//
+	// class functions
+	//
 	
 	STVModel(int _p, int _r, int _ns, int _nt) {
 		p = _p;		// number of mean parameters
@@ -253,6 +256,26 @@ class STVModel {
 				   linspace<uvec>(0, N*p, N+1),
 				   vectorise(_X, 1),
 				   nsp, N).t();
+	}
+	
+	void setCompositionData(const mat & _Xnew, const mat & _Znew) {
+		
+		//
+		// set data needed for computing forecasts
+		//	 (recall that there may be a different number of prediction timepoints)
+		//
+		
+		// extract number of forecast timepoints, and set dimension constants
+		nt0 = _Znew.n_cols;
+		N0 = ns * nt0;
+		
+		Znew = _Znew;	// spatio-temporal remote covariate matrix (r x nt0)
+		
+		// spatially varying coefficient design matrix (ns*nt0 x ns*p)
+		Xnew = sp_mat(repmat(linspace<uvec>(0, nsp-1, nsp), nt0, 1),
+				   linspace<uvec>(0, N0*p, N0+1),
+				   vectorise(_Xnew, 1),
+				   nsp, N0).t();
 	}
 	
 	
@@ -652,11 +675,12 @@ class STVModel {
 		Rcout << "  rho_r: " << round(rho_r_accept * 100.0) << "%" << endl;
 	}
 	
-	void sampleAlphas(int burn) {
+	
+	void compositionSample(int burn, bool alphas, bool forecast) {
 		/* Assuming that the sampler output variables have data, this will use
-		   those data to composition sample alphas.
+		 those data to composition sample alphas and then use these to forecast
+		 the response at new locations.
 		 */
-		
 		
 		// initialize constants
 		mat ZZT = Z * Z.t();
@@ -664,15 +688,35 @@ class STVModel {
 		
 		// initialize structures
 		mat Sigma = mat(ns, ns, fill::zeros);
+		mat Sigma_cholU = mat(ns, ns, fill::zeros);
 		mat R = mat(r, r, fill::zeros);
 		mat RZZInv = mat(r, r, fill::zeros);
 		vec muAlpha = vec(nsr, fill::zeros);
-		vec alpha = vec(nsr, fill::zeros);
+		vec alpha;
+		mat local, remote, noise;
+		if(alphas) {
+			alpha = vec(nsr, fill::zeros);
+		}
+		if(forecast) {
+			local = mat(ns, nt0, fill::zeros);
+			remote = mat(ns, nt0, fill::zeros);
+			noise = mat(ns, nt0, fill::zeros);
+		}
+		
+		// TODO: allow forecasts to be made at new or subsampled locations
 		
 		// initialize output
 		int maxIt = beta_samples.n_rows;
 		int nsamples = maxIt - burn;
-		alpha_samples = mat(nsamples, nsr, fill::zeros);
+		if(alphas) {
+			alpha_samples = mat(nsamples, nsr, fill::zeros);
+		}
+		if(forecast) {
+			fcst_samples = cube(ns, nt0, nsamples, fill::zeros);
+			local_samples = cube(ns, nt0, nsamples, fill::zeros);
+			remote_samples = cube(ns, nt0, nsamples, fill::zeros);
+			noise_samples = cube(ns, nt0, nsamples, fill::zeros);
+		}
 		
 		// initialize tracking variables
 		int checkpointIt = (int) maxIt * 0.1;
@@ -685,22 +729,24 @@ class STVModel {
 		// generate composition samples
 		for(int it=burn; it<maxIt; it++) {
 			
+			checkUserInterrupt();
+			
 			//
 			// covariance structures
 			//
 			
 			maternCov( Sigma, Dy, sigmasq_y_samples.at(it), rho_y_samples.at(it),
-					   nu_y, sigmasq_y_samples.at(it) * sigmasq_eps_samples.at(it) );
+					  nu_y, sigmasq_y_samples.at(it) * sigmasq_eps_samples.at(it) );
+			
+			Sigma_cholU = chol(Sigma, "upper");
 			
 			maternCov( R, Dz, sigmasq_r_samples.at(it), rho_r_samples.at(it),
-					   nu_r, 0.0 );
-			//poweredExpCov( R, Dz, sigmasq_r_samples.at(it), rho_r_samples.at(it),
-			//		  nu_r, 0.0 );
+					  nu_r, 0.0 );
 			
 			RZZInv = inv_sympd( inv_sympd(R) + ZZT );
 			
 			//
-			// mean
+			// posterior mean for teleconnection effects
 			//
 			
 			muAlpha.zeros();
@@ -709,18 +755,41 @@ class STVModel {
 				int rStart = i * ns;
 				int rEnd = rStart + ns_minusOne;
 				muAlpha += kron(
-					Y.rows(rStart, rEnd) - X.rows(rStart, rEnd) *
-													 beta_samples.row(it).t(),
-					RZZInv * Z.col(i)
-				);
+								Y.rows(rStart, rEnd) - X.rows(rStart, rEnd) *
+								beta_samples.row(it).t(),
+								RZZInv * Z.col(i)
+								);
 			}
 			
 			
+			// sample teleconnection effects
 			alpha = muAlpha + vectorise( chol(RZZInv, "lower") *
 										 randn<mat>(r,ns) *
-										 chol(Sigma, "upper") );
+										 Sigma_cholU );
 			
-			alpha_samples.row(it-burn) = alpha.t();
+			// save teleconnection effects
+			if(alphas)
+				alpha_samples.row(it-burn) = alpha.t();
+			
+			
+			// sample and save posterior predictive samples
+			if(forecast) {
+				
+				// compute remote effects
+				remote = reshape(alpha, r, ns).t() * Znew;
+				
+				// compute local effects
+				local = reshape(Xnew * beta_samples.row(it).t(), ns, nt0);
+				
+				// sample spatially correlated noise, independent across time
+				noise = Sigma_cholU.t() * randn<mat>(ns, nt0);
+				
+				// save forecast objects
+				local_samples.slice(it-burn) = local;
+				remote_samples.slice(it-burn) = remote;
+				noise_samples.slice(it-burn) = noise;
+				fcst_samples.slice(it-burn) = local + remote + noise;
+			}
 			
 			
 			//
@@ -742,14 +811,12 @@ class STVModel {
 				
 				// output information
 				Rcout << round(pctComplete) << "% complete" << " (" <<
-					floor(duration * 10.0) / 10.0 << " seconds; " <<
-					floor(remaining * 10.0) / 10.0 << " minutes remaining)" <<
-					endl;
+				floor(duration * 10.0) / 10.0 << " seconds; " <<
+				floor(remaining * 10.0) / 10.0 << " minutes remaining)" <<
+				endl;
 			}
 		}
 	}
-	
-	
 };
 
 
@@ -808,18 +875,21 @@ RcppExport SEXP _stvfit( SEXP p, SEXP r, SEXP ns, SEXP nt, SEXP X, SEXP Z,
 }
 
 
-RcppExport SEXP _stvCompositionAlpha( SEXP p, SEXP r, SEXP ns, SEXP nt,
-									  SEXP X, SEXP Z, SEXP Y, SEXP Dy, SEXP Dz,
-									  SEXP nu_y, SEXP nu_r, SEXP beta,
-								      SEXP sigmasq_y, SEXP rho_y, SEXP rho_r,
-								      SEXP sigmasq_r, SEXP sigmasq_eps, SEXP burn,
-								      SEXP summaryOnly) {
+RcppExport SEXP _stvcomposition( SEXP p, SEXP r, SEXP ns, SEXP nt,
+								 SEXP X, SEXP Z, SEXP Y, SEXP Dy, SEXP Dz,
+								 SEXP nu_y, SEXP nu_r, SEXP beta,
+								 SEXP sigmasq_y, SEXP rho_y, SEXP rho_r,
+								 SEXP sigmasq_r, SEXP sigmasq_eps,
+								 SEXP burn, SEXP summaryOnly, SEXP Xnew,
+								 SEXP Znew, SEXP alphas, SEXP forecast ) {
 	
 	using namespace Rcpp;
 	
 	int r_ = as<int>(r);
 	int ns_ = as<int>(ns);
 	int burn_ = as<int>(burn);
+	bool alphas_ = as<bool>(alphas);
+	bool forecast_ = as<bool>(forecast);
 	
 	// instantiate sampler
 	STVModel stvmod = STVModel(as<int>(p), r_, ns_, as<int>(nt));
@@ -835,6 +905,9 @@ RcppExport SEXP _stvCompositionAlpha( SEXP p, SEXP r, SEXP ns, SEXP nt,
 					0.0, 0.0, 0.0,
 					0.0, 0.0, mat(1,1,fill::eye), 0.0 );
 	
+	if(forecast_)
+		stvmod.setCompositionData(as<mat>(Xnew), as<mat>(Znew));
+	
 	//
 	// add posterior samples
 	//
@@ -848,54 +921,96 @@ RcppExport SEXP _stvCompositionAlpha( SEXP p, SEXP r, SEXP ns, SEXP nt,
 	
 	
 	// run composition sampler
-	stvmod.sampleAlphas(burn_);
+	stvmod.compositionSample(burn_, alphas_, forecast_);
 	
-	
-	//
-	// compute summary objects
-	//
-	
-	// posterior mean and sd for each alpha
-	mat est = mean(stvmod.alpha_samples);
-	mat sd = stddev(stvmod.alpha_samples, 1);
-	
-	// posterior variance for the remote field of alphas for each local point
-	cube ZVar = cube(r_, r_, ns_, fill::zeros);
-	for(int i=0; i<ns_; i++) {
-		int rStart = i*r_;
-		int rEnd = rStart + r_ - 1;
-		ZVar.slice(i) = cov( stvmod.alpha_samples.cols(rStart, rEnd), 1 );
+	// post-process teleconnection effects
+	mat est, sd, covBetaAlpha, betaMean;
+	cube ZVar;
+	if(alphas_) {
+		
+		//
+		// compute summary objects
+		//
+		
+		// posterior mean and sd for each alpha
+		est = mean(stvmod.alpha_samples);
+		sd = stddev(stvmod.alpha_samples, 1);
+		
+		// posterior variance for the remote field of alphas for each local point
+		ZVar = cube(r_, r_, ns_, fill::zeros);
+		for(int i=0; i<ns_; i++) {
+			int rStart = i*r_;
+			int rEnd = rStart + r_ - 1;
+			ZVar.slice(i) = cov( stvmod.alpha_samples.cols(rStart, rEnd), 1 );
+		}
+		
+		// posterior covariance between beta and alpha
+		covBetaAlpha = cov( stvmod.beta_samples.rows(burn_,
+								stvmod.beta_samples.n_rows-1),
+								stvmod.alpha_samples, 1 );
+		
+		// mean of the betas used required for merging covariances
+		betaMean = mean(
+				stvmod.beta_samples.rows(burn_, stvmod.beta_samples.n_rows-1) );
 	}
 	
-	// posterior covariance between beta and alpha
-	mat covBetaAlpha = cov( stvmod.beta_samples.rows(burn_, stvmod.beta_samples.n_rows-1),
-						    stvmod.alpha_samples, 1 );
-	
-	// mean of the betas used required for merging covariances
-	mat betaMean = mean(stvmod.beta_samples.rows(burn_, stvmod.beta_samples.n_rows-1));
 
+	//
 	// build and return results
+	//
+	
+	// compile teleconnection results
+	List alpha_res;
+	if(alphas_) {
+		if(as<bool>(summaryOnly)==true) {
+			alpha_res = List::create(
+							_["est"] = est,
+							_["sd"] = sd,
+							_["ZVar"] = ZVar,
+							_["covBetaAlpha"] = covBetaAlpha,
+							_["beta"] = betaMean,
+							_["nsamples"] = stvmod.alpha_samples.n_rows
+						);
+		} else {
+			alpha_res = List::create(
+							_["est"] = est,
+							_["sd"] = sd,
+							_["ZVar"] = ZVar,
+							_["covBetaAlpha"] = covBetaAlpha,
+							_["beta"] = betaMean,
+							_["samples"] = stvmod.alpha_samples,
+							_["nsamples"] = stvmod.alpha_samples.n_rows
+						);
+		}
+	}
+	
+	// compile forecast results
+	List forecast_res;
+	if(forecast_) {
+		forecast_res = List::create(
+						_["forecasts"] = stvmod.fcst_samples,
+						_["local"] = stvmod.local_samples,
+						_["remote"] = stvmod.remote_samples,
+						_["noise"] = stvmod.noise_samples
+		);
+	}
+	
+	// compile appropriate results
 	List res;
-	if(as<bool>(summaryOnly)==true) {
+	if(alphas_ & forecast_) {
 		res = List::create(
-			_["est"] = est,
-			_["sd"] = sd,
-			_["ZVar"] = ZVar,
-			_["covBetaAlpha"] = covBetaAlpha,
-			_["beta"] = betaMean,
-			_["nsamples"] = stvmod.alpha_samples.n_rows
+				_["forecast"] = forecast_res,
+				_["alpha"] = alpha_res
+		);
+	} else if(alphas_) {
+		res = List::create(
+				_["alpha"] = alpha_res
 		);
 	} else {
 		res = List::create(
-			_["est"] = est,
-			_["sd"] = sd,
-			_["ZVar"] = ZVar,
-			_["covBetaAlpha"] = covBetaAlpha,
-			_["beta"] = betaMean,
-			_["samples"] = stvmod.alpha_samples,
-			_["nsamples"] = stvmod.alpha_samples.n_rows
+				_["forecast"] = forecast_res
 		);
-		
 	}
+	
 	return wrap( res );
 }

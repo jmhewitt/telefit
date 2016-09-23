@@ -4,22 +4,66 @@
 \alias{stPredict}
 \title{Compute forecasts based on posterior samples}
 \usage{
-stPredict(stFit, stData, ncores = 1, conf = 0.95,
-  coords.s = stData$coords.s, X = stData$X, Z = stData$Z,
-  tLabs = stData$tLabs, burn = 1)
+stPredict(stFit, stData, stDataNew, burn = 1, prob = 0.95, ncores = 1,
+  conf = 0.95, tLabs = stDataNew$tLabs, X = stData$X, Y = stData$Y,
+  Z = stData$Z, Xnew = stDataNew$X, Znew = stDataNew$Z,
+  coords.s = stData$coords.s, coords.r = stData$coords.r,
+  returnAlphas = T)
 }
 \arguments{
-\item{stFit}{object of class stFit that includes estimated teleconnection 
-effects.  This information will be used to make predictions}
+\item{stFit}{Object with class 'stFit' containing posterior parameter samples
+needed to composition sample the teleconnection effects and generate 
+posterior predictions. The data needed from stFit need only be manually 
+entered if not using a stData object.}
 
-\item{stData}{object of class stData that includes information needed for 
+\item{stData}{Object with class 'stData' containing data needed to fit this 
+model. The data need only be manually entered if not using a stData object.}
+
+\item{stDataNew}{object of class stData that includes information needed for 
 making forecasts.  If response data is included, this function will 
 automatically run stEval using the empirical climatology as the reference
 forecast}
 
-\item{burn}{Number of posterior samples to ignore}
+\item{burn}{number of posterior samples to burn before drawing composition
+samples}
+
+\item{prob}{confidence level for approximate confidence intervals of 
+teleconnection effects (only needed if returnAlphas==TRUE)}
+
+\item{ncores}{Since the teleconnection effects and posterior predictions can 
+be sampled in parallel, this parameter lets users specify the number of 
+cores to use to draw teleconnection and prediction samples}
+
+\item{conf}{Parameter specifying the HPD level to compute for posterior 
+predictive samples}
+
+\item{tLabs}{Forecast timepoint labels}
+
+\item{X}{[ns, p, nt] array of design matrices with local covariates}
+
+\item{Y}{[ns, nt] matrix with response data}
+
+\item{Z}{[nr, nt] matrix with remote covariates}
+
+\item{Xnew}{[ns, p, nt0] array of design matrices with local covariates 
+at forecast timepoints}
+
+\item{Znew}{[nr, nt0] matrix with remote covariates at forecast timepoints}
+
+\item{coords.s}{matrix with coordinates where responses were 
+observed (lon, lat)}
+
+\item{coords.r}{matrix with coordinates where remote covariates
+were observed (lon, lat)}
+
+\item{returnAlphas}{TRUE to return the teleconnection effects sampled 
+alongside the forecasts.  Note that only basic summary information about the 
+teleconnection effects will be returned.}
 }
 \description{
-Compute forecasts based on posterior samples
+Predict response at new timepoints by drawing samples of the response from
+the posterior predictive distribution.  Since this requires sampling 
+teleconnection effects, this method can return estimates of the 
+teleconnection effects as a by-product.
 }
 
