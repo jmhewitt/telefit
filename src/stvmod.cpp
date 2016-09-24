@@ -216,7 +216,7 @@ class STVModel {
 	
 	// composition sample output
 	mat alpha_samples;
-	cube fcst_samples, local_samples, remote_samples, noise_samples;
+	cube fcst_samples, local_samples, remote_samples;
 	
 	
 	
@@ -715,7 +715,6 @@ class STVModel {
 			fcst_samples = cube(ns, nt0, nsamples, fill::zeros);
 			local_samples = cube(ns, nt0, nsamples, fill::zeros);
 			remote_samples = cube(ns, nt0, nsamples, fill::zeros);
-			noise_samples = cube(ns, nt0, nsamples, fill::zeros);
 		}
 		
 		// initialize tracking variables
@@ -787,7 +786,6 @@ class STVModel {
 				// save forecast objects
 				local_samples.slice(it-burn) = local;
 				remote_samples.slice(it-burn) = remote;
-				noise_samples.slice(it-burn) = noise;
 				fcst_samples.slice(it-burn) = local + remote + noise;
 			}
 			
@@ -924,8 +922,7 @@ RcppExport SEXP _stvcomposition( SEXP p, SEXP r, SEXP ns, SEXP nt,
 	stvmod.compositionSample(burn_, alphas_, forecast_);
 	
 	// post-process teleconnection effects
-	mat est, sd, covBetaAlpha, betaMean;
-	cube ZVar;
+	mat est, sd;
 	if(alphas_) {
 		
 		//
@@ -936,22 +933,6 @@ RcppExport SEXP _stvcomposition( SEXP p, SEXP r, SEXP ns, SEXP nt,
 		est = mean(stvmod.alpha_samples);
 		sd = stddev(stvmod.alpha_samples, 1);
 		
-		// posterior variance for the remote field of alphas for each local point
-		ZVar = cube(r_, r_, ns_, fill::zeros);
-		for(int i=0; i<ns_; i++) {
-			int rStart = i*r_;
-			int rEnd = rStart + r_ - 1;
-			ZVar.slice(i) = cov( stvmod.alpha_samples.cols(rStart, rEnd), 1 );
-		}
-		
-		// posterior covariance between beta and alpha
-		covBetaAlpha = cov( stvmod.beta_samples.rows(burn_,
-								stvmod.beta_samples.n_rows-1),
-								stvmod.alpha_samples, 1 );
-		
-		// mean of the betas used required for merging covariances
-		betaMean = mean(
-				stvmod.beta_samples.rows(burn_, stvmod.beta_samples.n_rows-1) );
 	}
 	
 
@@ -966,18 +947,12 @@ RcppExport SEXP _stvcomposition( SEXP p, SEXP r, SEXP ns, SEXP nt,
 			alpha_res = List::create(
 							_["est"] = est,
 							_["sd"] = sd,
-							_["ZVar"] = ZVar,
-							_["covBetaAlpha"] = covBetaAlpha,
-							_["beta"] = betaMean,
 							_["nsamples"] = stvmod.alpha_samples.n_rows
 						);
 		} else {
 			alpha_res = List::create(
 							_["est"] = est,
 							_["sd"] = sd,
-							_["ZVar"] = ZVar,
-							_["covBetaAlpha"] = covBetaAlpha,
-							_["beta"] = betaMean,
 							_["samples"] = stvmod.alpha_samples,
 							_["nsamples"] = stvmod.alpha_samples.n_rows
 						);
@@ -990,8 +965,7 @@ RcppExport SEXP _stvcomposition( SEXP p, SEXP r, SEXP ns, SEXP nt,
 		forecast_res = List::create(
 						_["forecasts"] = stvmod.fcst_samples,
 						_["local"] = stvmod.local_samples,
-						_["remote"] = stvmod.remote_samples,
-						_["noise"] = stvmod.noise_samples
+						_["remote"] = stvmod.remote_samples
 		);
 	}
 	
