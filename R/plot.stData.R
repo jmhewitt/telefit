@@ -20,7 +20,8 @@
 #'  will include us state outlines.
 #' @param region name of subregions to include. Defaults to . which includes 
 #'  all subregions. See documentation for map for more details.
-#' @param type Either 'response', 'covariate', 'remote', or 'teleconnection' 
+#' @param type Either 'response', 'cat.response', 'covariate', 'remote', 
+#'  or 'teleconnection' 
 #'  to specify which part of stData to plot.  Note that 'teleconnection' applies
 #'  only if the stData object contains information about teleconnection effects,
 #'  i.e., if it is a simulated dataset or otherwise modified to include 
@@ -54,7 +55,8 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     stData$Y = matrix(stData$Y, nrow = nrow(stData$coords.s))
   
   # extract dataset to plot
-  match.opts = c('response', 'covariate', 'remote', 'teleconnection')
+  match.opts = c('response', 'covariate', 'remote', 'teleconnection', 
+                 'cat.response')
   type = match.opts[pmatch(type, match.opts)]
   if( type=='response' ) {
     Y = data.frame( Y = stData$Y[, match(t, stData$tLabs)],
@@ -92,7 +94,13 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     
     lab.col = lab.teleconnection
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
-  }
+  } else if( type=='cat.response' ) {
+    Y = data.frame( Y = stData$Y[, match(t, stData$tLabs)],
+                    lon.Y = stData$coords.s[,1], 
+                    lat.Y = stData$coords.s[,2] )
+    lab.col = paste(stData$Y.lab, 'level')
+    scheme.col = list(low = "#a6611a", mid = '#f5f5f5', high = '#018571')
+  } 
   
   # compute truncations and apply wrapping
   if(type %in% c('remote', 'teleconnection')) {
@@ -146,19 +154,24 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   # wrap fill label
   lab.col = str_wrap(lab.col, width=fill.lab.width)
   
-  if(is.null(zlim)) {
+  if(type=='cat.response') {
+    fillscale = scale_fill_brewer(lab.col, 
+                                  type = 'div',
+                                  palette = 'BrBG',
+                                  direction = 1)
+  } else if(is.null(zlim)) {
     fillscale = scale_fill_gradient2(lab.col,
                                      low = scheme.col$low, 
                                      mid = scheme.col$mid, 
                                      high = scheme.col$high)
-  } else {
+  } else  {
     fillscale = scale_fill_gradient2(lab.col,
                                      low = scheme.col$low, 
                                      mid = scheme.col$mid, 
                                      high = scheme.col$high,
                                      limits = zlim)
-  }
-    
+  } 
+  
   # build base plot
   worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
     geom_tile(tile.aes, data = Y  %>% 

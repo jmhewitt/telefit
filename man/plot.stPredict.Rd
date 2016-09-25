@@ -12,7 +12,7 @@
 \item{stPredict}{Object of class stPredict to plot.}
 
 \item{type}{Either 'prediction', 'residual', 'observed', 'standard_error' (or 'se'), 
-'local', 'remote', 'correlation', or 'teleconnection'
+'local', 'remote', 'correlation', 'teleconnection', or 'cat.prediction'
 to specify which part of stPredict to plot. Note that the value for type can
 be an abbreviation since partial matching is used during plotting. 'truth'
 and 'residual' plots are only available if the model has been evaluted and

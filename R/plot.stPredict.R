@@ -16,7 +16,7 @@
 #' @param region name of subregions to include. Defaults to . which includes 
 #'  all subregions. See documentation for map for more details.
 #' @param type Either 'prediction', 'residual', 'observed', 'standard_error' (or 'se'), 
-#'  'local', 'remote', 'correlation', or 'teleconnection'
+#'  'local', 'remote', 'correlation', 'teleconnection', or 'cat.prediction'
 #'  to specify which part of stPredict to plot. Note that the value for type can
 #'  be an abbreviation since partial matching is used during plotting. 'truth'
 #'  and 'residual' plots are only available if the model has been evaluted and
@@ -47,7 +47,8 @@ plot.stPredict = function( stPredict, type='prediction', boxsize=NULL,
 
   # determine which type of plot is requested
   match.opts = c('prediction', 'residual', 'observed', 'standard_error', 'se', 
-                 'local', 'remote', 'correlation', 'teleconnection')
+                 'local', 'remote', 'correlation', 'teleconnection', 
+                 'cat.prediction')
   type = match.opts[pmatch(type, match.opts)]
   
   # create a basic stData object for plotting
@@ -125,7 +126,12 @@ plot.stPredict = function( stPredict, type='prediction', boxsize=NULL,
                      stData = stData, map = map, region = region, 
                      coord.s = coord.s, zlim = zlim,  
                      signif.telecon = signif.telecon)
-  }
+  } else if( type=='cat.prediction' ) {
+    stData$Y = factor(pred$pred$Y.cat)
+    stData$Y.lab = paste('Predicted', stPredict$Y.lab)
+    ret = plot.stData(stData, boxsize = boxsize, map = map, region = region,
+                      zlim = zlim, type='cat.response')
+  } 
   
   ret
 }

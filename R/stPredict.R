@@ -51,6 +51,8 @@
 #'  observed (lon, lat)
 #' @param coords.r matrix with coordinates where remote covariates
 #'  were observed (lon, lat)
+#' @param probs vector of probabilities for also returning categorical 
+#'  predictions from the posterior prediction samples; NULL otherwise
 #'  
   
 stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95, 
@@ -58,7 +60,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
                       X = stData$X, Y = stData$Y, Z = stData$Z, 
                       Xnew = stDataNew$X, Znew = stDataNew$Z,
                       coords.s = stData$coords.s, coords.r = stData$coords.r,
-                      returnAlphas = T ) {
+                      returnAlphas = T, probs = c(1/3, 2/3) ) {
   
   # TODO: add support for localOnly and/or non-varying models
   
@@ -133,12 +135,29 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     composition$alpha$sd = NULL
   }
   
+  # compute empirical breakpoints at each location to define forecast categories
+  if(!is.null(probs)) {
+    category.breaks = t(apply(stData$Y, 1, 
+                              function(r) { quantile(r, probs = probs)}))
+  }
+  
   # package results
   nt0 = ncol(composition$forecast$forecasts)
   Y = foreach(t= 1:nt0) %dopar% {
     
+    # TODO: move this code somewhere where it can be called outside of sampling
+    
+    # generate HPD intervals
     forecast.mcmc = mcmc(t(composition$forecast$forecasts[,t,]))
     forecast.hpd = HPDinterval(forecast.mcmc, prob = conf)
+    
+    # build categorical predictions (process by location)
+    Y.cat = foreach(s = 1:nrow(composition$forecast$forecasts), .combine='rbind') %do% {
+      # extract posterior samples for specified location and timepoint
+      y = fcst$samples$forecasts[s,t,]
+      # return label for posterior mode of categories
+      1 + as.numeric(names(which.max(table(findInterval(y,quantiles[s,])))))
+    }
     
     pred = data.frame(
       Y = colMeans(forecast.mcmc),
@@ -146,7 +165,8 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
       Y.remote = colMeans(t(composition$forecast$remote[,t,])),
       se = apply(forecast.mcmc, 2, sd),
       Y.lwr = forecast.hpd[,1],
-      Y.upr = forecast.hpd[,2]
+      Y.upr = forecast.hpd[,2],
+      Y.cat = Y.cat
     )
     
     r = list(
@@ -166,7 +186,9 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     localOnly = localOnly,
     varying = varying,
     tLabs = tLabs,
-    Y.lab = stData$Y.lab
+    Y.lab = stData$Y.lab,
+    probs = probs,
+    category.breaks = category.breaks
   )
   class(ret) = 'stPredict'
   

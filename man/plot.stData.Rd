@@ -11,7 +11,8 @@
 \arguments{
 \item{stData}{Object of class stData to plot.}
 
-\item{type}{Either 'response', 'covariate', 'remote', or 'teleconnection' 
+\item{type}{Either 'response', 'cat.response', 'covariate', 'remote', 
+or 'teleconnection' 
 to specify which part of stData to plot.  Note that 'teleconnection' applies
 only if the stData object contains information about teleconnection effects,
 i.e., if it is a simulated dataset or otherwise modified to include 
