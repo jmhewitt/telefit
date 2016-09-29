@@ -127,7 +127,7 @@ plot.stPredict = function( stPredict, type='prediction', boxsize=NULL,
                      coord.s = coord.s, zlim = zlim,  
                      signif.telecon = signif.telecon)
   } else if( type=='cat.prediction' ) {
-    stData$Y = factor(pred$pred$Y.cat)
+    stData$Y.cat = factor(pred$pred$Y.cat)
     stData$Y.lab = paste('Predicted', stPredict$Y.lab)
     ret = plot.stData(stData, boxsize = boxsize, map = map, region = region,
                       zlim = zlim, type='cat.response')

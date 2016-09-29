@@ -6,7 +6,8 @@
 \usage{
 \method{plot}{stData}(stData, type = "response", t = NULL, boxsize = NULL,
   p = NULL, map = "world", region = ".", coord.s = NULL, zlim = NULL,
-  lab.teleconnection = expression(alpha), fill.lab.width = 20)
+  lab.teleconnection = expression(alpha), fill.lab.width = 20,
+  category.breaks = NULL)
 }
 \arguments{
 \item{stData}{Object of class stData to plot.}
@@ -44,6 +45,9 @@ NULL, the middle local coordinate will be plotted.}
 \item{lab.teleconnection}{label used for fill scale in teleconnection plot}
 
 \item{fill.lab.width}{line width for fill scale label}
+
+\item{category.breaks}{[ncoords x ncats] list of breakpoints used for binning
+responses into categories}
 }
 \value{
 a ggplot object with the specified map

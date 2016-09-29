@@ -34,6 +34,8 @@
 #' @param zlim c(min, max) vector that specifies the colorscale limits
 #' @param lab.teleconnection label used for fill scale in teleconnection plot
 #' @param fill.lab.width line width for fill scale label
+#' @param category.breaks [ncoords x ncats] list of breakpoints used for binning
+#'  responses into categories
 #' 
 #' @return a ggplot object with the specified map
 #'
@@ -43,7 +45,7 @@
 plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,  
                         map='world', region='.', coord.s=NULL, zlim=NULL,
                         lab.teleconnection = expression(alpha),
-                        fill.lab.width = 20 ) {
+                        fill.lab.width = 20, category.breaks = NULL ) {
 
   if(is.null(t))
     t=stData$tLabs[1]
@@ -51,8 +53,15 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   if(is.null(p))
     p=2
   
-  if(class(stData$Y)!='matrix')
-    stData$Y = matrix(stData$Y, nrow = nrow(stData$coords.s))
+  if(!is.null(stData$Y)) {
+    if(class(stData$Y)!='matrix')
+      stData$Y = matrix(stData$Y, nrow = nrow(stData$coords.s))  
+  }
+  
+  if(!is.null(stData$Y.cat)) {
+    if(class(stData$Y.cat)!='matrix')
+      stData$Y.cat = matrix(stData$Y.cat, nrow = nrow(stData$coords.s))  
+  }
   
   # extract dataset to plot
   match.opts = c('response', 'covariate', 'remote', 'teleconnection', 
@@ -95,7 +104,17 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     lab.col = lab.teleconnection
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='cat.response' ) {
-    Y = data.frame( Y = stData$Y[, match(t, stData$tLabs)],
+    
+    # categorize Y according to given breakpoints, if necessary
+    if(is.null(stData$Y.cat)) {
+      stData$Y.cat = stData$Y
+      for(s in 1:nrow(stData$Y)) {
+        stData$Y.cat[s,] = 1 + findInterval(stData$Y[s,], category.breaks[s,])
+      }
+    }
+    
+    # build plotting frame
+    Y = data.frame( Y = factor(stData$Y.cat[, match(t, stData$tLabs)]),
                     lon.Y = stData$coords.s[,1], 
                     lat.Y = stData$coords.s[,2] )
     lab.col = paste(stData$Y.lab, 'level')

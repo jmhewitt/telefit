@@ -51,7 +51,7 @@
 #'  observed (lon, lat)
 #' @param coords.r matrix with coordinates where remote covariates
 #'  were observed (lon, lat)
-#' @param probs vector of probabilities for also returning categorical 
+#' @param cat.probs vector of probabilities for also returning categorical 
 #'  predictions from the posterior prediction samples; NULL otherwise
 #'  
   
@@ -60,7 +60,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
                       X = stData$X, Y = stData$Y, Z = stData$Z, 
                       Xnew = stDataNew$X, Znew = stDataNew$Z,
                       coords.s = stData$coords.s, coords.r = stData$coords.r,
-                      returnAlphas = T, probs = c(1/3, 2/3) ) {
+                      returnAlphas = T, cat.probs = c(1/3, 2/3) ) {
   
   # TODO: add support for localOnly and/or non-varying models
   
@@ -136,9 +136,9 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   }
   
   # compute empirical breakpoints at each location to define forecast categories
-  if(!is.null(probs)) {
+  if(!is.null(cat.probs)) {
     category.breaks = t(apply(stData$Y, 1, 
-                              function(r) { quantile(r, probs = probs)}))
+                              function(r) { quantile(r, probs = cat.probs)}))
   }
   
   # package results
@@ -151,12 +151,15 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     forecast.mcmc = mcmc(t(composition$forecast$forecasts[,t,]))
     forecast.hpd = HPDinterval(forecast.mcmc, prob = conf)
     
-    # build categorical predictions (process by location)
-    Y.cat = foreach(s = 1:nrow(composition$forecast$forecasts), .combine='rbind') %do% {
-      # extract posterior samples for specified location and timepoint
-      y = fcst$samples$forecasts[s,t,]
-      # return label for posterior mode of categories
-      1 + as.numeric(names(which.max(table(findInterval(y,quantiles[s,])))))
+    if(!is.null(cat.probs)) {
+      # build categorical predictions (process by location)
+      Y.cat = foreach(s = 1:nrow(composition$forecast$forecasts), 
+                      .combine='rbind') %do% {
+        # extract posterior samples for specified location and timepoint
+        y = composition$forecast$forecasts[s,t,]
+        # return label for posterior mode of categories
+        1 + as.numeric(names(which.max(table(findInterval(y,category.breaks[s,])))))
+      }
     }
     
     pred = data.frame(
@@ -187,7 +190,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     varying = varying,
     tLabs = tLabs,
     Y.lab = stData$Y.lab,
-    probs = probs,
+    cat.probs = cat.probs,
     category.breaks = category.breaks
   )
   class(ret) = 'stPredict'

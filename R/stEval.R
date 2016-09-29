@@ -22,10 +22,13 @@ stEval = function(forecast, Y, clim) {
   }
   
   # categorize Y according to empirical breakpoints
-  Y.cat = Y
-  for(s in 1:nrow(Y)) {
-    Y.cat[s,] = 1 + findInterval(Y[s,], forecast$category.breaks[s,])
+  if(!is.null(forecast$cat.probs)) {
+    Y.cat = Y
+    for(s in 1:nrow(Y)) {
+      Y.cat[s,] = 1 + findInterval(Y[s,], forecast$category.breaks[s,])
+    }
   }
+  
   
   # evaluation for categorical predictions
   eval.cat = function(pred, obs) {
@@ -57,7 +60,9 @@ stEval = function(forecast, Y, clim) {
     fcst = forecast$pred[[t]]
     
     # evaluate categorical errors
-    fcst.cat.eval = eval.cat(fcst$pred$Y.cat, Y.cat[,t])
+    if(!is.null(forecast$cat.probs)) {
+      fcst.cat.eval = eval.cat(fcst$pred$Y.cat, Y.cat[,t])
+    }
     
     # compute residual
     fcst$pred$resid = Y[,t] - fcst$pred$Y
@@ -72,10 +77,13 @@ stEval = function(forecast, Y, clim) {
       ppl = sum(fcst$pred$resid^2)/2 + sum(fcst$pred$se^2),
       r2 = 1 - var(fcst$pred$resid)/var(Y[,t]),
       cor = cor(fcst$pred$Y, Y[,t]),
-      coverage = mean(fcst$pred$covered, na.rm = T),
-      cat.correct = fcst.cat.eval$pct.correct,
-      cat.heidke = fcst.cat.eval$heidke.skill
+      coverage = mean(fcst$pred$covered, na.rm = T)
     )
+    
+    if(!is.null(forecast$cat.probs)) {
+      fcst$err$cat.correct = fcst.cat.eval$pct.correct
+      fcst$err$cat.heidke = fcst.cat.eval$heidke.skill
+    }
     
     # brier skill score if climatology was provided for reference forecast
     if(!is.null(clim)) {
@@ -96,7 +104,6 @@ stEval = function(forecast, Y, clim) {
   resid = as.numeric(sapply(forecast$pred, function(f) { f$pred$resid }))
   se = as.numeric(sapply(forecast$pred, function(f) { f$pred$se }))
   coverages = as.numeric(sapply(forecast$pred, function(f) { f$pred$covered }))
-  fcst.cat.eval = eval.cat(pred = Y.cat.hat, obs = Y.cat)
   
   # add overall error evaluations
   attr(forecast, 'err.mspe') = mean(resid^2)
@@ -105,8 +112,12 @@ stEval = function(forecast, Y, clim) {
   attr(forecast, 'err.cor') = cor(Y.hat, Y)
   attr(forecast, 'err.coverage') = mean(coverages, na.rm = T)
   attr(forecast, 'err.bss') = 1 - mean(resid^2) / mean(clim.resid^2)
-  attr(forecast, 'err.cat') = fcst.cat.eval$pct.correct
-  attr(forecast, 'err.heidke') = fcst.cat.eval$heidke.skill
+  if(!is.null(forecast$cat.probs)) {
+    fcst.cat.eval = eval.cat(pred = Y.cat.hat, obs = Y.cat)
+    attr(forecast, 'err.cat') = fcst.cat.eval$pct.correct
+    attr(forecast, 'err.heidke') = fcst.cat.eval$heidke.skill
+  }
+  
   
   forecast
 }
