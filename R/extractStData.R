@@ -39,12 +39,19 @@
 #'  @param X.lab name for X data (optional)
 #'  @param Y.lab name for Y data (optional)
 #'  @param Z.lab name for Z data (optional)
+#'  @param aspect TRUE to return the aspect of the surface at each location 
+#'   instead of the value of the surface itself
+#'  @param aspect.categories if aspect==TRUE, this specifies the number of 
+#'   discrete categories to divide aspect numbers (0-360) into.  NULL if the
+#'   original scale (0-360) should be kept. By design, the aspect categories
+#'   will be centered on north in the first category.
 #'  
 
 extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NULL,
                           aggfact.s = NULL, aggfact.r = NULL, intercept = T,
                           type.s = 'response', type.r = 'response',
-                          X.lab = NULL, Y.lab = NULL, Z.lab = NULL ) {
+                          X.lab = NULL, Y.lab = NULL, Z.lab = NULL,
+                          aspect = F, aspect.categories=4, slope=F) {
                   
   # convert local bounds to extent object
   D.s = extent(D.s)
@@ -66,7 +73,8 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   
   # extract regions and aggregate local covariates
   for(i in 1:length(X))
-    X[[i]] = extractRegion(X[[i]], D.s, type.s, aggfact.s, mask.s)
+    X[[i]] = extractRegion(X[[i]], D.s, type.s, aggfact.s, mask.s, aspect,
+                           aspect.categories, slope)
   
   # build local design matrices for each timepoint
   X.mat = foreach(tt = t, .combine = 'abind3') %do% {

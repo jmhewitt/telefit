@@ -16,7 +16,8 @@
 #' @param region name of subregions to include. Defaults to . which includes 
 #'  all subregions. See documentation for map for more details.
 #' @param type Either 'prediction', 'residual', 'observed', 'standard_error' (or 'se'), 
-#'  'local', 'remote', 'correlation', 'teleconnection', or 'cat.prediction'
+#'  'local', 'remote', 'correlation', 'teleconnection', 'teleconnection_knot',
+#'  or 'cat.prediction'
 #'  to specify which part of stPredict to plot. Note that the value for type can
 #'  be an abbreviation since partial matching is used during plotting. 'truth'
 #'  and 'residual' plots are only available if the model has been evaluted and
@@ -48,7 +49,7 @@ plot.stPredict = function( stPredict, type='prediction', boxsize=NULL,
   # determine which type of plot is requested
   match.opts = c('prediction', 'residual', 'observed', 'standard_error', 'se', 
                  'local', 'remote', 'correlation', 'teleconnection', 
-                 'cat.prediction')
+                 'cat.prediction', 'teleconnection_knot')
   type = match.opts[pmatch(type, match.opts)]
   
   # create a basic stData object for plotting
@@ -123,6 +124,21 @@ plot.stPredict = function( stPredict, type='prediction', boxsize=NULL,
     stFit$alpha$summary = stPredict$alpha
     
     ret = plot.stFit(stFit = stFit, type='teleconnection', boxsize = boxsize,
+                     stData = stData, map = map, region = region, 
+                     coord.s = coord.s, zlim = zlim,  
+                     signif.telecon = signif.telecon)
+  } else if( type=='teleconnection_knot') {
+    
+    if(is.null(stData)) {
+      stop('stData object required for plotting estimated teleconnection effects.')
+    }
+    if(is.null(stFit)) {
+      stop('stFit object required for plotting estimated teleconnection effects.')
+    }
+    
+    stFit$alpha_knots$summary = stPredict$alpha_knots
+    
+    ret = plot.stFit(stFit = stFit, type='teleconnection_knot', boxsize = boxsize,
                      stData = stData, map = map, region = region, 
                      coord.s = coord.s, zlim = zlim,  
                      signif.telecon = signif.telecon)

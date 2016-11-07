@@ -5,7 +5,7 @@
 \title{Extract region from a SpatialGridDataFrame}
 \usage{
 extractRegion(sgdf, extent, type = "response", aggfact = NULL,
-  mask = NULL)
+  mask = NULL, aspect = F, aspect.categories = NULL, slope = F)
 }
 \arguments{
 \item{extent}{raster::extent object featuring region to extract}
@@ -17,7 +17,13 @@ temporal standard deviation at each location)}
 \item{aggfact}{if provided, will spatially average the data}
 
 \item{mask}{if an sgdf is provided, the data will be masked before
-extraction, aggregation, and anomaly computation}
+extraction, aggregation, and anomaly computation
+@param aspect TRUE to return the aspect of the surface at each location 
+ instead of the value of the surface itself
+@param aspect.categories if aspect==TRUE, this specifies the number of 
+ discrete categories to divide aspect numbers (0-360) into.  NULL if the
+ original scale (0-360) should be kept. By design, the aspect categories
+ will be centered on north in the first category.}
 }
 \value{
 a modified SpatialGridDataFrame, sgdf, with the climatology for each

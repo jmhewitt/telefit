@@ -16,7 +16,8 @@
 #' @param region name of subregions to include. Defaults to . which includes 
 #'  all subregions. See documentation for map for more details.
 #' @param type Either 'traceplot', 'density', 'pairs', 'teleconnection',
-#'  or 'beta' to specify which part of stFit to plot. Note that the value for
+#'  'teleconnection_knot', or 'beta' to specify which part of stFit to plot. 
+#'  Note that the value for
 #'  type can be an abbreviation since partial matching is used during plotting.
 #' @param stFit Object of class stFit to plot.
 #' @param coord.s if plot type is 'teleconnection', specifies the longitude and 
@@ -44,7 +45,8 @@ plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
                        signif.telecon = F, p = 1 ) {
 
   # determine which type of plot is requested
-  match.opts = c('traceplot', 'density', 'pairs', 'teleconnection', 'beta')
+  match.opts = c('traceplot', 'density', 'pairs', 'teleconnection', 'beta',
+                 'teleconnection_knot')
   type = match.opts[pmatch(type, match.opts)]
   
   # extract posterior samples if necessary
@@ -61,6 +63,12 @@ plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
     # discard burned samples
     res.df = res.df[burn:maxIt,]
     res.df$Iteration = burn:maxIt
+    
+    # add names for the betas
+    if(!is.null(stFit$parameters$beta.names)) {
+      colnames(res.df)[
+        1:length(stFit$parameters$beta.names)] = stFit$parameters$beta.names
+    }
     
     # coerce to plottable form
     res.plottable = melt(res.df, id.vars = 'Iteration', variable.name = 'param', 
@@ -113,6 +121,23 @@ plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
                         lab.teleconnection = 'alpha') + 
         ggtitle('Estimated teleconnection effects')
     }
+    
+  } else if( type=='teleconnection_knot' ) {
+    if(is.null(stData)) {
+      stop('stData object required for plotting estimated teleconnection effects.')
+    }
+    
+    coord.s = unlist(coord.s)
+    
+    stData$alpha_knots = stFit$alpha_knots$summary$alpha
+    stData$alpha_knots_signif = stFit$alpha_knots$summary$signif
+    stData$coords.knots = stFit$coords.knots
+    
+    ret = plot.stData(stData, 'teleconnection_knot', boxsize = boxsize, map = map, 
+                      region = region, coord.s = coord.s, zlim = zlim, 
+                      lab.teleconnection = 'alpha', 
+                      signif.telecon = signif.telecon) + 
+      ggtitle('Estimated teleconnection effects')
     
   } else if( type=='beta' ) {
     if(is.null(stData)) {

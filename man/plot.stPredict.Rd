@@ -4,7 +4,7 @@
 \alias{plot.stPredict}
 \title{Plot stPredict objects}
 \usage{
-\method{plot}{stPredict}(stPredict, type = "prediction", boxsize = NULL,
+plot.stPredict(stPredict, type = "prediction", boxsize = NULL,
   map = "world", region = ".", zlim = NULL, t = NULL, stFit = NULL,
   stData = NULL, coord.s = NULL, signif.telecon = F)
 }
@@ -12,7 +12,8 @@
 \item{stPredict}{Object of class stPredict to plot.}
 
 \item{type}{Either 'prediction', 'residual', 'observed', 'standard_error' (or 'se'), 
-'local', 'remote', 'correlation', 'teleconnection', or 'cat.prediction'
+'local', 'remote', 'correlation', 'teleconnection', 'teleconnection_knot',
+or 'cat.prediction'
 to specify which part of stPredict to plot. Note that the value for type can
 be an abbreviation since partial matching is used during plotting. 'truth'
 and 'residual' plots are only available if the model has been evaluted and

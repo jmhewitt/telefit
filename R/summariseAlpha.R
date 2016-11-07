@@ -9,7 +9,7 @@
 #' 
 #' 
 
-summariseAlpha = function( alpha, burn, prob=.95, coords.s, coords.r ) {
+summariseAlpha = function( alpha, prob=.95, coords.s, coords.r ) {
   
   n = nrow(coords.s)
   r = nrow(coords.r)

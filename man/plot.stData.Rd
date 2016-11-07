@@ -4,16 +4,16 @@
 \alias{plot.stData}
 \title{Plot stData objects}
 \usage{
-\method{plot}{stData}(stData, type = "response", t = NULL, boxsize = NULL,
+plot.stData(stData, type = "response", t = NULL, boxsize = NULL,
   p = NULL, map = "world", region = ".", coord.s = NULL, zlim = NULL,
   lab.teleconnection = expression(alpha), fill.lab.width = 20,
-  category.breaks = NULL)
+  category.breaks = NULL, coords.knots = NULL, signif.telecon = F)
 }
 \arguments{
 \item{stData}{Object of class stData to plot.}
 
 \item{type}{Either 'response', 'cat.response', 'covariate', 'remote', 
-or 'teleconnection' 
+'teleconnection', or 'teleconnection_knot'
 to specify which part of stData to plot.  Note that 'teleconnection' applies
 only if the stData object contains information about teleconnection effects,
 i.e., if it is a simulated dataset or otherwise modified to include 
@@ -48,6 +48,12 @@ NULL, the middle local coordinate will be plotted.}
 
 \item{category.breaks}{[ncoords x ncats] list of breakpoints used for binning
 responses into categories}
+
+\item{coords.knots}{if plot type is 'remote', specifies the longitude and
+latitude of knot locations to overlay on the 'remote' plot}
+
+\item{signif.telecon}{if TRUE, will highlight significant teleconnection
+effects when type=='teleconnection'}
 }
 \value{
 a ggplot object with the specified map

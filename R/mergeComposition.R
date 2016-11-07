@@ -17,29 +17,28 @@ mergeComposition = function(xfull, yfull) {
       y = yfull$forecast
       
       # merge composition samples
-      x$forecasts = abind3(x$forecasts, y$forecasts)
+      x$forecast = abind3(x$forecast, y$forecast)
       x$local = abind3(x$local, y$local)
       x$remote = abind3(x$remote, y$remote)
-      x$noise = abind3(x$noise, y$noise)
       
       xfull$forecast = x
     }
     
     
     # merge teleconnection effects
-    if(!is.null(xfull$alpha)) {
+    if(!is.null(xfull$alpha_knots)) {
       # extract alpha parts
-      x = xfull$alpha
-      y = yfull$alpha
+      x = xfull$alpha_knots
+      y = yfull$alpha_knots
       
       z = list(
-        est = mergeMean(x$est, y$est, x$nsamples, y$nsamples),
-        sd = sqrt(mergeVar(x$sd^2, y$sd^2, x$est, y$est, x$nsamples, y$nsamples)),
-        nsamples = x$nsamples + y$nsamples,
+        est = mergeMean(x$est, y$est, x$nSamples, y$nSamples),
+        sd = sqrt(mergeVar(x$sd^2, y$sd^2, x$est, y$est, x$nSamples, y$nSamples)),
+        nSamples = x$nSamples + y$nSamples,
         samples = rbind(x$samples, y$samples)
       )
       
-      xfull$alpha = z
+      xfull$alpha_knots = z
     }
     
     xfull

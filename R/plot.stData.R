@@ -21,7 +21,7 @@
 #' @param region name of subregions to include. Defaults to . which includes 
 #'  all subregions. See documentation for map for more details.
 #' @param type Either 'response', 'cat.response', 'covariate', 'remote', 
-#'  or 'teleconnection' 
+#'  'teleconnection', or 'teleconnection_knot'
 #'  to specify which part of stData to plot.  Note that 'teleconnection' applies
 #'  only if the stData object contains information about teleconnection effects,
 #'  i.e., if it is a simulated dataset or otherwise modified to include 
@@ -36,7 +36,11 @@
 #' @param fill.lab.width line width for fill scale label
 #' @param category.breaks [ncoords x ncats] list of breakpoints used for binning
 #'  responses into categories
-#' 
+#' @param coords.knots if plot type is 'remote', specifies the longitude and
+#'  latitude of knot locations to overlay on the 'remote' plot
+#' @param signif.telecon if TRUE, will highlight significant teleconnection
+#'  effects when type=='teleconnection'
+#'  
 #' @return a ggplot object with the specified map
 #'
 #' 
@@ -45,7 +49,8 @@
 plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,  
                         map='world', region='.', coord.s=NULL, zlim=NULL,
                         lab.teleconnection = expression(alpha),
-                        fill.lab.width = 20, category.breaks = NULL ) {
+                        fill.lab.width = 20, category.breaks = NULL,
+                        coords.knots = NULL, signif.telecon = F) {
 
   if(is.null(t))
     t=stData$tLabs[1]
@@ -63,9 +68,15 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
       stData$Y.cat = matrix(stData$Y.cat, nrow = nrow(stData$coords.s))  
   }
   
+  if(!is.null(coords.knots)) {
+    coords.knots = data.frame(coords.knots)
+    colnames(coords.knots) = c('lon', 'lat')
+    coords.knots = rbind(coords.knots, coords.knots %>% mutate(lon=lon-360))
+  }
+  
   # extract dataset to plot
   match.opts = c('response', 'covariate', 'remote', 'teleconnection', 
-                 'cat.response')
+                 'cat.response', 'teleconnection_knot')
   type = match.opts[pmatch(type, match.opts)]
   if( type=='response' ) {
     Y = data.frame( Y = stData$Y[, match(t, stData$tLabs)],
@@ -103,6 +114,25 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     
     lab.col = lab.teleconnection
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
+  } else if( type=='teleconnection_knot' ) {
+    
+    n = nrow(stData$coords.s)
+    r_knots = nrow(stData$coords.knots)
+    
+    if(is.null(coord.s))
+      coord.s = stData$coords.s[round(n/2),]
+    
+    Y = data.frame( Y = stData$alpha_knots,
+                    signif = ifelse(stData$alpha_knots_signif, 3, 0),
+                    lon.Z = stData$coords.knots[,1], 
+                    lat.Z = stData$coords.knots[,2],
+                    lon.Y = rep(stData$coords.s[,1], rep(r_knots,n)),
+                    lat.Y = rep(stData$coords.s[,2], rep(r_knots,n)) ) %>% 
+      filter(lon.Y==coord.s[1], lat.Y==coord.s[2]) %>% 
+      mutate(lon.Y=lon.Z, lat.Y=lat.Z )
+    
+    lab.col = lab.teleconnection
+    scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='cat.response' ) {
     
     # categorize Y according to given breakpoints, if necessary
@@ -122,11 +152,11 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   } 
   
   # compute truncations and apply wrapping
-  if(type %in% c('remote', 'teleconnection')) {
+  if(type %in% c('remote', 'teleconnection', 'teleconnection_knot')) {
     if(max(Y$lon.Y)>0) {
       if(min(Y$lon.Y)<0) {
-        lon.E = max(Y %>% filter(lon.Y<=0) %>% select(lon.Y))
-        lon.W = min(Y %>% filter(lon.Y>0) %>% select(lon.Y)) - 360
+        lon.E = max(Y %>% filter(lon.Y<=0) %>% dplyr::select(lon.Y))
+        lon.W = min(Y %>% filter(lon.Y>0) %>% dplyr::select(lon.Y)) - 360
       } else {
         lon.E = max(Y$lon.Y) - 360
         lon.W = min(Y$lon.Y) - 360
@@ -165,10 +195,20 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   # set commands to modify plotting options, if specified
   #
   
-  if(is.null(boxsize))
-    tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y)
-  else
-    tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y, width=boxsize, height=boxsize)
+  if(type!='teleconnection_knot') {
+    if(is.null(boxsize)) {
+      tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y)
+    }
+    else {
+      tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y, width=boxsize, height=boxsize)
+    }
+  } else {
+    if(signif.telecon) {
+      point.aes = aes(x=lon.Y, y=lat.Y, fill=Y, stroke=signif)
+    } else {
+      point.aes = aes(x=lon.Y, y=lat.Y, fill=Y, stroke=0)
+    }
+  }
   
   # wrap fill label
   lab.col = str_wrap(lab.col, width=fill.lab.width)
@@ -183,8 +223,17 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
                                      low = scheme.col$low, 
                                      mid = scheme.col$mid, 
                                      high = scheme.col$high)
+    colscale = scale_color_gradient2(lab.col,
+                                     low = scheme.col$low, 
+                                     mid = scheme.col$mid, 
+                                     high = scheme.col$high)
   } else  {
     fillscale = scale_fill_gradient2(lab.col,
+                                     low = scheme.col$low, 
+                                     mid = scheme.col$mid, 
+                                     high = scheme.col$high,
+                                     limits = zlim)
+    colscale = scale_color_gradient2(lab.col,
                                      low = scheme.col$low, 
                                      mid = scheme.col$mid, 
                                      high = scheme.col$high,
@@ -192,18 +241,45 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   } 
   
   # build base plot
-  worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
-    geom_tile(tile.aes, data = Y  %>% 
-                mutate(lon.Y = ifelse(lon.Y<=0, lon.Y, lon.Y-360)), 
-              inherit.aes = F) +
-    fillscale +
-    scale_x_continuous(trans = lon_trans()) +
-    scale_y_continuous(trans = lat_trans()) +
-    xlab('Longitude') +
-    ylab('Latitude') + 
-    geom_path() +
-    theme_grey() +
-    ggtitle(t)
+  if(type!='teleconnection_knot') {
+    worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
+      geom_raster(tile.aes, data = Y  %>% 
+                  mutate(lon.Y = ifelse(lon.Y<=0, lon.Y, lon.Y-360)), 
+                inherit.aes = F) +
+      fillscale +
+      scale_x_continuous(trans = lon_trans()) +
+      scale_y_continuous(trans = lat_trans()) +
+      xlab('Longitude') +
+      ylab('Latitude') + 
+      geom_path() +
+      theme_grey() +
+      ggtitle(t)
+    
+    if(!is.null(coords.knots)) {
+      worldmap = worldmap + geom_point(aes(x=lon, y=lat), data = coords.knots,
+                                       col = 2, inherit.aes = F)
+    }
+  } else {
+    worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
+      geom_point(point.aes, data = Y  %>% 
+                  mutate(lon.Y = ifelse(lon.Y<=0, lon.Y, lon.Y-360)), 
+                inherit.aes = F, size=4, shape=21) +
+      fillscale +
+      scale_color_manual('Significance', values=c('True'='black', 'False'='grey')) +
+      scale_x_continuous(trans = lon_trans()) +
+      scale_y_continuous(trans = lat_trans()) +
+      xlab('Longitude') +
+      ylab('Latitude') + 
+      geom_path() +
+      theme_grey() +
+      ggtitle(t)
+    
+    if(!is.null(coords.knots)) {
+      worldmap = worldmap + geom_point(aes(x=lon, y=lat), data = coords.knots,
+                                       col = 2, inherit.aes = F)
+    }
+  }
+  
   
   # add coord.s to the plot and modify truncation
   if(!is.null(coord.s)) {

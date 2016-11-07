@@ -60,38 +60,55 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
                       X = stData$X, Y = stData$Y, Z = stData$Z, 
                       Xnew = stDataNew$X, Znew = stDataNew$Z,
                       coords.s = stData$coords.s, coords.r = stData$coords.r,
-                      returnAlphas = T, cat.probs = c(1/3, 2/3) ) {
+                      returnAlphas = T, cat.probs = c(1/3, 2/3)) {
   
-  # TODO: add support for localOnly and/or non-varying models
-  
-  # extract localOnly and varying
+  # extract some configurations
   localOnly = stFit$localOnly
+  remoteOnly = stFit$remoteOnly
   varying = stFit$varying
+  miles = stFit$miles
   
   maxIt = length(stFit$parameters$samples$ll)
   nSamples = length(burn:maxIt)
   
   n = nrow(coords.s)
   r = nrow(coords.r)
+  r_knots = nrow(coords.knots)
   p = dim(X)[2]
   t = dim(X)[3]
   
-  Dy = rdist.earth(coords.s, miles=stFit$miles)
-  Dz = rdist.earth(coords.r, miles=stFit$miles)
+  Dy = rdist.earth(coords.s, miles=miles)
+  Dz_knots = rdist.earth(coords.knots, miles=miles)
+  Dz_to_knots = rdist.earth(coords.r, coords.knots, miles=miles)
   
-  Xl = as.matrix(arrayToLong(X, coords.s, 1)[,-(1:3)])
-  Yl = matrix(as.numeric(Y), ncol=1)
   Z = as.matrix(Z)
-  
-  Xlnew = as.matrix(arrayToLong(Xnew, coords.s, 1)[,-(1:3)])
   Znew = as.matrix(Znew)
+  
+  # format data
+  Yl = matrix(as.numeric(Y), ncol=1)
+  
+  # format design matrix
+  if(remoteOnly) {
+    # remoteOnly => intercept only model
+    
+    Xl = matrix(1, nrow = nrow(Yl), ncol = 1)
+    p = 1
+    priors$beta$Lambda = matrix(priors$beta$Lambda[1,1], ncol=1, nrow=1)
+    
+    Xlnew = as.matrix(arrayToLong(Xnew, coords.s, 1)[,-(1:3)])
+    Xlnew = matrix(1, nrow(Xlnew), ncol=1)
+  } else {
+    Xl = as.matrix(arrayToLong(X, coords.s, 1)[,-(1:3)])
+    
+    Xlnew = as.matrix(arrayToLong(Xnew, coords.s, 1)[,-(1:3)])
+  }
   
   registerDoMC(ncores)
   mcoptions = list(preschedule=FALSE)
   
   # estimate chunksize that will minimize number of function calls
   chunkSize = ceiling((maxIt-burn+1)/ncores)
-
+  
   # draw composition samples
   composition = foreach( inds = ichunk(burn:maxIt, chunkSize = chunkSize),
                          .combine = mergeComposition,
@@ -99,17 +116,19 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     inds = unlist(inds)            
                            
     if(stFit$varying) {
-      .Call("_stvcomposition", PACKAGE = 'telefit', p, r, n, t, Xl, Z, Yl, Dy, 
-            Dz, stFit$priors$cov.s$smoothness, stFit$priors$cov.r$smoothness, 
-            stFit$parameters$samples$beta[inds,], 
-            stFit$parameters$samples$sigmasq_y[inds], 
-            stFit$parameters$samples$rho_y[inds], 
-            stFit$parameters$samples$rho_r[inds], 
-            stFit$parameters$samples$sigmasq_r[inds], 
-            stFit$parameters$samples$sigmasq_eps[inds], 0, T, 
-            Xlnew, Znew, returnAlphas, T)
     } else {
-      
+      .Call("_stpcomposition", PACKAGE = 'telefit', Xl, Z, Yl, Dy, 
+            Dz_knots, Dz_to_knots, p, n, r, r_knots, t, 
+            stFit$priors$cov.s$smoothness, stFit$priors$cov.r$smoothness,
+            stFit$parameters$samples$beta[inds,], 
+            stFit$parameters$samples$sigmasq_y[inds],
+            stFit$parameters$samples$sigmasq_r[inds], 
+            stFit$parameters$samples$sigmasq_eps[inds],
+            stFit$parameters$samples$rho_y[inds], 
+            stFit$parameters$samples$rho_r[inds],
+            stFit$parameters$samples$ll[inds],
+            Xlnew, Znew)
+        
     }
   }
   
@@ -118,50 +137,47 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   
   # post process teleconnection effects
   if(returnAlphas) {
-    # remove unwanted information
-    composition$alpha$beta = NULL
-    composition$alpha$samples = NULL
-    
     # convert results away from unnecessary matrix format
-    composition$alpha$est = as.numeric(composition$alpha$est)
-    composition$alpha$sd = as.numeric(composition$alpha$sd)
+    composition$alpha_knots$est = as.numeric(composition$alpha_knots$est)
+    composition$alpha_knots$sd = as.numeric(composition$alpha_knots$sd)
     
     # compute approximate intervals, etc.
-    composition$alpha$summary = summariseAlpha(composition$alpha, burn, prob, 
-                                               coords.s, coords.r)
+    composition$alpha_knots$summary = summariseAlpha(composition$alpha_knots, 
+                                                     prob, coords.s, 
+                                                     stFit$coords.knots)
     
     # remove information redundant with the summary
-    composition$alpha$est = NULL
-    composition$alpha$sd = NULL
+    composition$alpha_knots$est = NULL
+    composition$alpha_knots$sd = NULL
   }
   
   # compute empirical breakpoints at each location to define forecast categories
   if(!is.null(cat.probs)) {
-    category.breaks = t(apply(stData$Y, 1, 
+    category.breaks = t(apply(stData$Y, 1,
                               function(r) { quantile(r, probs = cat.probs)}))
   }
-  
+
   # package results
-  nt0 = ncol(composition$forecast$forecasts)
+  nt0 = ncol(composition$forecast$forecast)
   Y = foreach(t= 1:nt0) %dopar% {
-    
+
     # TODO: move this code somewhere where it can be called outside of sampling
-    
+
     # generate HPD intervals
-    forecast.mcmc = mcmc(t(composition$forecast$forecasts[,t,]))
+    forecast.mcmc = mcmc(t(composition$forecast$forecast[,t,]))
     forecast.hpd = HPDinterval(forecast.mcmc, prob = conf)
-    
+
     if(!is.null(cat.probs)) {
       # build categorical predictions (process by location)
-      Y.cat = foreach(s = 1:nrow(composition$forecast$forecasts), 
+      Y.cat = foreach(s = 1:nrow(composition$forecast$forecast),
                       .combine='rbind') %do% {
         # extract posterior samples for specified location and timepoint
-        y = composition$forecast$forecasts[s,t,]
+        y = composition$forecast$forecast[s,t,]
         # return label for posterior mode of categories
         1 + as.numeric(names(which.max(table(findInterval(y,category.breaks[s,])))))
       }
     }
-    
+
     pred = data.frame(
       Y = colMeans(forecast.mcmc),
       Y.local = colMeans(t(composition$forecast$local[,t,])),
@@ -171,20 +187,23 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
       Y.upr = forecast.hpd[,2],
       Y.cat = Y.cat
     )
-    
+
     r = list(
       pred = pred,
       yrLab = tLabs[t]
     )
     r
   }
-  
+
+  attr(composition$forecast$forecast, 'dimnames') = NULL
+  attr(composition$forecast$local, 'dimnames') = NULL
+  attr(composition$forecast$remote, 'dimnames') = NULL
 
   # format return
   ret = list(
     pred = Y,
     samples = composition$forecast,
-    alpha = composition$alpha$summary,
+    alpha_knots = composition$alpha_knots$summary,
     coords.s = coords.s,
     localOnly = localOnly,
     varying = varying,

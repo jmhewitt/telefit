@@ -7,7 +7,7 @@
 extractStData(X, Y, Z, t = NULL, D.s, D.r, mask.s = NULL, mask.r = NULL,
   aggfact.s = NULL, aggfact.r = NULL, intercept = T,
   type.s = "response", type.r = "response", X.lab = NULL, Y.lab = NULL,
-  Z.lab = NULL)
+  Z.lab = NULL, aspect = F, aspect.categories = 4, slope = F)
 }
 \arguments{
 \item{X}{SpatialGridDataFrame with local covariates.  If X is a list, each
@@ -51,7 +51,13 @@ standardized anomalies (where the climatology is computed from the
 observations as the pointwise temporal average)
 @param X.lab name for X data (optional)
 @param Y.lab name for Y data (optional)
-@param Z.lab name for Z data (optional)}
+@param Z.lab name for Z data (optional)
+@param aspect TRUE to return the aspect of the surface at each location 
+ instead of the value of the surface itself
+@param aspect.categories if aspect==TRUE, this specifies the number of 
+ discrete categories to divide aspect numbers (0-360) into.  NULL if the
+ original scale (0-360) should be kept. By design, the aspect categories
+ will be centered on north in the first category.}
 }
 \description{
 Basic extraction of SpatialGridDataFrame data for teleconnection analysis

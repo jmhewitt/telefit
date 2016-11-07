@@ -7,7 +7,47 @@
 
 namespace mcstat {
 	
+	using namespace Rcpp;
 	using namespace arma;
+	
+	
+	//
+	// structures to hold distribution parameters
+	//
+	
+	struct mvnorm {
+		vec mu;
+		mat Sigma;
+		
+		mvnorm() {}
+		
+		mvnorm(const vec &_mu, const mat &_Sigma) {
+			mu = _mu;
+			Sigma = _Sigma;
+		}
+	};
+	
+	struct invgamma {
+		double shape, rate;
+		
+		invgamma() {}
+		
+		invgamma(double _shape, double _rate) {
+			shape = _shape;
+			rate = _rate;
+		}
+	};
+	
+	struct uniform {
+		double a, b;
+		
+		uniform() { }
+		
+		uniform(double _a, double _b) {
+			a = _a;
+			b = _b;
+		}
+	};
 	
 	
 	//
@@ -23,11 +63,8 @@ namespace mcstat {
 	// transformations
 	//
 	
-	inline double logit(double x) { return log( x / (1.0 - x) ); }
-	inline double invlogit(double x) {
-		double expX = exp(x);
-		return isinf(expX)!=0 ? 1 : expX / (1.0 + expX);
-	}
+	double logit(double x);
+	double invlogit(double x);
 	
 
 	//
@@ -35,31 +72,23 @@ namespace mcstat {
 	//
 	
 	// log inverse gamma density, without normalization constant
-	inline double logdinvgamma_unscaled(double x, double a, double b) {
-		return - (a + 1.0) * log(x) - b/x;
-	}
+	double logdinvgamma_unscaled(double x, double a, double b);
 	
 	
 	//
 	// proposal functions
 	//
 	
-	inline double logitProposal(double x, double min_x, double max_x, double sd) {
-		double w = max_x - min_x;
-		return invlogit( logit((x - min_x)/w) + R::rnorm(0, sd) ) * w + min_x;
-	}
-	
-	inline double logProposal(double x, double sd) {
-		return exp( log(x) + R::rnorm(0, sd) );
-	}
+	double logitProposal(double x, double min_x, double max_x, double sd);
+	double logProposal(double x, double sd);
 	
 	
 	//
 	// proposal jacobians
 	//
 	
-	inline double loglogJacobian(double x) { return -log( std::abs(x) ); }
-	inline double loglogitJacobian(double x) { return -log( std::abs(x*(1.0-x)) ); }
+	double loglogJacobian(double x);
+	double loglogitJacobian(double x);
 	
 	
 	//
@@ -67,41 +96,19 @@ namespace mcstat {
 	//
 	
 	// sample a mean 0 multivariate normal r.v.
-	inline vec mvrnorm(const mat & sigma) {
-		return chol(sigma, "lower") * randn<vec>(sigma.n_rows, 1);
-	}
+	vec mvrnorm(const mat & sigma);
 	
 	// sample a multivariate normal r.v.
-	inline vec mvrnorm(const vec & mu, const mat & sigma) {
-		return mu + chol(sigma, "lower") * randn<vec>(sigma.n_rows, 1);
-	}
+	vec mvrnorm(const vec & mu, const mat & sigma);
+	
+	// sample a multivariate normal r.v. using a precision or covariance matrix
+	vec mvrnorm(const vec &mu, const mat &sigma, bool precision);
 	
 	// sample a wishart matrix using bartlett's decompostion
-	inline mat rwishart(mat V, int n) {
-		// Params:
-		//  n - degrees of freedom
-		//  V - (symmetric) scale matrix
-		
-		int p = V.n_rows;
-		mat A = mat(p, p, fill::zeros);
-		
-		// fill diagonal
-		for(int i=0; i<p; i++)
-			A(i,i) = sqrt(R::rchisq(n-i));
-		
-		// fill lower-triangular portion of matrix
-		for(int i=1; i<p; i++)
-			for(int j=0; j<i; j++)
-				A(i,j) = R::rnorm(0,1);
-		
-		mat C = chol(V, "lower") * trimatl(A);
-		return C * C.t();
-	}
+	mat rwishart(const mat &V, int n);
 	
 	// sample an inverse wishart matrix
-	inline mat rinvwishart(mat V, int n) {
-		return inv_sympd( rwishart(inv_sympd(V), n) );
-	}
+	mat rinvwishart(const mat &V, int n);
 	
 	
 	//
@@ -109,10 +116,51 @@ namespace mcstat {
 	//
 
 	
-	/// call 'message' from C++
-	// inline Rcpp::Function msg(\"message\");
-	// usage: msg(std::string(\"Hello, txt: \") + txt);
+	class MCMCCheckpoint {
+	
+	private:
+		int it, checkPointIt, nSamples;
+		std::clock_t lap, start;
+		
+	public:
+		
+		MCMCCheckpoint(int nSamples);
+		
+		void run();
+		void finish();
+	};
+	
+	
+	//
+	// abstract sampling functions
+	//
+	
+	// univariate adaptive random walk sampler
+	class RWSampler {
+		
+	protected:
+		enum ProposalType { NORMAL, LOG, LOGIT };
+		int nSamples ;
+		double accept, sd, L, U;
+		ProposalType type;
+		
+		// likelihood and prior, no jacobian; gets a copy of proposed value, x
+		virtual double logR_posterior(double x) = 0;
+		
+		virtual void update() {};
+		
+	public:
+		double sample(double x0);
+		void adapt(double adaptScale, double targetRate);
+		List toList();
+		
+		RWSampler(double _sd);
+		
+		double getAcceptanceRate();
+		double getSd();
+	};
 }
+
 
 
 #endif
