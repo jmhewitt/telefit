@@ -11,7 +11,7 @@
 #' 
 #' @param type Either 'prediction', 'residual', 'observed', 'standard_error' (or 'se'), 
 #'  'local', 'remote', 'correlation', 'teleconnection', 'teleconnection_knot',
-#'  or 'cat.prediction'
+#'  'teleconnection_knot_transect', 'errors', or 'cat.prediction'
 #'  to specify which part of stPredict to plot. Note that the value for type can
 #'  be an abbreviation since partial matching is used during plotting. 'truth'
 #'  and 'residual' plots are only available if the model has been evaluted and
@@ -23,6 +23,10 @@
 #'  information for plotting estimated teleconnection effects
 #' @param stFit Object of class stFit to provide related
 #'  information and structures for plotting estimated teleconnection effects
+#' @param err.comparison data.frame with Year column  and a column for a variable
+#'  that will be used to plot annual errors against
+#' @param err.var name of variable in err.comparison for plotting against
+#' @param err.lab label for name of variable in err.comparison for plotting against
 #' @param ... additional arguments to be passed to lower-level plotting functions
 #'  
 #' @return a ggplot object with the specified map
@@ -31,12 +35,14 @@
 #' 
 
 plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL, 
-                           stData=NULL, ... ) {
+                           stData=NULL, err.comparison=NULL, err.var=NULL,
+                           err.lab=err.var, ... ) {
 
   # determine which type of plot is requested
   match.opts = c('prediction', 'residual', 'observed', 'standard_error', 'se', 
                  'local', 'remote', 'correlation', 'teleconnection', 
-                 'cat.prediction', 'teleconnection_knot')
+                 'cat.prediction', 'teleconnection_knot', 
+                 'teleconnection_knot_transect', 'errors')
   type = match.opts[pmatch(type, match.opts)]
   
   # create a basic stData object for plotting
@@ -117,11 +123,44 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
     stFit$alpha_knots$summary = stPredict$alpha_knots
     
     ret = plot.stFit(stFit = stFit, stData = stData, type='teleconnection_knot', ...)
+  } else if( type=='teleconnection_knot_transect') {
+    
+    stFit$alpha_knots$summary = stPredict$alpha_knots
+    
+    ret = plot.stFit(stFit = stFit, type='teleconnection_knot_transect', ...)
+    
   } else if( type=='cat.prediction' ) {
     stData$Y.cat = factor(pred$pred$Y.cat)
     stData$Y.lab = paste('Predicted', stPredict$Y.lab)
     ret = plot.stData(stData, type='cat.response', ...)
-  } 
+  } else if( type=='errors' ) {
+    
+    # extract yearly errors
+    errsum = foreach(f=stPredict$pred, .combine='rbind') %do% {
+      data.frame(Year=f$yrLab, f$err)
+    } %>% mutate(RMSPE = sqrt(mspe), mspe = NULL,
+                 'Brier skill' = bss, bss = NULL,
+                 'Categorical Accuracy' = cat.correct, cat.correct = NULL,
+                 'Heidke skill' = cat.heidke, cat.heidke = NULL,
+                 'Response Correlation' = cor, cor = NULL,
+                 'R sq.' = r2, r2 = NULL,
+                 'PPL' = ppl, ppl=NULL,
+                 'Coverage' = coverage, coverage=NULL
+    )
+    
+    errsum = cbind(errsum, err.comparison)
+    
+    errsum.plottable = melt(errsum, id.vars = c('Year', err.var))
+    
+    ret = ggplot(errsum.plottable, aes_string(x=err.var, y='value')) +
+      facet_wrap(~variable, scales='free') +
+      geom_smooth(span=1) +
+      geom_label(aes(label=Year), alpha=.8) +
+      ylab('') +
+      xlab(err.lab) +
+      annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf) +
+      annotate("segment", x=-Inf, xend=-Inf, y=-Inf, yend=Inf)
+  }
   
   ret
 }

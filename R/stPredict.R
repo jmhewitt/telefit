@@ -183,14 +183,17 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
 
     pred = data.frame(
       Y = colMeans(forecast.mcmc),
-      Y.local = colMeans(t(composition$forecast$local[,t,])),
-      Y.remote = colMeans(t(composition$forecast$remote[,t,])),
       se = apply(forecast.mcmc, 2, sd),
       Y.lwr = forecast.hpd[,1],
       Y.upr = forecast.hpd[,2],
       Y.cat = Y.cat
     )
-
+    
+    if(!is.null(composition$forecast$local)) {
+      pred$Y.local = colMeans(t(composition$forecast$local[,t,]))
+      pred$Y.remote = colMeans(t(composition$forecast$remote[,t,]))
+    }
+    
     r = list(
       pred = pred,
       yrLab = tLabs[t]

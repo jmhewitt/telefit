@@ -5,14 +5,15 @@
 \title{Plot stPredict objects}
 \usage{
 plot.stPredict(stPredict, type = "prediction", t = NULL, stFit = NULL,
-  stData = NULL, ...)
+  stData = NULL, err.comparison = NULL, err.var = NULL,
+  err.lab = err.var, ...)
 }
 \arguments{
 \item{stPredict}{Object of class stPredict to plot.}
 
 \item{type}{Either 'prediction', 'residual', 'observed', 'standard_error' (or 'se'), 
 'local', 'remote', 'correlation', 'teleconnection', 'teleconnection_knot',
-or 'cat.prediction'
+'teleconnection_knot_transect', 'errors', or 'cat.prediction'
 to specify which part of stPredict to plot. Note that the value for type can
 be an abbreviation since partial matching is used during plotting. 'truth'
 and 'residual' plots are only available if the model has been evaluted and
@@ -26,6 +27,13 @@ information and structures for plotting estimated teleconnection effects}
 
 \item{stData}{Object of class stData to provide coordinate and related
 information for plotting estimated teleconnection effects}
+
+\item{err.comparison}{data.frame with Year column  and a column for a variable
+that will be used to plot annual errors against}
+
+\item{err.var}{name of variable in err.comparison for plotting against}
+
+\item{err.lab}{label for name of variable in err.comparison for plotting against}
 
 \item{...}{additional arguments to be passed to lower-level plotting functions}
 }

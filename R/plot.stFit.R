@@ -5,12 +5,15 @@
 #'
 #' @export
 #' 
+#' @import grid
+#' @import gtable
 #' @import ggplot2
 #' @import dplyr
 #' @importFrom reshape2 melt
 #' 
 #' @param type Either 'traceplot', 'density', 'pairs', 'teleconnection',
-#'  'teleconnection_knot', or 'beta' to specify which part of stFit to plot. 
+#'  'teleconnection_knot', 'teleconnection_knot_transect', 
+#'  or 'beta' to specify which part of stFit to plot. 
 #'  Note that the value for
 #'  type can be an abbreviation since partial matching is used during plotting.
 #' @param stFit Object of class stFit to plot.
@@ -26,6 +29,11 @@
 #'  effects when type=='teleconnection'
 #' @param p If stFit was fit with spatially varying coefficients, p specifies 
 #'  the index of the spatially varying coefficient to plot
+#' @param local.covariate data.frame with variables, 'lon.Y', 'lat.Y', 'x'
+#'  that will be plotted against teleconnection effects if 
+#'  type=='teleconnection_knot_transect'
+#' @param facet.signif number of significant figures to round facet latitudes 
+#'  and longitudes for if type=='teleconnection_knot_transect'
 #' 
 #' @return a ggplot object with the specified map
 #'
@@ -34,11 +42,12 @@
 
 plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
                        text.size=NULL, axis.text.size=NULL, burn = 1,
-                       signif.telecon = F, p = 1, ... ) {
+                       signif.telecon = F, p = 1, local.covariate=NULL, 
+                       facet.signif = 3, ... ) {
 
   # determine which type of plot is requested
   match.opts = c('traceplot', 'density', 'pairs', 'teleconnection', 'beta',
-                 'teleconnection_knot')
+                 'teleconnection_knot', 'teleconnection_knot_transect')
   type = match.opts[pmatch(type, match.opts)]
   
   # extract posterior samples if necessary
@@ -124,6 +133,99 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
     
     ret = plot.stData(stData, 'teleconnection_knot', lab.teleconnection = 'alpha', ...) + 
       ggtitle('Estimated teleconnection effects')
+    
+  } else if( type == 'teleconnection_knot_transect' ) {
+    # examine teleconnection effects across a transect
+    
+    coord.s = unlist(coord.s)
+    
+    df = stFit$alpha_knots$summary %>% 
+      filter(lat.Y == coord.s[2]) %>% # choose a transect latitude
+      mutate(lon.Z = signif(lon.Z, 3), 
+             lat.Z = signif(lat.Z, 3)) # group/tidy knot locations
+    
+    # Order and format latitudes and longitudes for plotting in grid
+    lon.trans = lon_trans()
+    lat.trans = lat_trans()
+    
+    df$lon.Z = factor(lon.trans$format(df$lon.Z), 
+                      levels = lon.trans$format(sort(unique(df$lon.Z %% 360))))
+    
+    df$lat.Z = factor(lat.trans$format(df$lat.Z), 
+                      levels = lat.trans$format(sort(unique(df$lat.Z), 
+                                                     decreasing = T)))
+    
+    if(!is.null(local.covariate)) {
+      df = df %>% left_join(local.covariate, by=c('lon.Y', 'lat.Y'))
+    }
+      
+    # build base plot
+    ret = ggplot(df, aes(x = lon.Y, y = alpha)) +
+      # teleconnection effects with CI
+      geom_ribbon(aes(ymin = lower, ymax=upper), fill = 'grey70') +
+      geom_line() +
+      # reference line for significance
+      geom_hline(yintercept = 0, lty=2, alpha=.6 ) +
+      # plot teleconnection effect transect for all knots
+      facet_grid(lat.Z ~ lon.Z, labeller = ) +
+      ylab('Teleconnection effect') +
+      scale_x_continuous('Transect longitude', trans = lon_trans()) +
+      ggtitle(paste('Teleconnection effects along', lat.trans$format(coord.s[2]),
+                    'transect'))
+    
+    # change text size
+    if(!is.null(text.size))
+      ret = ret + theme( text = element_text(size=text.size))
+    if(!is.null(axis.text.size))
+      ret = ret + theme( axis.text = element_text(size=axis.text.size))
+    
+    # add covariate information
+    if(!is.null(local.covariate)) {
+      ret = ret + geom_line(aes(x=lon.Y, y=x), col=2, alpha=.7)
+    }
+      
+    #
+    # add facet labels
+    #
+    
+    # get gtable object
+    ret.grob = ggplotGrob(ret)
+    
+    # text and background config for the labels
+    label.bg = rectGrob(gp = gpar(col = NA, fill = gray(6/8)))
+    label.textgp = gpar(fontsize=14, col = gray(.1))
+    
+    # add label for right strip
+    right.pos = max(ret.grob$layout[which(ret.grob$layout$name=='strip-right'),]$r)
+    ylab.range = ret.grob$layout[which(ret.grob$layout$name=='ylab'),c('t','b')]
+    ret.grob = gtable_add_cols(ret.grob, ret.grob$widths[right.pos], right.pos)
+    ret.grob = gtable_add_grob(ret.grob, 
+                  list(label.bg, 
+                       textGrob("Teleconnection latitude", rot = -90, 
+                                gp = label.textgp)),
+                  ylab.range$t, right.pos+1, ylab.range$b, right.pos+1, 
+                  name = paste(runif(2)))
+    
+    # add label for top strip
+    top.pos = min(ret.grob$layout[which(ret.grob$layout$name=='strip-top'),]$t)
+    xlab.range = ret.grob$layout[which(ret.grob$layout$name=='xlab'),c('l','r')]
+    ret.grob = gtable_add_rows(ret.grob, ret.grob$heights[top.pos], top.pos-1)
+    ret.grob = gtable_add_grob(ret.grob, 
+                    list(label.bg, 
+                         textGrob("Teleconnection longitude", gp = label.textgp)),
+                  top.pos, xlab.range$l, top.pos, xlab.range$r, 
+                  name = paste(runif(2)))
+    
+    # add space between outer and inner labels
+    ret.grob = gtable_add_cols(ret.grob, unit(1/8, "line"), right.pos)
+    ret.grob = gtable_add_rows(ret.grob, unit(1/8, "line"), top.pos)
+    
+    # draw image
+    grid.newpage()
+    grid.draw(ret.grob)
+    
+    # return nothing
+    ret = NULL
     
   } else if( type=='beta' ) {
     if(is.null(stData)) {

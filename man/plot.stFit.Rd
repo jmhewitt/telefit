@@ -6,13 +6,14 @@
 \usage{
 plot.stFit(stFit, type = "density", stData = NULL, coord.s = NULL,
   text.size = NULL, axis.text.size = NULL, burn = 1, signif.telecon = F,
-  p = 1, ...)
+  p = 1, local.covariate = NULL, facet.signif = 3, ...)
 }
 \arguments{
 \item{stFit}{Object of class stFit to plot.}
 
 \item{type}{Either 'traceplot', 'density', 'pairs', 'teleconnection',
-'teleconnection_knot', or 'beta' to specify which part of stFit to plot. 
+'teleconnection_knot', 'teleconnection_knot_transect', 
+or 'beta' to specify which part of stFit to plot. 
 Note that the value for
 type can be an abbreviation since partial matching is used during plotting.}
 
@@ -34,6 +35,13 @@ effects when type=='teleconnection'}
 
 \item{p}{If stFit was fit with spatially varying coefficients, p specifies 
 the index of the spatially varying coefficient to plot}
+
+\item{local.covariate}{data.frame with variables, 'lon.Y', 'lat.Y', 'x'
+that will be plotted against teleconnection effects if 
+type=='teleconnection_knot_transect'}
+
+\item{facet.signif}{number of significant figures to round facet latitudes 
+and longitudes for if type=='teleconnection_knot_transect'}
 }
 \value{
 a ggplot object with the specified map
