@@ -22,7 +22,6 @@ process derivatives.}
 }
 \description{
 This function evaluates the Matern covariance function for the elements of 
-a spatial distance matrix, d---i.e., a symmetric matrix with 0's along its
-main diagonal.
+a (potentially non-square) spatial distance matrix
 }
 

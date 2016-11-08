@@ -94,7 +94,7 @@ RcppExport SEXP _maternCov(SEXP d, SEXP scale, SEXP range, SEXP smoothness,
 	using namespace Rcpp;
 	
 	mat dist = as<mat>(d);
-	mat res = mat(dist.n_rows, dist.n_rows, fill::zeros);
+	mat res = mat(dist.n_rows, dist.n_cols, fill::zeros);
 	
 	maternCov( res, dist, as<double>(scale), as<double>(range),
 			   as<double>(smoothness), as<double>(nugget) );

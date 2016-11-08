@@ -1,8 +1,7 @@
 #' Matern covariance
 #'
 #' This function evaluates the Matern covariance function for the elements of 
-#' a spatial distance matrix, d---i.e., a symmetric matrix with 0's along its
-#' main diagonal.
+#' a (potentially non-square) spatial distance matrix
 #'
 #' @useDynLib telefit
 #'
@@ -20,8 +19,5 @@
 #' 
 
 maternCov = function(d, scale = 1, range = 1, smoothness = .5, nugget = 0) {
-  
-  # coerce d to a symmetric matrix with 0's on the diagonal
-  
   .Call("_maternCov", PACKAGE = 'telefit', d, scale, range, smoothness, nugget)
 }
