@@ -50,7 +50,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
                         map='world', region='.', coord.s=NULL, zlim=NULL,
                         lab.teleconnection = expression(alpha),
                         fill.lab.width = 20, category.breaks = NULL,
-                        coords.knots = NULL, signif.telecon = F) {
+                        coords.knots = NULL, signif.telecon = F, ...) {
 
   if(is.null(t))
     t=stData$tLabs[1]

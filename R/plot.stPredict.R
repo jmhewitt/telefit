@@ -9,12 +9,6 @@
 #' @import dplyr
 #' @importFrom reshape2 melt
 #' 
-#' @param boxsize size of grid boxes plotted
-#' @param map name of map provided by the maps package. These include county, 
-#'  france, italy, nz, state, usa, world, world2.  By default, all stData plots
-#'  will include us state outlines.
-#' @param region name of subregions to include. Defaults to . which includes 
-#'  all subregions. See documentation for map for more details.
 #' @param type Either 'prediction', 'residual', 'observed', 'standard_error' (or 'se'), 
 #'  'local', 'remote', 'correlation', 'teleconnection', 'teleconnection_knot',
 #'  or 'cat.prediction'
@@ -23,28 +17,21 @@
 #'  and 'residual' plots are only available if the model has been evaluted and
 #'  the predictions have been compared to another response dataset.
 #' @param stPredict Object of class stPredict to plot.
-#' @param zlim c(min, max) vector that specifies the colorscale limits
 #' @param t timepoint to plot.  Will automatically plot the first timepoint if
 #'  t=NULL.
 #' @param stData Object of class stData to provide coordinate and related
 #'  information for plotting estimated teleconnection effects
 #' @param stFit Object of class stFit to provide related
 #'  information and structures for plotting estimated teleconnection effects
-#' @param coord.s if plot type is 'teleconnection', specifies the longitude and 
-#'  latitude of local coordinate for which to plot estimated teleconnection 
-#'  effects. if NULL, the middle local coordinate will be plotted.
-#' @param signif.telecon if TRUE, will highlight significant teleconnection
-#'  effects when type=='teleconnection'
+#' @param ... additional arguments to be passed to lower-level plotting functions
 #'  
 #' @return a ggplot object with the specified map
 #'
 #' 
 #' 
 
-plot.stPredict = function( stPredict, type='prediction', boxsize=NULL,
-                           map='world', region='.', zlim=NULL, t=NULL,
-                           stFit=NULL, stData=NULL, coord.s=NULL,
-                           signif.telecon=F ) {
+plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL, 
+                           stData=NULL, ... ) {
 
   # determine which type of plot is requested
   match.opts = c('prediction', 'residual', 'observed', 'standard_error', 'se', 
@@ -77,33 +64,27 @@ plot.stPredict = function( stPredict, type='prediction', boxsize=NULL,
   if( type=='prediction' ) {
     stData$Y = pred$pred$Y
     stData$Y.lab = paste('Predicted', stPredict$Y.lab)
-    ret = plot.stData(stData, boxsize = boxsize, map = map, region = region,
-                      zlim = zlim)
+    ret = plot.stData(stData, ...)
   } else if( type=='residual' ) {
     stData$Y = pred$pred$resid
     stData$Y.lab = 'Residual'
-    ret = plot.stData(stData, boxsize = boxsize, map = map, region = region,
-                      zlim = zlim)
+    ret = plot.stData(stData, ...)
   } else if( type=='observed' ) {
     stData$Y = pred$pred$Y + pred$pred$resid
     stData$Y.lab = paste('Observed', stPredict$Y.lab)
-    ret = plot.stData(stData, boxsize = boxsize, map = map, region = region,
-                      zlim = zlim)
+    ret = plot.stData(stData, ...)
   } else if( type=='standard_error' || type=='se' ) {
     stData$Y = pred$pred$se
     stData$Y.lab = 'SE'
-    ret = plot.stData(stData, boxsize = boxsize, map = map, region = region,
-                      zlim = zlim)
+    ret = plot.stData(stData, ...)
   } else if( type=='local' ) {
     stData$Y = pred$pred$Y.local
     stData$Y.lab = paste('Local contribution to', stPredict$Y.lab)
-    ret = plot.stData(stData, boxsize = boxsize, map = map, region = region,
-                      zlim = zlim)
+    ret = plot.stData(stData, ...)
   } else if( type=='remote' ) {
     stData$Y = pred$pred$Y.remote
     stData$Y.lab = paste('Remote contribution to', stPredict$Y.lab)
-    ret = plot.stData(stData, boxsize = boxsize, map = map, region = region,
-                      zlim = zlim)
+    ret = plot.stData(stData, ...)
   } else if( type=='correlation' ) {
     ret = ggplot(pred$pred, aes(y=Y, x=Y+resid)) +
       geom_abline(slope=1, intercept=0) +
@@ -123,10 +104,7 @@ plot.stPredict = function( stPredict, type='prediction', boxsize=NULL,
     
     stFit$alpha$summary = stPredict$alpha
     
-    ret = plot.stFit(stFit = stFit, type='teleconnection', boxsize = boxsize,
-                     stData = stData, map = map, region = region, 
-                     coord.s = coord.s, zlim = zlim,  
-                     signif.telecon = signif.telecon)
+    ret = plot.stFit(stFit = stFit, stData = stData, type='teleconnection', ...)
   } else if( type=='teleconnection_knot') {
     
     if(is.null(stData)) {
@@ -138,15 +116,11 @@ plot.stPredict = function( stPredict, type='prediction', boxsize=NULL,
     
     stFit$alpha_knots$summary = stPredict$alpha_knots
     
-    ret = plot.stFit(stFit = stFit, type='teleconnection_knot', boxsize = boxsize,
-                     stData = stData, map = map, region = region, 
-                     coord.s = coord.s, zlim = zlim,  
-                     signif.telecon = signif.telecon)
+    ret = plot.stFit(stFit = stFit, stData = stData, type='teleconnection_knot', ...)
   } else if( type=='cat.prediction' ) {
     stData$Y.cat = factor(pred$pred$Y.cat)
     stData$Y.lab = paste('Predicted', stPredict$Y.lab)
-    ret = plot.stData(stData, boxsize = boxsize, map = map, region = region,
-                      zlim = zlim, type='cat.response')
+    ret = plot.stData(stData, type='cat.response', ...)
   } 
   
   ret

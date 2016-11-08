@@ -4,10 +4,9 @@
 \alias{plot.stFit}
 \title{Plot stFit objects}
 \usage{
-plot.stFit(stFit, type = "density", boxsize = NULL, stData = NULL,
-  map = "world", region = ".", coord.s = NULL, zlim = NULL,
+plot.stFit(stFit, type = "density", stData = NULL, coord.s = NULL,
   text.size = NULL, axis.text.size = NULL, burn = 1, signif.telecon = F,
-  p = 1)
+  p = 1, ...)
 }
 \arguments{
 \item{stFit}{Object of class stFit to plot.}
@@ -17,23 +16,12 @@ plot.stFit(stFit, type = "density", boxsize = NULL, stData = NULL,
 Note that the value for
 type can be an abbreviation since partial matching is used during plotting.}
 
-\item{boxsize}{size of grid boxes plotted}
-
 \item{stData}{Object of class stData to provide coordinate and related
 information for plotting estimated teleconnection effects}
-
-\item{map}{name of map provided by the maps package. These include county, 
-france, italy, nz, state, usa, world, world2.  By default, all stData plots
-will include us state outlines.}
-
-\item{region}{name of subregions to include. Defaults to . which includes 
-all subregions. See documentation for map for more details.}
 
 \item{coord.s}{if plot type is 'teleconnection', specifies the longitude and 
 latitude of local coordinate for which to plot estimated teleconnection 
 effects. if NULL, the middle local coordinate will be plotted.}
-
-\item{zlim}{c(min, max) vector that specifies the colorscale limits}
 
 \item{text.size}{number specifying the size of text labels}
 

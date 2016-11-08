@@ -9,12 +9,6 @@
 #' @import dplyr
 #' @importFrom reshape2 melt
 #' 
-#' @param boxsize size of grid boxes plotted
-#' @param map name of map provided by the maps package. These include county, 
-#'  france, italy, nz, state, usa, world, world2.  By default, all stData plots
-#'  will include us state outlines.
-#' @param region name of subregions to include. Defaults to . which includes 
-#'  all subregions. See documentation for map for more details.
 #' @param type Either 'traceplot', 'density', 'pairs', 'teleconnection',
 #'  'teleconnection_knot', or 'beta' to specify which part of stFit to plot. 
 #'  Note that the value for
@@ -23,7 +17,6 @@
 #' @param coord.s if plot type is 'teleconnection', specifies the longitude and 
 #'  latitude of local coordinate for which to plot estimated teleconnection 
 #'  effects. if NULL, the middle local coordinate will be plotted.
-#' @param zlim c(min, max) vector that specifies the colorscale limits
 #' @param text.size number specifying the size of text labels
 #' @param axis.text.size number specifying the size of axis text labels
 #' @param burn number of observations to exclude from graph
@@ -39,10 +32,9 @@
 #' 
 #' 
 
-plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
-                       map='world', region='.', coord.s=NULL, zlim=NULL,
+plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
                        text.size=NULL, axis.text.size=NULL, burn = 1,
-                       signif.telecon = F, p = 1 ) {
+                       signif.telecon = F, p = 1, ... ) {
 
   # determine which type of plot is requested
   match.opts = c('traceplot', 'density', 'pairs', 'teleconnection', 'beta',
@@ -111,15 +103,11 @@ plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
       )
       class(teleCor) = 'teleCor'
       
-      ret = plot.teleCor(teleCor, signif = T, coord.s = coord.s, 
-                         boxsize = boxsize, map = map, region = region, 
-                         zlim = zlim )
+      ret = plot.teleCor(teleCor, signif = T, ...)
       
     } else {
       stData$alpha = stFit$alpha$summary$alpha
-      ret = plot.stData(stData, 'tele', boxsize = boxsize, map = map, 
-                        region = region, coord.s = coord.s, zlim = zlim, 
-                        lab.teleconnection = 'alpha') + 
+      ret = plot.stData(stData, 'tele', lab.teleconnection = 'alpha', ...) + 
         ggtitle('Estimated teleconnection effects')
     }
     
@@ -134,10 +122,7 @@ plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
     stData$alpha_knots_signif = stFit$alpha_knots$summary$signif
     stData$coords.knots = stFit$coords.knots
     
-    ret = plot.stData(stData, 'teleconnection_knot', boxsize = boxsize, map = map, 
-                      region = region, coord.s = coord.s, zlim = zlim, 
-                      lab.teleconnection = 'alpha', 
-                      signif.telecon = signif.telecon) + 
+    ret = plot.stData(stData, 'teleconnection_knot', lab.teleconnection = 'alpha', ...) + 
       ggtitle('Estimated teleconnection effects')
     
   } else if( type=='beta' ) {

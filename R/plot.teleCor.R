@@ -26,7 +26,7 @@
 #' @return a ggplot object with the specified map
 
 plot.teleCor = function( teleCor, signif=F, coord.s=NULL, boxsize=NULL, 
-                         map='world', region='.', zlim=NULL ) {
+                         map='world', region='.', zlim=NULL, ... ) {
   
   # extract basic plotting information
   n = nrow(teleCor$coords.s)

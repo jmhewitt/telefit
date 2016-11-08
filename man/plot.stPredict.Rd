@@ -4,9 +4,8 @@
 \alias{plot.stPredict}
 \title{Plot stPredict objects}
 \usage{
-plot.stPredict(stPredict, type = "prediction", boxsize = NULL,
-  map = "world", region = ".", zlim = NULL, t = NULL, stFit = NULL,
-  stData = NULL, coord.s = NULL, signif.telecon = F)
+plot.stPredict(stPredict, type = "prediction", t = NULL, stFit = NULL,
+  stData = NULL, ...)
 }
 \arguments{
 \item{stPredict}{Object of class stPredict to plot.}
@@ -19,17 +18,6 @@ be an abbreviation since partial matching is used during plotting. 'truth'
 and 'residual' plots are only available if the model has been evaluted and
 the predictions have been compared to another response dataset.}
 
-\item{boxsize}{size of grid boxes plotted}
-
-\item{map}{name of map provided by the maps package. These include county, 
-france, italy, nz, state, usa, world, world2.  By default, all stData plots
-will include us state outlines.}
-
-\item{region}{name of subregions to include. Defaults to . which includes 
-all subregions. See documentation for map for more details.}
-
-\item{zlim}{c(min, max) vector that specifies the colorscale limits}
-
 \item{t}{timepoint to plot.  Will automatically plot the first timepoint if
 t=NULL.}
 
@@ -39,12 +27,7 @@ information and structures for plotting estimated teleconnection effects}
 \item{stData}{Object of class stData to provide coordinate and related
 information for plotting estimated teleconnection effects}
 
-\item{coord.s}{if plot type is 'teleconnection', specifies the longitude and 
-latitude of local coordinate for which to plot estimated teleconnection 
-effects. if NULL, the middle local coordinate will be plotted.}
-
-\item{signif.telecon}{if TRUE, will highlight significant teleconnection
-effects when type=='teleconnection'}
+\item{...}{additional arguments to be passed to lower-level plotting functions}
 }
 \value{
 a ggplot object with the specified map
