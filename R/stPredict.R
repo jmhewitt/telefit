@@ -112,22 +112,22 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   # draw composition samples
   composition = foreach( inds = ichunk(burn:maxIt, chunkSize = chunkSize),
                          .combine = mergeComposition,
-                         .options.multicore=mcoptions ) %dorng% {
+                         .options.multicore=mcoptions ) %dopar% {
     inds = unlist(inds)            
                            
     if(stFit$varying) {
     } else {
-      .Call("_stpcomposition", PACKAGE = 'telefit', Xl, Z, Yl, Dy, 
-            Dz_knots, Dz_to_knots, p, n, r, r_knots, t, 
+      .Call("_stpcomposition", PACKAGE = 'telefit', matrix(Xl, ncol=p), Z, Yl, 
+            Dy, Dz_knots, Dz_to_knots, p, n, r, r_knots, t, 
             stFit$priors$cov.s$smoothness, stFit$priors$cov.r$smoothness,
-            stFit$parameters$samples$beta[inds,], 
+            matrix(stFit$parameters$samples$beta[inds,], ncol=p), 
             stFit$parameters$samples$sigmasq_y[inds],
             stFit$parameters$samples$sigmasq_r[inds], 
             stFit$parameters$samples$sigmasq_eps[inds],
             stFit$parameters$samples$rho_y[inds], 
             stFit$parameters$samples$rho_r[inds],
             stFit$parameters$samples$ll[inds],
-            Xlnew, Znew)
+            Xlnew, Znew, localOnly)
         
     }
   }
@@ -136,20 +136,23 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   attr(composition, 'rng') = NULL
   
   # post process teleconnection effects
-  if(returnAlphas) {
-    # convert results away from unnecessary matrix format
-    composition$alpha_knots$est = as.numeric(composition$alpha_knots$est)
-    composition$alpha_knots$sd = as.numeric(composition$alpha_knots$sd)
-    
-    # compute approximate intervals, etc.
-    composition$alpha_knots$summary = summariseAlpha(composition$alpha_knots, 
-                                                     prob, coords.s, 
-                                                     stFit$coords.knots)
-    
-    # remove information redundant with the summary
-    composition$alpha_knots$est = NULL
-    composition$alpha_knots$sd = NULL
+  if(!localOnly) {
+    if(returnAlphas) {
+      # convert results away from unnecessary matrix format
+      composition$alpha_knots$est = as.numeric(composition$alpha_knots$est)
+      composition$alpha_knots$sd = as.numeric(composition$alpha_knots$sd)
+      
+      # compute approximate intervals, etc.
+      composition$alpha_knots$summary = summariseAlpha(composition$alpha_knots, 
+                                                       prob, coords.s, 
+                                                       stFit$coords.knots)
+      
+      # remove information redundant with the summary
+      composition$alpha_knots$est = NULL
+      composition$alpha_knots$sd = NULL
+    }
   }
+  
   
   # compute empirical breakpoints at each location to define forecast categories
   if(!is.null(cat.probs)) {
@@ -196,14 +199,15 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   }
 
   attr(composition$forecast$forecast, 'dimnames') = NULL
-  attr(composition$forecast$local, 'dimnames') = NULL
-  attr(composition$forecast$remote, 'dimnames') = NULL
+  if(!localOnly) {
+    attr(composition$forecast$local, 'dimnames') = NULL
+    attr(composition$forecast$remote, 'dimnames') = NULL
+  }
 
   # format return
   ret = list(
     pred = Y,
     samples = composition$forecast,
-    alpha_knots = composition$alpha_knots$summary,
     coords.s = coords.s,
     localOnly = localOnly,
     varying = varying,
@@ -212,6 +216,9 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     cat.probs = cat.probs,
     category.breaks = category.breaks
   )
+  if(!localOnly) {
+    ret$alpha_knots = composition$alpha_knots$summary
+  }
   class(ret) = 'stPredict'
   
   # evaluate performance if response data is given

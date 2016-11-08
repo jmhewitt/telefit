@@ -9,33 +9,42 @@ STPModel::STPModel(Data &_dat, Priors &_prior, Constants &_consts) {
 
 struct STPModel::Params {
 	
+	Constants consts;
 	vec beta;
 	double sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r;
 	
 	// default constructor
 	Params() {};
 	
-	Params(const Constants &consts) {
+	Params(const Constants &_consts) {
+		consts = _consts;
 		beta = vec(consts.p, fill::zeros);
 	}
 	
 	// initialize parameter object by sampling from prior distributions
-	Params(const Priors &p) {
+	Params(const Priors &p, const Constants &consts) {
 		beta = mcstat::mvrnorm(p.beta.mu, p.beta.Sigma);
 		sigmasq_y = 1.0 / R::rgamma(p.sigmasq_y.shape, 1.0 / p.sigmasq_y.rate);
-		sigmasq_r = 1.0 / R::rgamma(p.sigmasq_r.shape, 1.0 / p.sigmasq_r.rate);
 		sigmasq_eps = 1.0 / R::rgamma(p.sigmasq_eps.shape, 1.0 / p.sigmasq_eps.rate);
 		rho_y = R::runif(p.rho_y.a, p.rho_y.b);
-		rho_r = R::runif(p.rho_r.a, p.rho_r.b);
+		if(!consts.localOnly) {
+			sigmasq_r = 1.0 /
+				R::rgamma(p.sigmasq_r.shape, 1.0 / p.sigmasq_r.rate);
+			rho_r = R::runif(p.rho_r.a, p.rho_r.b);
+		}
+		
 	};
 	
 	void set(const Samples &samples, int i) {
 		beta = samples.beta.row(i).t();
 		sigmasq_y = samples.sigmasq_y.at(i);
-		sigmasq_r = samples.sigmasq_r.at(i);
 		sigmasq_eps = samples.sigmasq_eps.at(i);
 		rho_y = samples.rho_y.at(i);
-		rho_r = samples.rho_r.at(i);
+		
+		if(!consts.localOnly) {
+			sigmasq_r = samples.sigmasq_r.at(i);
+			rho_r = samples.rho_r.at(i);
+		}
 	}
 	
 	// convert object to Rcpp List
@@ -58,7 +67,8 @@ struct STPModel::CompositionParams {
 	vec alpha_knots;
 	
 	CompositionParams(const Constants &consts) {
-		alpha_knots = vec(consts.ns * consts.nr_knots, fill::zeros);
+		if(!consts.localOnly)
+			alpha_knots = vec(consts.ns * consts.nr_knots, fill::zeros);
 	}
 	
 };
@@ -76,28 +86,34 @@ struct STPModel::CompositionScratch {
 		consts = _consts;
 		dat = _dat;
 		
-		RknotsInv = mat(consts.nr_knots, consts.nr_knots, fill::zeros);
-		Zknots = mat(consts.nr_knots, consts.nt, fill::zeros);
 		Sigma = mat(consts.ns, consts.ns, fill::zeros);
-		RknotsInvZZknots = mat(consts.nr_knots, consts.nr_knots, fill::zeros);
-		cknots = mat(consts.nr, consts.nr_knots, fill::zeros);
+		
+		if(!consts.localOnly) {
+			RknotsInv = mat(consts.nr_knots, consts.nr_knots, fill::zeros);
+			RknotsInvZZknots = mat(consts.nr_knots, consts.nr_knots, fill::zeros);
+			cknots = mat(consts.nr, consts.nr_knots, fill::zeros);
+			Zknots = mat(consts.nr_knots, consts.nt, fill::zeros);
+		}
 	}
 	
 	void update(const Params &params) {
 		
-		maternCov( RknotsInv, consts.Dz_knots, params.sigmasq_r, params.rho_r,
-				  consts.smoothness_r, 0 );
-		maternCov( cknots, consts.Dz_to_knots, params.sigmasq_r, params.rho_r,
-				  consts.smoothness_r, 0 );
 		maternCov( Sigma, consts.Dy, params.sigmasq_y, params.rho_y,
 				  consts.smoothness_y, params.sigmasq_y * params.sigmasq_eps );
 		
-		RknotsInv = inv_sympd(RknotsInv);
 		Sigma_cholU = chol(Sigma, "upper");
 		
-		Zknots = RknotsInv * cknots.t() * dat.Z;
-		
-		RknotsInvZZknots = RknotsInv + Zknots * Zknots.t();
+		if(!consts.localOnly) {
+			maternCov( RknotsInv, consts.Dz_knots, params.sigmasq_r, params.rho_r,
+					  consts.smoothness_r, 0 );
+			maternCov( cknots, consts.Dz_to_knots, params.sigmasq_r, params.rho_r,
+					  consts.smoothness_r, 0 );
+			RknotsInv = inv_sympd(RknotsInv);
+			
+			Zknots = RknotsInv * cknots.t() * dat.Z;
+			
+			RknotsInvZZknots = RknotsInv + Zknots * Zknots.t();
+		}
 	}
 	
 };
@@ -114,6 +130,8 @@ private:
 	vec compMean, remoteInfo;
 	
 public:
+	CompAlphaKnot () { }
+	
 	CompAlphaKnot(const Data &_dat, const Constants &_consts,
 				  CompositionScratch &_compositionScratch, Params &_params,
 				  CompositionParams &_compositionParams) {
@@ -169,28 +187,38 @@ struct STPModel::Scratch {
 		double one = 1.0;
 		
 		// initialize resid
-		
 		resid = dat.Y - dat.X * params.beta;
 		
-		// initialize C
-		
-		C = mat(consts.nt, consts.nt, fill::zeros);
-		mat RknotsInv = mat(consts.nr_knots, consts.nr_knots, fill::zeros);
-		mat cknots = mat(consts.nr, consts.nr_knots, fill::zeros);
-		mat eye_nt;
-		eye_nt.eye(consts.nt, consts.nt);
-		
-		maternCov( RknotsInv, consts.Dz_knots, params.sigmasq_r, params.rho_r,
-				  consts.smoothness_r, 0 );
-		maternCov( cknots, consts.Dz_to_knots, params.sigmasq_r, params.rho_r,
-				  consts.smoothness_r, 0 );
-		
-		RknotsInv = inv_sympd(RknotsInv);
-		
-		mat cknotsZ = cknots.t() * dat.Z;
-		
-		C = inv_sympd( eye_nt + cknotsZ.t() * RknotsInv * cknotsZ );
-		log_det(C_logdet, one, C);
+		if(!consts.localOnly) {
+			
+			// initialize C
+			
+			C = mat(consts.nt, consts.nt, fill::zeros);
+			mat RknotsInv = mat(consts.nr_knots, consts.nr_knots, fill::zeros);
+			mat cknots = mat(consts.nr, consts.nr_knots, fill::zeros);
+			mat eye_nt;
+			eye_nt.eye(consts.nt, consts.nt);
+			
+			maternCov( RknotsInv, consts.Dz_knots, params.sigmasq_r, params.rho_r,
+					  consts.smoothness_r, 0 );
+			maternCov( cknots, consts.Dz_to_knots, params.sigmasq_r, params.rho_r,
+					  consts.smoothness_r, 0 );
+			
+			RknotsInv = inv_sympd(RknotsInv);
+			
+			mat cknotsZ = cknots.t() * dat.Z;
+			
+			C = inv_sympd( eye_nt + cknotsZ.t() * RknotsInv * cknotsZ );
+			log_det(C_logdet, one, C);
+			
+		} else if(consts.localOnly) {
+			
+			// initialize "empty" C
+			
+			C = mat(consts.nt, consts.nt, fill::zeros);
+			C.eye(consts.nt, consts.nt);
+			log_det(C_logdet, one, C);
+		}
 		
 		
 		// initialize SigmaInv
@@ -207,10 +235,10 @@ struct STPModel::Scratch {
 };
 
 double STPModel::getLL(const Params &params, const Scratch &scratch) {
-	vec qform = scratch.resid.t() * mcstat::dgemkmm(scratch.C,
-												scratch.SigmaInv,
-												scratch.resid);
-	return - ( consts.ns / scratch.C_logdet +
+		vec qform = scratch.resid.t() * mcstat::dgemkmm(scratch.C,
+														scratch.SigmaInv,
+														scratch.resid);
+		return - ( consts.ns / scratch.C_logdet +
 			   consts.nt / scratch.SigmaInv_logdet +
 			   qform.at(0) ) / 2.0;
 }
@@ -228,6 +256,9 @@ private:
 	double CProposed_logdet, one;
 	
 public:
+	
+	RwSigmasq_r() { }
+	
 	RwSigmasq_r(const Data &_dat, const Priors &_prior,
 				const Constants &_consts, Scratch &_scratch, Params &_params,
 				double sd) : RWSampler(sd) {
@@ -302,6 +333,8 @@ private:
 	double CProposed_logdet, one;
 	
 public:
+	RwRho_r() { }
+	
 	RwRho_r(const Data &_dat, const Priors &_prior, const Constants &_consts,
 			Scratch &_scratch, Params &_params, double sd) : RWSampler(sd) {
 		dat = _dat;
@@ -398,8 +431,8 @@ public:
 							SigmaInvProposed - scratch->SigmaInv,
 							scratch->resid);
 		
-		return ( consts.nt * (SigmaInvProposed_logdet - scratch->SigmaInv_logdet) -
-				qform.at(0) ) / 2.0 +
+		return ( consts.nt * (SigmaInvProposed_logdet - scratch->SigmaInv_logdet)
+				- qform.at(0) ) / 2.0 +
 		mcstat::logdinvgamma_unscaled(sigmasq_eps_prop,
 									  prior.sigmasq_y.shape,
 									  prior.sigmasq_y.rate) -
@@ -572,7 +605,7 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 	Samples samples = Samples(consts, nSamples);
 	
 	// initialize parameters
-	Params current = Params(prior);
+	Params current = Params(prior, consts);
 	
 	// initialize temporary structures
 	Scratch scratch = Scratch(current, consts, dat);
@@ -583,9 +616,13 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 	RwRho_y rwRho_y = RwRho_y(dat, prior, consts, scratch, current, rho_y_sd);
 	RwSigmasq_eps rwSigmasq_eps = RwSigmasq_eps(dat, prior, consts, scratch,
 												current, sigmasq_eps_sd);
-	RwRho_r rwRho_r = RwRho_r(dat, prior, consts, scratch, current, rho_r_sd);
-	RwSigmasq_r rwSigmasq_r = RwSigmasq_r(dat, prior, consts, scratch, current,
-										rho_r_sd);
+	RwRho_r rwRho_r;
+	RwSigmasq_r rwSigmasq_r;
+	if(!consts.localOnly) {
+		rwRho_r = RwRho_r(dat, prior, consts, scratch, current, rho_r_sd);
+		rwSigmasq_r = RwSigmasq_r(dat, prior, consts, scratch,
+											  current, rho_r_sd);
+	}
 	
 	// initialize trackers
 	mcstat::MCMCCheckpoint checkpoint = mcstat::MCMCCheckpoint(nSamples);
@@ -612,20 +649,22 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 		rwRho_y.sample();
 		samples.rho_y.at(it) = current.rho_y;
 		
-		// RW rho_r
-		step = 'r';
-		rwRho_r.sample();
-		samples.rho_r.at(it) = current.rho_r;
-		
 		// RW sigmasq_eps
 		step = 'e';
 		rwSigmasq_eps.sample();
 		samples.sigmasq_eps.at(it) = current.sigmasq_eps;
 		
-		// RW sigmasq_r
-		step = 's';
-		rwSigmasq_r.sample();
-		samples.sigmasq_r.at(it) = current.sigmasq_r;
+		if(!consts.localOnly) {
+			// RW rho_r
+			step = 'r';
+			rwRho_r.sample();
+			samples.rho_r.at(it) = current.rho_r;
+			
+			// RW sigmasq_r
+			step = 's';
+			rwSigmasq_r.sample();
+			samples.sigmasq_r.at(it) = current.sigmasq_r;
+		}
 		
 		// ll
 		step = 'l';
@@ -635,9 +674,11 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 		step = 't';
 		double adaptScale = C / sqrt( (double) (it + 1) );
 		rwRho_y.adapt(adaptScale, RWrate);
-		rwRho_r.adapt(adaptScale, RWrate);
-		rwSigmasq_r.adapt(adaptScale, RWrate);
 		rwSigmasq_eps.adapt(adaptScale, RWrate);
+		if(!consts.localOnly) {
+			rwRho_r.adapt(adaptScale, RWrate);
+			rwSigmasq_r.adapt(adaptScale, RWrate);
+		}
 		
 		// checkpoint behaviors
 		checkpoint.run();
@@ -667,15 +708,17 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 	Rcout << "  rho_y: (" <<
 		round(rwRho_y.getAcceptanceRate() * 100.0) << "%" << ", " <<
 		std::setprecision(3) << rwRho_y.getSd()  << ")" << endl;
-	Rcout << "  rho_r: (" <<
-		round(rwRho_r.getAcceptanceRate() * 100.0) << "%" << ", " <<
-		std::setprecision(3) << rwRho_r.getSd()  << ")" << endl;
 	Rcout << "  sigmasq_eps: (" <<
 		round(rwSigmasq_eps.getAcceptanceRate() * 100.0) << "%" << ", " <<
 		std::setprecision(3) << rwSigmasq_eps.getSd()  << ")" << endl;
-	Rcout << "  sigmasq_r: (" <<
-		round(rwSigmasq_r.getAcceptanceRate() * 100.0) << "%" << ", " <<
-		std::setprecision(3) << rwSigmasq_r.getSd()  << ")" << endl << endl;
+	if(!consts.localOnly) {
+		Rcout << "  rho_r: (" <<
+			round(rwRho_r.getAcceptanceRate() * 100.0) << "%" << ", " <<
+			std::setprecision(3) << rwRho_r.getSd()  << ")" << endl;
+		Rcout << "  sigmasq_r: (" <<
+			round(rwSigmasq_r.getAcceptanceRate() * 100.0) << "%" << ", " <<
+			std::setprecision(3) << rwSigmasq_r.getSd()  << ")" << endl << endl;
+	}
 	
 	return samples;
 }
@@ -704,13 +747,17 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 	CompositionScratch compositionScratch = CompositionScratch(consts, dat);
 	
 	// initialize samplers
-	CompAlphaKnot compAlphaKnot = CompAlphaKnot(dat, consts, compositionScratch,
-												current, currentComp);
+	CompAlphaKnot compAlphaKnot;
+	if(!consts.localOnly) {
+		compAlphaKnot = CompAlphaKnot(dat, consts, compositionScratch,
+									  current, currentComp);
+	}
 	
 	// initialize trackers
 	mcstat::MCMCCheckpoint checkpoint = mcstat::MCMCCheckpoint(nSamples);
 	
 	// composition iterations
+	
 	for(int it=0; it < nSamples; it++) {
 		
 		checkUserInterrupt();
@@ -718,30 +765,41 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 		// refresh posterior sample
 		current.set(samples, it);
 		compositionScratch.update(current);
+	
+		if(!consts.localOnly) {
+			// alpha_knots
+			compAlphaKnot.sample();
+			compositionSamples.alpha_knots.row(it) = currentComp.alpha_knots.t();
+		}
 		
-		// alpha_knots
-		compAlphaKnot.sample();
-		compositionSamples.alpha_knots.row(it) = currentComp.alpha_knots.t();
 		
 		// forecasts
 		if(compositionSamples.return_forecast) {
 			
 			// compute remote effects
-			mat remote = reshape(currentComp.alpha_knots, consts.nr_knots,
-								 consts.ns).t() * compositionScratch.RknotsInv *
-								 compositionScratch.cknots.t() * newDat.Z;
+			mat remote;
+			if(!consts.localOnly) {
+				remote = reshape(currentComp.alpha_knots, consts.nr_knots,
+									 consts.ns).t() *
+									 compositionScratch.RknotsInv *
+									 compositionScratch.cknots.t() * newDat.Z;
+			}
 			
 			// compute local effects
 			mat local = reshape(newDat.X * current.beta, consts.ns, newDat.Z.n_cols);
-			
+		
 			// sample spatially correlated noise, independent across time
 			mat noise = compositionScratch.Sigma_cholU.t() *
 				randn<mat>(consts.ns, newDat.Z.n_cols);
 			
 			// save forecast objects
-			compositionSamples.local.slice(it) = local;
-			compositionSamples.remote.slice(it) = remote;
-			compositionSamples.forecast.slice(it) = local + remote + noise;
+			if(consts.localOnly) {
+				compositionSamples.forecast.slice(it) = local + noise;
+			} else {
+				compositionSamples.local.slice(it) = local;
+				compositionSamples.remote.slice(it) = remote;
+				compositionSamples.forecast.slice(it) =  local + remote + noise;
+			}
 		}
 		
 		// checkpoint behaviors

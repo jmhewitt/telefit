@@ -42,7 +42,7 @@ List CompositionSamples::toSummarizedList() {
 	
 	List forecast_sum;
  
-	if(!localOnly) {
+	if(localOnly) {
 		forecast_sum = List::create(
 									_["forecast"] = forecast
 									);
@@ -56,25 +56,29 @@ List CompositionSamples::toSummarizedList() {
 	
 	
 	// return results
+	List ret;
+	
 	if(return_full_alpha & return_forecast) {
-		return List::create(
+		ret = List::create(
 			_["alpha_knots"] = alpha_knots_sum,
 			_["alpha"] = alpha_sum,
 			_["forecast"] = forecast_sum
 		);
 	} else if(return_full_alpha) {
-		return List::create(
+		ret = List::create(
 			_["alpha_knots"] = alpha_knots_sum,
 			_["alpha"] = alpha_sum
 		);
-	} else if(return_forecast & !localOnly) {
-		return List::create(
+	} else if(return_forecast & (!localOnly)) {
+		ret = List::create(
 			_["alpha_knots"] = alpha_knots_sum,
 			_["forecast"] = forecast_sum
 		);
 	} else if(return_forecast & localOnly) {
-		return List::create(
+		ret = List::create(
 							_["forecast"] = forecast_sum
 							);
 	}
+	
+	return ret;
 }

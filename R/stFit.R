@@ -90,21 +90,17 @@ stFit = function( stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
     )
   
   # fit model
-  if(localOnly) {
-    
-  } else {
-    res = .Call("_stpfit", PACKAGE = 'telefit', p, Xl, Z, Yl, priors$beta$Lambda,
-                priors$cov.s$variance[1], priors$cov.s$variance[2],
-                priors$cov.r$variance[1], priors$cov.r$variance[2],
-                priors$cov.s$nugget[1], priors$cov.s$nugget[2],
-                priors$cov.s$range[1], priors$cov.s$range[2],
-                priors$cov.r$range[1], priors$cov.r$range[2], 
-                Dy, Dz_knots, Dz_to_knots, n, r, r_knots, t, 
-                priors$cov.s$smoothness, priors$cov.r$smoothness,
-                maxIt, errDump, C, alpha, 
-                rw.initsd$cov.s$range, rw.initsd$cov.r$range,
-                rw.initsd$cov.s$nugget, rw.initsd$cov.r$variance)
-  }
+  res = .Call("_stpfit", PACKAGE = 'telefit', p, Xl, Z, Yl, priors$beta$Lambda,
+              priors$cov.s$variance[1], priors$cov.s$variance[2],
+              priors$cov.r$variance[1], priors$cov.r$variance[2],
+              priors$cov.s$nugget[1], priors$cov.s$nugget[2],
+              priors$cov.s$range[1], priors$cov.s$range[2],
+              priors$cov.r$range[1], priors$cov.r$range[2], 
+              Dy, Dz_knots, Dz_to_knots, n, r, r_knots, t, 
+              priors$cov.s$smoothness, priors$cov.r$smoothness,
+              maxIt, errDump, C, alpha, 
+              rw.initsd$cov.s$range, rw.initsd$cov.r$range,
+              rw.initsd$cov.s$nugget, rw.initsd$cov.r$variance, localOnly)
   
   
   reslist = list(

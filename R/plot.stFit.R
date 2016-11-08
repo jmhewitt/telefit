@@ -67,7 +67,8 @@ plot.stFit = function( stFit, type='density', boxsize=NULL, stData=NULL,
     # add names for the betas
     if(!is.null(stFit$parameters$beta.names)) {
       colnames(res.df)[
-        1:length(stFit$parameters$beta.names)] = stFit$parameters$beta.names
+        1:ncol(stFit$parameters$samples$beta)] = 
+          stFit$parameters$beta.names[1:ncol(stFit$parameters$samples$beta)]
     }
     
     # coerce to plottable form

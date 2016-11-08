@@ -154,6 +154,8 @@ namespace mcstat {
 		void adapt(double adaptScale, double targetRate);
 		List toList();
 		
+		RWSampler () { }
+		
 		RWSampler(double _sd);
 		
 		double getAcceptanceRate();
