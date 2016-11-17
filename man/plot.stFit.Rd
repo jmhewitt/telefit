@@ -5,8 +5,10 @@
 \title{Plot stFit objects}
 \usage{
 plot.stFit(stFit, type = "density", stData = NULL, coord.s = NULL,
-  text.size = NULL, axis.text.size = NULL, burn = 1, signif.telecon = F,
-  p = 1, local.covariate = NULL, facet.signif = 3, ...)
+  text.size = NULL, axis.text.size = NULL, title.text.size = NULL,
+  burn = 1, signif.telecon = F, p = 1, local.covariate = NULL,
+  lwd = NULL, facet.signif = 3, stat.smooth.bw = NULL,
+  stat.smooth.degree = NULL, dots = NULL, ...)
 }
 \arguments{
 \item{stFit}{Object of class stFit to plot.}

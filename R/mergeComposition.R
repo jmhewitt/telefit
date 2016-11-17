@@ -35,10 +35,27 @@ mergeComposition = function(xfull, yfull) {
         est = mergeMean(x$est, y$est, x$nSamples, y$nSamples),
         sd = sqrt(mergeVar(x$sd^2, y$sd^2, x$est, y$est, x$nSamples, y$nSamples)),
         nSamples = x$nSamples + y$nSamples,
-        samples = rbind(x$samples, y$samples)
+        samples = rbind(x$samples, y$samples),
+        cov = mergeCovmat(x$cov, y$cov, x$est, x$est, y$est, y$est, x$nSamples, y$nSamples)
       )
       
       xfull$alpha_knots = z
+    }
+    
+    # merge full-field teleconnection effects
+    if(!is.null(xfull$alpha)) {
+      # extract alpha parts
+      x = xfull$alpha
+      y = yfull$alpha
+      
+      z = list(
+        est = mergeMean(x$est, y$est, x$nSamples, y$nSamples),
+        sd = sqrt(mergeVar(x$sd^2, y$sd^2, x$est, y$est, x$nSamples, y$nSamples)),
+        nSamples = x$nSamples + y$nSamples,
+        samples = rbind(x$samples, y$samples)
+      )
+      
+      xfull$alpha = z
     }
     
     xfull

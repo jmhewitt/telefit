@@ -3,33 +3,30 @@
 
 List CompositionSamples::toSummarizedList() {
 	
-	// post process teleconnection knots
-	
-	mat alpha_knots_est, alpha_knots_sd;
-	List alpha_knots_sum;
+	mat alpha_knots_est, alpha_knots_sd, alpha_est, alpha_sd, alpha_knots_cov;
+	List alpha_knots_sum, alpha_sum;
 	
 	if(!localOnly) {
+		
+		// post process teleconnection knots
+		
 		alpha_knots_est = mean(alpha_knots);
 		alpha_knots_sd = stddev(alpha_knots, 1);
+		alpha_knots_cov = cov(alpha_knots, 1);
 		
 		alpha_knots_sum = List::create(
 									   _["est"] = alpha_knots_est,
 									   _["sd"] = alpha_knots_sd,
-									   _["nSamples"] = alpha_knots.n_rows
+									   _["nSamples"] = alpha_knots.n_rows,
+									   _["cov"] = alpha_knots_cov
 									   );
-	}
-	
-	// post process full teleconnection field
-	
-	mat alpha_est, alpha_sd;
-	
-	List alpha_sum;
-	
-	if(!localOnly) {
+		
+		// post process full teleconnection field
+		
 		if(return_full_alpha) {
 			alpha_est = mean(alpha);
 			alpha_sd = stddev(alpha, 1);
-		
+			
 			alpha_sum = List::create(
 									 _["est"] = alpha_est,
 									 _["sd"] = alpha_sd,
@@ -37,6 +34,7 @@ List CompositionSamples::toSummarizedList() {
 									 );
 		}
 	}
+	
 	
 	// package forecast results
 	

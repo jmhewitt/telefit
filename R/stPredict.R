@@ -38,6 +38,9 @@
 #' @param returnAlphas TRUE to return the teleconnection effects sampled 
 #'  alongside the forecasts.  Note that only basic summary information about the 
 #'  teleconnection effects will be returned.
+#' @param returnFullAlphas TRUE to return the teleconnection effects sampled 
+#'  alongside the forecasts.  Note that only basic summary information about the 
+#'  teleconnection effects will be returned.
 #' @param conf Parameter specifying the HPD level to compute for posterior 
 #'  predictive samples
 #' @param tLabs Forecast timepoint labels
@@ -60,7 +63,8 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
                       X = stData$X, Y = stData$Y, Z = stData$Z, 
                       Xnew = stDataNew$X, Znew = stDataNew$Z,
                       coords.s = stData$coords.s, coords.r = stData$coords.r,
-                      returnAlphas = T, cat.probs = c(1/3, 2/3)) {
+                      returnAlphas = T, cat.probs = c(1/3, 2/3),
+                      returnFullAlphas = T) {
   
   # extract some configurations
   localOnly = stFit$localOnly
@@ -127,7 +131,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
             stFit$parameters$samples$rho_y[inds], 
             stFit$parameters$samples$rho_r[inds],
             stFit$parameters$samples$ll[inds],
-            Xlnew, Znew, localOnly)
+            Xlnew, Znew, localOnly, returnFullAlphas)
         
     }
   }
@@ -150,6 +154,21 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
       # remove information redundant with the summary
       composition$alpha_knots$est = NULL
       composition$alpha_knots$sd = NULL
+    }
+    
+    if(returnFullAlphas) {
+      # convert results away from unnecessary matrix format
+      composition$alpha$est = as.numeric(composition$alpha$est)
+      composition$alpha$sd = as.numeric(composition$alpha$sd)
+      
+      # compute approximate intervals, etc.
+      composition$alpha$summary = summariseAlpha(composition$alpha, 
+                                                       prob, coords.s, 
+                                                       coords.r)
+      
+      # remove information redundant with the summary
+      composition$alpha$est = NULL
+      composition$alpha$sd = NULL
     }
   }
   
@@ -221,6 +240,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   )
   if(!localOnly) {
     ret$alpha_knots = composition$alpha_knots$summary
+    ret$alpha_knots_cov = composition$alpha_knots$cov
   }
   class(ret) = 'stPredict'
   

@@ -5,7 +5,7 @@
 \title{Plots teleconnection correlation maps}
 \usage{
 plot.teleCor(teleCor, signif = F, coord.s = NULL, boxsize = NULL,
-  map = "world", region = ".", zlim = NULL, ...)
+  map = "world", region = ".", zlim = NULL, dots = NULL, ...)
 }
 \arguments{
 \item{teleCor}{object of class teleCor, containing pointwise correlations}

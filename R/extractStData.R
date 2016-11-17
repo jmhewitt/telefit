@@ -28,30 +28,44 @@
 #' @param mask.r SpatialGridDataFrame to be used as a mask when extracting data
 #'  from Z.  Locations in mask.s with NA values will be ignored when 
 #'  extracting data from Z.
-#' @param type.s 'response' 'anomaly' or 'std.anomaly' depending on whether
-#'  data extracted from X and Y should be the observed data, anomalies, or
+#' @param type.s 'response' 'anomaly' or 'std.anomaly' or a vector of these
+#'  options depending on whether
+#'  data extracted from X should be the observed data, anomalies, or
 #'  standardized anomalies (where the climatology is computed from the 
 #'  observations as the pointwise temporal average)
-#' @param type.r 'response' 'anomaly' or 'std.anomaly' depending on whether
+#' @param type.s.y 'response' 'anomaly' or 'std.anomaly' depending on whether
+#'  data extracted from Y should be the observed data, anomalies, or
+#'  standardized anomalies (where the climatology is computed from the 
+#'  observations as the pointwise temporal average)
+#' @param type.r 'response' 'anomaly' or 'std.anomaly' or a vector of these
+#'  options depending on whether
 #'  data extracted from Z should be the observed data, anomalies, or
 #'  standardized anomalies (where the climatology is computed from the 
 #'  observations as the pointwise temporal average)
 #'  @param X.lab name for X data (optional)
 #'  @param Y.lab name for Y data (optional)
 #'  @param Z.lab name for Z data (optional)
-#'  @param aspect TRUE to return the aspect of the surface at each location 
+#'  @param aspect TRUE or vector of logicals (one for each X object)
+#'   to return the aspect of the surface at each location 
 #'   instead of the value of the surface itself
 #'  @param aspect.categories if aspect==TRUE, this specifies the number of 
 #'   discrete categories to divide aspect numbers (0-360) into.  NULL if the
 #'   original scale (0-360) should be kept. By design, the aspect categories
 #'   will be centered on north in the first category.
+#'  @param slope TRUE or vector of logicals (one for each X object)
+#'   to return the slope of the surface at each location 
+#'   instead of the value of the surface itself
+#'  @param colnames.X names of columns of X
+#'  @param formula formula object to specify how to create the design matrix
 #'  
 
 extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NULL,
                           aggfact.s = NULL, aggfact.r = NULL, intercept = T,
                           type.s = 'response', type.r = 'response',
+                          type.s.y = 'response',
                           X.lab = NULL, Y.lab = NULL, Z.lab = NULL,
-                          aspect = F, aspect.categories=4, slope=F) {
+                          aspect = F, aspect.categories=4, slope=F,
+                          colnames.X=NULL, formula=NULL) {
                   
   # convert local bounds to extent object
   D.s = extent(D.s)
@@ -65,16 +79,31 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   
   # extract local data
   
-  Y = extractRegion(Y, D.s, type.s, aggfact.s, mask.s)
-  
+  Y = extractRegion(Y, D.s, type.s.y, aggfact.s, mask.s)
   
   if(class(X)!='list')
     X = list(X)
   
+  if(length(type.s)!=length(X)) {
+    type.s = rep(type.s, length(X))
+  }
+  
+  if(length(type.r)!=length(X)) {
+    type.r = rep(type.r, length(X))
+  }
+  
+  if(length(aspect)!=length(X)) {
+    aspect = rep(aspect, length(X))
+  }
+  
+  if(length(slope)!=length(X)) {
+    slope = rep(slope, length(X))
+  }
+  
   # extract regions and aggregate local covariates
   for(i in 1:length(X))
-    X[[i]] = extractRegion(X[[i]], D.s, type.s, aggfact.s, mask.s, aspect,
-                           aspect.categories, slope)
+    X[[i]] = extractRegion(X[[i]], D.s, type.s[i], aggfact.s, mask.s, aspect[i],
+                           aspect.categories, slope[i])
   
   # build local design matrices for each timepoint
   X.mat = foreach(tt = t, .combine = 'abind3') %do% {
@@ -82,8 +111,12 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
     # extract data from each predictor
     x = foreach(x = X, .combine='cbind') %do% { x@data@values[, tt] }
     
-    # if requested, add intercept; return data
-    if(intercept) {
+    # if a formula is not specified, add intercept if requested; return data
+    if(!is.null(formula)) {
+      x = data.frame(x)
+      colnames(x) = colnames.X
+      model.matrix(formula, x)
+    } else if(intercept) {
       cbind(1, x)
     } else
       x
@@ -100,7 +133,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   
   # extract regions and aggregate remote covariates
   for(i in 1:length(Z))
-    Z[[i]] = extractRegion(Z[[i]], D.r[[i]], type.r, aggfact.r, mask.r[[i]])
+    Z[[i]] = extractRegion(Z[[i]], D.r[[i]], type.r[i], aggfact.r, mask.r[[i]])
   
   # combine remote covariate data from each region
   Z.mat = foreach(z = Z, .combine = 'rbind') %do% { matrix(z@data@values[, t], 
@@ -119,8 +152,12 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   coords.r = coords.r[complete.data,]
   
   # remove local coordinates that have NA data
-  complete.data = complete.cases(X.mat[,,1])
-  X.mat = X.mat[complete.data,,]
+  complete.data = complete.cases(X[[1]]@data@values[, 1])
+  if(is.null(formula)) {
+    # only required if a formula isn't used since model.matrix automatically
+    # removes cases with (all) NA data
+    X.mat = X.mat[complete.data,,]
+  }
   Y.mat = matrix(Y.mat[complete.data,], ncol=length(t))
   coords.s = coords.s[complete.data,]
   

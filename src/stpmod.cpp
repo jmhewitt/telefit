@@ -78,7 +78,7 @@ struct STPModel::CompositionScratch {
 	Constants consts;
 	Data dat;
 	
-	mat RknotsInv, cknots, Zknots, Sigma, RknotsInvZZknots, Sigma_cholU;
+	mat RknotsInv, cknots, Zknots, Sigma, RknotsInvZZknots, Sigma_cholU, eye_ns;
 	
 	CompositionScratch() { }
 	
@@ -93,6 +93,7 @@ struct STPModel::CompositionScratch {
 			RknotsInvZZknots = mat(consts.nr_knots, consts.nr_knots, fill::zeros);
 			cknots = mat(consts.nr, consts.nr_knots, fill::zeros);
 			Zknots = mat(consts.nr_knots, consts.nt, fill::zeros);
+			eye_ns = eye(consts.ns, consts.ns);
 		}
 	}
 	
@@ -725,7 +726,8 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 
 
 CompositionSamples STPModel::compositionSample(const Samples &samples,
-											   const Data &newDat) {
+											   const Data &newDat,
+											   bool return_full_alpha) {
 	
 	// TODO: Extend code so it works for full alpha recovery
 	
@@ -736,7 +738,7 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 	int nSamples = samples.ll.size();
 	CompositionSamples compositionSamples = CompositionSamples(nSamples,
 															   consts,
-															   false,
+															   return_full_alpha,
 															   newDat.Z.n_cols);
 	
 	// initialize parameters
@@ -783,6 +785,15 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 									 consts.ns).t() *
 									 compositionScratch.RknotsInv *
 									 compositionScratch.cknots.t() * newDat.Z;
+				
+				// fill in full teleconnection field
+				if(return_full_alpha) {
+					compositionSamples.alpha.row(it) =
+					mcstat::dgemkmm(compositionScratch.eye_ns,
+								compositionScratch.cknots *
+								compositionScratch.RknotsInv,
+								currentComp.alpha_knots).t();
+				}
 			}
 			
 			// compute local effects
@@ -875,7 +886,7 @@ RcppExport SEXP _stpcomposition(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 								SEXP sigmasq_r_samples, SEXP sigmasq_eps_samples,
 								SEXP rho_y_samples, SEXP rho_r_samples,
 								SEXP ll_samples, SEXP Xnew, SEXP Znew,
-								SEXP localOnly) {
+								SEXP localOnly, SEXP full_alpha) {
 	
 	using namespace Rcpp;
 	
@@ -900,7 +911,8 @@ RcppExport SEXP _stpcomposition(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 	
 	// instantiate and run sampler
 	STPModel stpmod = STPModel(dat, prior, consts);
-	CompositionSamples compositionSamples = stpmod.compositionSample(samples, newDat);
+	CompositionSamples compositionSamples = stpmod.compositionSample(
+										samples, newDat, as<bool>(full_alpha));
 	
 	// return samples
 	return compositionSamples.toSummarizedList();

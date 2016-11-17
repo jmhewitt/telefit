@@ -6,7 +6,7 @@
 \usage{
 plot.stPredict(stPredict, type = "prediction", t = NULL, stFit = NULL,
   stData = NULL, err.comparison = NULL, err.var = NULL,
-  err.lab = err.var, ...)
+  err.lab = err.var, dots = NULL, ...)
 }
 \arguments{
 \item{stPredict}{Object of class stPredict to plot.}

@@ -46,9 +46,9 @@ public:
 				double rho_y_sd, double rho_r_sd, double sigmasq_eps_sd,
 				double sigmasq_r_sd);
 	
-	// TODO: add flags for forecasting and for sampling full alpha field
 	CompositionSamples compositionSample(const Samples &samples,
-										 const Data &newDat);
+										 const Data &newDat,
+										 bool return_full_alpha);
 };
 
 #endif

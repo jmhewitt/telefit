@@ -26,7 +26,17 @@
 #' @return a ggplot object with the specified map
 
 plot.teleCor = function( teleCor, signif=F, coord.s=NULL, boxsize=NULL, 
-                         map='world', region='.', zlim=NULL, ... ) {
+                         map='world', region='.', zlim=NULL, dots=NULL, ... ) {
+  
+  # merge unique list of dots
+    dots = c(dots, list(...))
+    dots = dots[!duplicated(dots)]
+  # overwrite arguments to function if they exist in dots
+    for(x in setdiff(names(formals(eval(match.call()[[1]]))), c('dots', '...'))) {
+      if(x %in% names(dots)) {
+        assign(eval(x), dots[[x]])
+      }
+    }
   
   # extract basic plotting information
   n = nrow(teleCor$coords.s)

@@ -36,8 +36,18 @@
 
 plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL, 
                            stData=NULL, err.comparison=NULL, err.var=NULL,
-                           err.lab=err.var, ... ) {
+                           err.lab=err.var, dots=NULL, ... ) {
 
+  # merge unique list of dots
+    dots = c(dots, list(...))
+    dots = dots[!duplicated(dots)]
+  # overwrite arguments to function if they exist in dots
+    for(x in setdiff(names(formals(eval(match.call()[[1]]))), c('dots', '...'))) {
+      if(x %in% names(dots)) {
+        assign(eval(x), dots[[x]])
+      }
+    }
+  
   # determine which type of plot is requested
   match.opts = c('prediction', 'residual', 'observed', 'standard_error', 'se', 
                  'local', 'remote', 'correlation', 'teleconnection', 
@@ -70,27 +80,27 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
   if( type=='prediction' ) {
     stData$Y = pred$pred$Y
     stData$Y.lab = paste('Predicted', stPredict$Y.lab)
-    ret = plot.stData(stData, ...)
+    ret = plot.stData(stData, dots=dots, ...)
   } else if( type=='residual' ) {
     stData$Y = pred$pred$resid
     stData$Y.lab = 'Residual'
-    ret = plot.stData(stData, ...)
+    ret = plot.stData(stData, dots=dots, ...)
   } else if( type=='observed' ) {
     stData$Y = pred$pred$Y + pred$pred$resid
     stData$Y.lab = paste('Observed', stPredict$Y.lab)
-    ret = plot.stData(stData, ...)
+    ret = plot.stData(stData, dots=dots, ...)
   } else if( type=='standard_error' || type=='se' ) {
     stData$Y = pred$pred$se
     stData$Y.lab = 'SE'
-    ret = plot.stData(stData, ...)
+    ret = plot.stData(stData, dots=dots, ...)
   } else if( type=='local' ) {
     stData$Y = pred$pred$Y.local
     stData$Y.lab = paste('Local contribution to', stPredict$Y.lab)
-    ret = plot.stData(stData, ...)
+    ret = plot.stData(stData, dots=dots, ...)
   } else if( type=='remote' ) {
     stData$Y = pred$pred$Y.remote
     stData$Y.lab = paste('Remote contribution to', stPredict$Y.lab)
-    ret = plot.stData(stData, ...)
+    ret = plot.stData(stData, dots=dots, ...)
   } else if( type=='correlation' ) {
     ret = ggplot(pred$pred, aes(y=Y, x=Y+resid)) +
       geom_abline(slope=1, intercept=0) +
@@ -110,7 +120,8 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
     
     stFit$alpha$summary = stPredict$alpha
     
-    ret = plot.stFit(stFit = stFit, stData = stData, type='teleconnection', ...)
+    ret = plot.stFit(stFit = stFit, stData = stData, type='teleconnection', 
+                     dots=dots, ...)
   } else if( type=='teleconnection_knot') {
     
     if(is.null(stData)) {
@@ -122,17 +133,19 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
     
     stFit$alpha_knots$summary = stPredict$alpha_knots
     
-    ret = plot.stFit(stFit = stFit, stData = stData, type='teleconnection_knot', ...)
+    ret = plot.stFit(stFit = stFit, stData = stData, type='teleconnection_knot', 
+                     dots=dots, ...)
   } else if( type=='teleconnection_knot_transect') {
     
     stFit$alpha_knots$summary = stPredict$alpha_knots
     
-    ret = plot.stFit(stFit = stFit, type='teleconnection_knot_transect', ...)
+    ret = plot.stFit(stFit = stFit, type='teleconnection_knot_transect', 
+                     dots=dots, ...)
     
   } else if( type=='cat.prediction' ) {
     stData$Y.cat = factor(pred$pred$Y.cat)
     stData$Y.lab = paste('Predicted', stPredict$Y.lab)
-    ret = plot.stData(stData, type='cat.response', ...)
+    ret = plot.stData(stData, type='cat.response', dots=dots, ...)
   } else if( type=='errors' ) {
     
     # extract yearly errors

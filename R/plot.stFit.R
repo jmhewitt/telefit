@@ -41,10 +41,22 @@
 #' 
 
 plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
-                       text.size=NULL, axis.text.size=NULL, burn = 1,
-                       signif.telecon = F, p = 1, local.covariate=NULL, 
-                       facet.signif = 3, ... ) {
-
+                       text.size=NULL, axis.text.size=NULL, title.text.size=NULL,
+                       burn = 1, signif.telecon = F, p = 1, local.covariate=NULL, 
+                       lwd=NULL, facet.signif = 3, stat.smooth.bw=NULL,
+                       stat.smooth.degree=NULL,
+                       dots=NULL, ...) {
+  
+  # merge unique list of dots
+    dots = c(dots, list(...))
+    dots = dots[!duplicated(dots)]
+  # overwrite arguments to function if they exist in dots
+    for(x in setdiff(names(formals(eval(match.call()[[1]]))), c('dots', '...'))) {
+      if(x %in% names(dots)) {
+        assign(eval(x), dots[[x]])
+      }
+    }
+  
   # determine which type of plot is requested
   match.opts = c('traceplot', 'density', 'pairs', 'teleconnection', 'beta',
                  'teleconnection_knot', 'teleconnection_knot_transect')
@@ -112,11 +124,12 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
       )
       class(teleCor) = 'teleCor'
       
-      ret = plot.teleCor(teleCor, signif = T, ...)
+      ret = plot.teleCor(teleCor, signif = T, dots=dots, ...)
       
     } else {
       stData$alpha = stFit$alpha$summary$alpha
-      ret = plot.stData(stData, 'tele', lab.teleconnection = 'alpha', ...) + 
+      ret = plot.stData(stData, type='teleconnection', lab.teleconnection = 'alpha', 
+                        dots=dots, ...) + 
         ggtitle('Estimated teleconnection effects')
     }
     
@@ -125,13 +138,12 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
       stop('stData object required for plotting estimated teleconnection effects.')
     }
     
-    coord.s = unlist(coord.s)
-    
     stData$alpha_knots = stFit$alpha_knots$summary$alpha
     stData$alpha_knots_signif = stFit$alpha_knots$summary$signif
     stData$coords.knots = stFit$coords.knots
     
-    ret = plot.stData(stData, 'teleconnection_knot', lab.teleconnection = 'alpha', ...) + 
+    ret = plot.stData(stData, 'teleconnection_knot', lab.teleconnection = 'alpha', 
+                      dots=dots, ...) + 
       ggtitle('Estimated teleconnection effects')
     
   } else if( type == 'teleconnection_knot_transect' ) {
@@ -159,15 +171,28 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
       df = df %>% left_join(local.covariate, by=c('lon.Y', 'lat.Y'))
     }
       
+    if(is.null(lwd))
+      lwd=1
+    
     # build base plot
     ret = ggplot(df, aes(x = lon.Y, y = alpha)) +
-      # teleconnection effects with CI
-      geom_ribbon(aes(ymin = lower, ymax=upper), fill = 'grey70') +
-      geom_line() +
+      # teleconnection effect CI
+      geom_ribbon(aes(ymin = lower, ymax=upper), fill = 'grey70')
+    if(is.null(stat.smooth.bw)) {
+      ret = ret +
+        # teleconnection effects with CI
+        geom_line(lwd=lwd)
+    } else {
+      ret = ret + 
+        # smoothed teleconnection effects with CI
+        stat_smooth(span=stat.smooth.bw, se=F, col=1, method='loess',
+                    method.args=list(degree=stat.smooth.degree))
+    }
+    ret = ret + 
       # reference line for significance
-      geom_hline(yintercept = 0, lty=2, alpha=.6 ) +
+      geom_hline(yintercept = 0, lty=2, alpha=.6, lwd=lwd ) +
       # plot teleconnection effect transect for all knots
-      facet_grid(lat.Z ~ lon.Z, labeller = ) +
+      facet_grid(lat.Z ~ lon.Z) +
       ylab('Teleconnection effect') +
       scale_x_continuous('Transect longitude', trans = lon_trans()) +
       ggtitle(paste('Teleconnection effects along', lat.trans$format(coord.s[2]),
@@ -178,10 +203,12 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
       ret = ret + theme( text = element_text(size=text.size))
     if(!is.null(axis.text.size))
       ret = ret + theme( axis.text = element_text(size=axis.text.size))
+    if(!is.null(title.text.size))
+      ret = ret + theme( plot.title = element_text(size=title.text.size))
     
     # add covariate information
     if(!is.null(local.covariate)) {
-      ret = ret + geom_line(aes(x=lon.Y, y=x), col=2, alpha=.7)
+      ret = ret + geom_line(aes(x=lon.Y, y=x), col=2, alpha=.7, lwd=lwd)
     }
       
     #
@@ -193,7 +220,8 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
     
     # text and background config for the labels
     label.bg = rectGrob(gp = gpar(col = NA, fill = gray(6/8)))
-    label.textgp = gpar(fontsize=14, col = gray(.1))
+    label.textgp = gpar(fontsize=ifelse(axis.text.size, axis.text.size, 14), 
+                        col = gray(.1))
     
     # add label for right strip
     right.pos = max(ret.grob$layout[which(ret.grob$layout$name=='strip-right'),]$r)

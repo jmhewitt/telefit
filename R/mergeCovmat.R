@@ -22,6 +22,11 @@
 mergeCovmat = function(A.cov.xy, B.cov.xy, A.mean.x, A.mean.y, 
                        B.mean.x, B.mean.y, A.n, B.n) {
   
+  A.mean.x = matrix(A.mean.x, ncol=1)
+  A.mean.y = matrix(A.mean.y, ncol=1)
+  B.mean.x = matrix(B.mean.x, ncol=1)
+  B.mean.y = matrix(B.mean.y, ncol=1)
+  
   N = A.n + B.n
 
   (A.cov.xy*A.n + B.cov.xy*B.n + 

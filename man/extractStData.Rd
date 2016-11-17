@@ -6,8 +6,9 @@
 \usage{
 extractStData(X, Y, Z, t = NULL, D.s, D.r, mask.s = NULL, mask.r = NULL,
   aggfact.s = NULL, aggfact.r = NULL, intercept = T,
-  type.s = "response", type.r = "response", X.lab = NULL, Y.lab = NULL,
-  Z.lab = NULL, aspect = F, aspect.categories = 4, slope = F)
+  type.s = "response", type.r = "response", type.s.y = "response",
+  X.lab = NULL, Y.lab = NULL, Z.lab = NULL, aspect = F,
+  aspect.categories = 4, slope = F, colnames.X = NULL, formula = NULL)
 }
 \arguments{
 \item{X}{SpatialGridDataFrame with local covariates.  If X is a list, each
@@ -40,24 +41,37 @@ extracting data from Z.}
 
 \item{intercept}{If TRUE, an intercept will be added to the design matrix}
 
-\item{type.s}{'response' 'anomaly' or 'std.anomaly' depending on whether
-data extracted from X and Y should be the observed data, anomalies, or
+\item{type.s}{'response' 'anomaly' or 'std.anomaly' or a vector of these
+options depending on whether
+data extracted from X should be the observed data, anomalies, or
 standardized anomalies (where the climatology is computed from the 
 observations as the pointwise temporal average)}
 
-\item{type.r}{'response' 'anomaly' or 'std.anomaly' depending on whether
+\item{type.r}{'response' 'anomaly' or 'std.anomaly' or a vector of these
+options depending on whether
 data extracted from Z should be the observed data, anomalies, or
 standardized anomalies (where the climatology is computed from the 
 observations as the pointwise temporal average)
 @param X.lab name for X data (optional)
 @param Y.lab name for Y data (optional)
 @param Z.lab name for Z data (optional)
-@param aspect TRUE to return the aspect of the surface at each location 
+@param aspect TRUE or vector of logicals (one for each X object)
+ to return the aspect of the surface at each location 
  instead of the value of the surface itself
 @param aspect.categories if aspect==TRUE, this specifies the number of 
  discrete categories to divide aspect numbers (0-360) into.  NULL if the
  original scale (0-360) should be kept. By design, the aspect categories
- will be centered on north in the first category.}
+ will be centered on north in the first category.
+@param slope TRUE or vector of logicals (one for each X object)
+ to return the slope of the surface at each location 
+ instead of the value of the surface itself
+@param colnames.X names of columns of X
+@param formula formula object to specify how to create the design matrix}
+
+\item{type.s.y}{'response' 'anomaly' or 'std.anomaly' depending on whether
+data extracted from Y should be the observed data, anomalies, or
+standardized anomalies (where the climatology is computed from the 
+observations as the pointwise temporal average)}
 }
 \description{
 Basic extraction of SpatialGridDataFrame data for teleconnection analysis
