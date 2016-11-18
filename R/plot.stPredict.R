@@ -145,7 +145,9 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
   } else if( type=='cat.prediction' ) {
     stData$Y.cat = factor(pred$pred$Y.cat)
     stData$Y.lab = paste('Predicted', stPredict$Y.lab)
-    ret = plot.stData(stData, type='cat.response', dots=dots, ...)
+    ret = plot.stData(stData, type='cat.response', 
+                      category.breaks = stPredict$category.breaks, 
+                      dots=dots, ...)
   } else if( type=='errors' ) {
     
     # extract yearly errors

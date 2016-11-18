@@ -156,12 +156,24 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
       }
     }
     
+    # auto-determine labels based on the number of category breaks
+    if(ncol(category.breaks)==1) {
+      cat.labels = c('Below average', 'Above average')
+      scheme.col = c('Below average'='#fc8d59', 'Above average'='#91bfdb')
+    } else if(ncol(category.breaks)==2) {
+      cat.labels = c('Below average', 'Near average', 'Above average')
+      scheme.col = c('Below average'='#fc8d59', 'Near average'='#ffffbf', 
+                     'Above average'='#91bfdb')
+    }
+    
+    Y.cat = as.numeric(stData$Y.cat[, match(t, stData$tLabs)])
+    Y.cat = factor(Y.cat, labels=cat.labels[sort(unique(Y.cat))])
+    
     # build plotting frame
-    Y = data.frame( Y = factor(stData$Y.cat[, match(t, stData$tLabs)]),
+    Y = data.frame( Y = Y.cat,
                     lon.Y = stData$coords.s[,1], 
                     lat.Y = stData$coords.s[,2] )
     lab.col = paste(stData$Y.lab, 'level')
-    scheme.col = list(low = "#a6611a", mid = '#f5f5f5', high = '#018571')
   } 
   
   # compute truncations and apply wrapping
@@ -195,7 +207,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   # get country outlines ggplot format
   if(map=='world') {
     # get raw outline data
-    world.raw = map_data('world')
+    world.raw = map_data('world', regions='^(?!.*USA).*$')
     # duplicate countries for plotting with any map center
     world.raw = rbind(world.raw, world.raw %>% 
                         mutate(long=long-360, group=group+max(group)+1))
@@ -227,10 +239,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   lab.col = str_wrap(lab.col, width=fill.lab.width)
   
   if(type=='cat.response') {
-    fillscale = scale_fill_brewer(lab.col, 
-                                  type = 'div',
-                                  palette = 'BrBG',
-                                  direction = 1)
+    fillscale = scale_fill_manual(lab.col, values = scheme.col)
   } else if(is.null(zlim)) {
     fillscale = scale_fill_gradient2(lab.col,
                                      low = scheme.col$low, 
@@ -263,8 +272,15 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
       scale_x_continuous(trans = lon_trans()) +
       scale_y_continuous(trans = lat_trans()) +
       xlab('Longitude') +
-      ylab('Latitude') + 
-      geom_path() +
+      ylab('Latitude') 
+    
+    if(type %in% c('remote', 'teleconnection') ) {
+      worldmap = worldmap + geom_polygon()
+    } else {
+      worldmap = worldmap + geom_path()
+    }
+    
+    worldmap = worldmap + 
       theme_grey() +
       ggtitle(t)
     
