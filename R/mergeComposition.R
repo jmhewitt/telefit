@@ -35,9 +35,12 @@ mergeComposition = function(xfull, yfull) {
         est = mergeMean(x$est, y$est, x$nSamples, y$nSamples),
         sd = sqrt(mergeVar(x$sd^2, y$sd^2, x$est, y$est, x$nSamples, y$nSamples)),
         nSamples = x$nSamples + y$nSamples,
-        samples = rbind(x$samples, y$samples),
-        cov = mergeCovmat(x$cov, y$cov, x$est, x$est, y$est, y$est, x$nSamples, y$nSamples)
+        samples = rbind(x$samples, y$samples)
       )
+      
+      if(!is.null(x$cov)) {
+        z$cov = mergeCovmat(x$cov, y$cov, x$est, x$est, y$est, y$est, x$nSamples, y$nSamples)
+      }
       
       xfull$alpha_knots = z
     }
