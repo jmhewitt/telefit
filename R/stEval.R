@@ -47,7 +47,8 @@ stEval = function(forecast, Y, clim) {
     # format return
     data.frame(
       pct.correct = pc,
-      heidke.skill = (pc - pe)/(1 - pe)
+      heidke.skill = (pc - pe)/(1 - pe),
+      heidke.skill.alt = (pc - 1/3)/(1 - 1/3)
     )
   }
   
@@ -83,6 +84,7 @@ stEval = function(forecast, Y, clim) {
     if(!is.null(forecast$cat.probs)) {
       fcst$err$cat.correct = fcst.cat.eval$pct.correct
       fcst$err$cat.heidke = fcst.cat.eval$heidke.skill
+      fcst$err$cat.heidke.alt = fcst.cat.eval$heidke.skill.alt
     }
     
     # brier skill score if climatology was provided for reference forecast
@@ -116,6 +118,7 @@ stEval = function(forecast, Y, clim) {
     fcst.cat.eval = eval.cat(pred = Y.cat.hat, obs = Y.cat)
     attr(forecast, 'err.cat') = fcst.cat.eval$pct.correct
     attr(forecast, 'err.heidke') = fcst.cat.eval$heidke.skill
+    attr(forecast, 'err.heidke.alt') = fcst.cat.eval$heidke.skill.alt
   }
   
   
