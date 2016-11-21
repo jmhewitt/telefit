@@ -13,7 +13,8 @@
 #'  indicates which correlations are significant.  These correlations will be
 #'  printed in bold, and the rest will be printed more lightly
 #' @param coord.s specifies the longitude and 
-#'  latitude of local coordinate for which to plot pointwise correlations. if 
+#'  latitude of local coordinate for which to plot pointwise correlations 
+#'  (if type=='remote'). if 
 #'  NULL, the middle local coordinate will be plotted.
 #' @param boxsize size of grid boxes plotted
 #' @param map name of map provided by the maps package. These include county, 
@@ -22,6 +23,7 @@
 #' @param region name of subregions to include. Defaults to . which includes 
 #'  all subregions. See documentation for map for more details.
 #' @param zlim c(min, max) vector that specifies the colorscale limits
+
 #' 
 #' @return a ggplot object with the specified map
 
@@ -42,7 +44,7 @@ plot.teleCor = function( teleCor, signif=F, coord.s=NULL, boxsize=NULL,
   n = nrow(teleCor$coords.s)
   r = nrow(teleCor$coords.r)
   
-  # if not specified, identify a base location
+  # if not specified, identify possible base locations
   if(is.null(coord.s))
     coord.s = teleCor$coords.s[round(n/2),]
   
@@ -75,8 +77,8 @@ plot.teleCor = function( teleCor, signif=F, coord.s=NULL, boxsize=NULL,
   # compute truncations and apply wrapping
   if(max(cor.frame$lon.Z)>0) {
     if(min(cor.frame$lon.Z)<0) {
-      lon.E = max(cor.frame %>% filter(lon.Z<=0) %>% select(lon.Z))
-      lon.W = min(cor.frame %>% filter(lon.Z>0) %>% select(lon.Z)) - 360
+      lon.E = max(cor.frame %>% filter(lon.Z<=0) %>% dplyr::select(lon.Z))
+      lon.W = min(cor.frame %>% filter(lon.Z>0) %>% dplyr::select(lon.Z)) - 360
     } else {
       lon.E = max(cor.frame$lon.Z) - 360
       lon.W = min(cor.frame$lon.Z) - 360
@@ -162,6 +164,7 @@ plot.teleCor = function( teleCor, signif=F, coord.s=NULL, boxsize=NULL,
   lat.S = min(lat.S, coord.s[2])
   
   # apply map projection and truncation
-  worldmap + coord_fixed(xlim=c(lon.W, lon.E), ylim=c(lat.S, lat.N), ratio=1.3)
+  ret = worldmap + coord_fixed(xlim=c(lon.W, lon.E), ylim=c(lat.S, lat.N), ratio=1.3)
   
+  ret 
 }

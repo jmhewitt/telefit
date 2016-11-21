@@ -5,17 +5,18 @@
 \title{Plot stFit objects}
 \usage{
 plot.stFit(stFit, type = "density", stData = NULL, coord.s = NULL,
-  text.size = NULL, axis.text.size = NULL, title.text.size = NULL,
-  burn = 1, signif.telecon = F, p = 1, local.covariate = NULL,
-  lwd = NULL, facet.signif = 3, stat.smooth.bw = NULL,
-  stat.smooth.degree = NULL, dots = NULL, ...)
+  coord.knot = NULL, text.size = NULL, axis.text.size = NULL,
+  title.text.size = NULL, burn = 1, signif.telecon = F, p = 1,
+  local.covariate = NULL, lwd = NULL, facet.signif = 3,
+  stat.smooth.bw = NULL, stat.smooth.degree = NULL, dots = NULL, ...)
 }
 \arguments{
 \item{stFit}{Object of class stFit to plot.}
 
 \item{type}{Either 'traceplot', 'density', 'pairs', 'teleconnection',
-'teleconnection_knot', 'teleconnection_knot_transect', 
-or 'beta' to specify which part of stFit to plot. 
+'teleconnection_local',
+'teleconnection_knot', 'teleconnection_knot_transect',
+'teleconnection_knot_influence',  or 'beta' to specify which part of stFit to plot. 
 Note that the value for
 type can be an abbreviation since partial matching is used during plotting.}
 
@@ -25,6 +26,12 @@ information for plotting estimated teleconnection effects}
 \item{coord.s}{if plot type is 'teleconnection', specifies the longitude and 
 latitude of local coordinate for which to plot estimated teleconnection 
 effects. if NULL, the middle local coordinate will be plotted.}
+
+\item{coord.knot}{if plot type is 'teleconnection_knot_influence' or 
+'teleconnection_knot_local', 
+ specifies the longitude and latitude of knot coordinate 
+ for which to plot influence of remote coefficient on remote covariates, or
+ the teleconnection coefficients associated with coord.knot}
 
 \item{text.size}{number specifying the size of text labels}
 

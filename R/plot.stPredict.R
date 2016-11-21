@@ -52,7 +52,7 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
   match.opts = c('prediction', 'residual', 'observed', 'standard_error', 'se', 
                  'local', 'remote', 'correlation', 'teleconnection', 
                  'cat.prediction', 'teleconnection_knot', 
-                 'teleconnection_knot_transect', 'errors')
+                 'teleconnection_knot_transect', 'errors', 'teleconnection_knot_local')
   type = match.opts[pmatch(type, match.opts)]
   
   # create a basic stData object for plotting
@@ -79,7 +79,8 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
   # build plot
   if( type=='prediction' ) {
     stData$Y = pred$pred$Y
-    stData$Y.lab = paste('Predicted', stPredict$Y.lab)
+    # stData$Y.lab = paste('Predicted', stPredict$Y.lab)
+    stData$Y.lab = stPredict$Y.lab
     ret = plot.stData(stData, dots=dots, ...)
   } else if( type=='residual' ) {
     stData$Y = pred$pred$resid
@@ -135,6 +136,20 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
     
     ret = plot.stFit(stFit = stFit, stData = stData, type='teleconnection_knot', 
                      dots=dots, ...)
+  } else if( type=='teleconnection_knot_local') {
+    
+    if(is.null(stData)) {
+      stop('stData object required for plotting estimated teleconnection effects.')
+    }
+    if(is.null(stFit)) {
+      stop('stFit object required for plotting estimated teleconnection effects.')
+    }
+    
+    stFit$alpha_knots$summary = stPredict$alpha_knots
+    
+    ret = plot.stFit(stFit = stFit, stData = stData, type='teleconnection_knot_local', 
+                     dots=dots, ...)
+    
   } else if( type=='teleconnection_knot_transect') {
     
     stFit$alpha_knots$summary = stPredict$alpha_knots
@@ -144,7 +159,8 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
     
   } else if( type=='cat.prediction' ) {
     stData$Y.cat = factor(pred$pred$Y.cat)
-    stData$Y.lab = paste('Predicted', stPredict$Y.lab)
+    # stData$Y.lab = paste('Predicted', stPredict$Y.lab)
+    stData$Y.lab = stPredict$Y.lab
     ret = plot.stData(stData, type='cat.response', 
                       category.breaks = stPredict$category.breaks, 
                       dots=dots, ...)

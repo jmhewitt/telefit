@@ -10,13 +10,20 @@
 #' @import ggplot2
 #' @import dplyr
 #' @importFrom reshape2 melt
+#' @importFrom fields rdist.earth
 #' 
 #' @param type Either 'traceplot', 'density', 'pairs', 'teleconnection',
-#'  'teleconnection_knot', 'teleconnection_knot_transect', 
-#'  or 'beta' to specify which part of stFit to plot. 
+#'  'teleconnection_local',
+#'  'teleconnection_knot', 'teleconnection_knot_transect',
+#'  'teleconnection_knot_influence',  or 'beta' to specify which part of stFit to plot. 
 #'  Note that the value for
 #'  type can be an abbreviation since partial matching is used during plotting.
 #' @param stFit Object of class stFit to plot.
+#' @param coord.knot if plot type is 'teleconnection_knot_influence' or 
+#' 'teleconnection_knot_local', 
+#'  specifies the longitude and latitude of knot coordinate 
+#'  for which to plot influence of remote coefficient on remote covariates, or
+#'  the teleconnection coefficients associated with coord.knot
 #' @param coord.s if plot type is 'teleconnection', specifies the longitude and 
 #'  latitude of local coordinate for which to plot estimated teleconnection 
 #'  effects. if NULL, the middle local coordinate will be plotted.
@@ -40,7 +47,8 @@
 #' 
 #' 
 
-plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
+plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL, 
+                       coord.knot=NULL,
                        text.size=NULL, axis.text.size=NULL, title.text.size=NULL,
                        burn = 1, signif.telecon = F, p = 1, local.covariate=NULL, 
                        lwd=NULL, facet.signif = 3, stat.smooth.bw=NULL,
@@ -59,7 +67,8 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
   
   # determine which type of plot is requested
   match.opts = c('traceplot', 'density', 'pairs', 'teleconnection', 'beta',
-                 'teleconnection_knot', 'teleconnection_knot_transect')
+                 'teleconnection_knot', 'teleconnection_knot_transect',
+                 'teleconnection_knot_influence', 'teleconnection_knot_local')
   type = match.opts[pmatch(type, match.opts)]
   
   # extract posterior samples if necessary
@@ -133,6 +142,21 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
         ggtitle('Estimated teleconnection effects')
     }
     
+  } else if(type=='teleconnection_knot_local') {
+    
+    if(is.null(stData)) {
+      stop('stData object required for plotting estimated teleconnection effects.')
+    }
+    
+    stData$alpha_knots = stFit$alpha_knots$summary$alpha
+    stData$alpha_knots_signif = stFit$alpha_knots$summary$signif
+    stData$coords.knots = stFit$coords.knots
+    
+    ret = plot.stData(stData, 'teleconnection_knot_local', 
+                      lab.teleconnection = expression(hat(alpha)),
+                      coord.r = coord.knot, dots=dots, ...) + 
+      ggtitle('Estimated teleconnection effects')
+    
   } else if( type=='teleconnection_knot' ) {
     if(is.null(stData)) {
       stop('stData object required for plotting estimated teleconnection effects.')
@@ -142,9 +166,32 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
     stData$alpha_knots_signif = stFit$alpha_knots$summary$signif
     stData$coords.knots = stFit$coords.knots
     
-    ret = plot.stData(stData, 'teleconnection_knot', lab.teleconnection = 'alpha', 
+    ret = plot.stData(stData, 'teleconnection_knot', 
+                      lab.teleconnection = expression(hat(alpha)), 
                       dots=dots, ...) + 
       ggtitle('Estimated teleconnection effects')
+    
+  } else if( type == 'teleconnection_knot_influence' ) {
+    if(is.null(stData)) {
+      stop('stData object required for plotting estimated teleconnection effects.')
+    }
+    
+    coord.knot = matrix(unlist(coord.knot), nrow=1)
+    
+    Dz_to_knots = rdist.earth(stData$coords.r, coord.knot, miles=stFit$miles)
+    
+    c_full = maternArray(Dz_to_knots, scale = 1, 
+                         range = mean(stFit$parameters$samples$rho_r[-(1:burn)]),
+                         smoothness = stFit$priors$cov.r$smoothness,
+                         nugget = 0)
+    
+    stData$coords.knots = stFit$coords.knots
+    stData$Z = matrix(log10(c_full), ncol=1)
+    stData$Z.lab = expression(log[10](Cor.))
+    
+    ret = plot.stData(stData, 'remote', coords.knots = coord.knot,
+                      dots=dots, ...) + 
+      ggtitle('Remote covariate influence on knot index')
     
   } else if( type == 'teleconnection_knot_transect' ) {
     # examine teleconnection effects across a transect

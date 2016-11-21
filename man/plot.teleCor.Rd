@@ -15,7 +15,8 @@ indicates which correlations are significant.  These correlations will be
 printed in bold, and the rest will be printed more lightly}
 
 \item{coord.s}{specifies the longitude and 
-latitude of local coordinate for which to plot pointwise correlations. if 
+latitude of local coordinate for which to plot pointwise correlations 
+(if type=='remote'). if 
 NULL, the middle local coordinate will be plotted.}
 
 \item{boxsize}{size of grid boxes plotted}

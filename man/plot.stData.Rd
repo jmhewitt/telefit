@@ -5,16 +5,16 @@
 \title{Plot stData objects}
 \usage{
 plot.stData(stData, type = "response", t = NULL, boxsize = NULL,
-  p = NULL, map = "world", region = ".", coord.s = NULL, zlim = NULL,
-  lab.teleconnection = expression(alpha), fill.lab.width = 20,
-  category.breaks = NULL, coords.knots = NULL, signif.telecon = F,
-  dots = NULL, ...)
+  p = NULL, map = "world", region = ".", coord.s = NULL,
+  coord.r = NULL, zlim = NULL, lab.teleconnection = expression(alpha),
+  fill.lab.width = 20, category.breaks = NULL, coords.knots = NULL,
+  signif.telecon = F, dots = NULL, ...)
 }
 \arguments{
 \item{stData}{Object of class stData to plot.}
 
 \item{type}{Either 'response', 'cat.response', 'covariate', 'remote', 
-'teleconnection', or 'teleconnection_knot'
+'teleconnection', 'teleconnection_local', or 'teleconnection_knot_local'
 to specify which part of stData to plot.  Note that 'teleconnection' applies
 only if the stData object contains information about teleconnection effects,
 i.e., if it is a simulated dataset or otherwise modified to include 
@@ -40,6 +40,10 @@ all subregions. See documentation for map for more details.}
 \item{coord.s}{if plot type is 'teleconnection', specifies the longitude and 
 latitude of local coordinate for which to plot teleconnection effects. if 
 NULL, the middle local coordinate will be plotted.}
+
+\item{coord.r}{if plot type is 'teleconnection_local', specifes the longitude
+and latitude of remote coordinate for which to plot associated teleconnection
+effects.  if NULL, the middle remote coordinate will be plotted.}
 
 \item{zlim}{c(min, max) vector that specifies the colorscale limits}
 

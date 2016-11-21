@@ -21,7 +21,7 @@
 #' @param region name of subregions to include. Defaults to . which includes 
 #'  all subregions. See documentation for map for more details.
 #' @param type Either 'response', 'cat.response', 'covariate', 'remote', 
-#'  'teleconnection', or 'teleconnection_knot'
+#'  'teleconnection', 'teleconnection_local', or 'teleconnection_knot_local'
 #'  to specify which part of stData to plot.  Note that 'teleconnection' applies
 #'  only if the stData object contains information about teleconnection effects,
 #'  i.e., if it is a simulated dataset or otherwise modified to include 
@@ -40,6 +40,9 @@
 #'  latitude of knot locations to overlay on the 'remote' plot
 #' @param signif.telecon if TRUE, will highlight significant teleconnection
 #'  effects when type=='teleconnection'
+#' @param coord.r if plot type is 'teleconnection_local', specifes the longitude
+#'  and latitude of remote coordinate for which to plot associated teleconnection
+#'  effects.  if NULL, the middle remote coordinate will be plotted.
 #'  
 #' @return a ggplot object with the specified map
 #'
@@ -47,7 +50,8 @@
 #' 
 
 plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,  
-                        map='world', region='.', coord.s=NULL, zlim=NULL,
+                        map='world', region='.', coord.s=NULL, coord.r=NULL,
+                        zlim=NULL,
                         lab.teleconnection = expression(alpha),
                         fill.lab.width = 20, category.breaks = NULL,
                         coords.knots = NULL, signif.telecon = F, dots=NULL, ...) {
@@ -89,7 +93,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   
   # extract dataset to plot
   match.opts = c('response', 'covariate', 'remote', 'teleconnection', 
-                 'cat.response', 'teleconnection_knot')
+                 'cat.response', 'teleconnection_knot', 'teleconnection_knot_local')
   type = match.opts[pmatch(type, match.opts)]
   if( type=='response' ) {
     Y = data.frame( Y = stData$Y[, match(t, stData$tLabs)],
@@ -108,7 +112,8 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
                     lon.Y = stData$coords.r[,1], 
                     lat.Y = stData$coords.r[,2] )
     lab.col = stData$Z.lab
-    scheme.col = list(low = "#008837", mid = '#f7f7f7', high = '#7b3294')
+    # scheme.col = list(low = "#008837", mid = '#f7f7f7', high = '#7b3294')
+    scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='teleconnection' ) {
     
     n = nrow(stData$coords.s)
@@ -143,6 +148,23 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
                     lat.Y = rep(stData$coords.s[,2], rep(r_knots,n)) ) %>% 
       filter(lon.Y==coord.s[1], lat.Y==coord.s[2]) %>% 
       mutate(lon.Y=lon.Z, lat.Y=lat.Z )
+    
+    lab.col = lab.teleconnection
+    scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
+  } else if( type=='teleconnection_knot_local' ) {
+    
+    n = nrow(stData$coords.s)
+    r_knots = nrow(stData$coords.knots)
+    
+    if(is.null(coord.r))
+      coord.r = stData$coords.s[round(r_knots/2),]
+    
+    Y = data.frame( Y = stData$alpha_knots,
+                    lon.Z = stData$coords.knots[,1], 
+                    lat.Z = stData$coords.knots[,2],
+                    lon.Y = rep(stData$coords.s[,1], rep(r_knots,n)),
+                    lat.Y = rep(stData$coords.s[,2], rep(r_knots,n)) ) %>% 
+      filter(lon.Z==coord.r[1], lat.Z==coord.r[2])
     
     lab.col = lab.teleconnection
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
@@ -236,7 +258,9 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   }
   
   # wrap fill label
-  lab.col = str_wrap(lab.col, width=fill.lab.width)
+  if(class(lab.col)!='expression') {
+    lab.col = str_wrap(lab.col, width=fill.lab.width)
+  }
   
   if(type=='cat.response') {
     fillscale = scale_fill_manual(lab.col, values = scheme.col)
@@ -265,7 +289,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   # build base plot
   if(type!='teleconnection_knot') {
     worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
-      geom_raster(tile.aes, data = Y  %>% 
+      geom_tile(tile.aes, data = Y  %>% 
                   mutate(lon.Y = ifelse(lon.Y<=0, lon.Y, lon.Y-360)), 
                 inherit.aes = F) +
       fillscale +
