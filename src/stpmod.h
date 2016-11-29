@@ -49,6 +49,8 @@ public:
 	CompositionSamples compositionSample(const Samples &samples,
 										 const Data &newDat,
 										 bool return_full_alpha);
+	
+	vec getLL(const Samples &samples);
 };
 
 #endif

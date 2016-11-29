@@ -13,6 +13,10 @@ double mcstat::logdinvgamma_unscaled(double x, double a, double b) {
 	return - (a + 1.0) * log(x) - b/x;
 }
 
+double mcstat::logdbeta_unscaled(double x, double a, double b) {
+	return (a-1) * log(x) + (b-1) * log(1-x);
+}
+
 double mcstat::logitProposal(double x, double min_x, double max_x, double sd) {
 	double w = max_x - min_x;
 	return mcstat::invlogit( mcstat::logit((x - min_x)/w) + R::rnorm(0, sd) ) * w + min_x;

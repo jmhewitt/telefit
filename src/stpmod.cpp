@@ -30,6 +30,8 @@ struct STPModel::Params {
 		if(!consts.localOnly) {
 			sigmasq_r = 1.0 /
 				R::rgamma(p.sigmasq_r.shape, 1.0 / p.sigmasq_r.rate);
+			//sigmasq_r = R::runif(0,1);
+			//sigmasq_r = p.sigmasq_r.shape;
 			rho_r = R::runif(p.rho_r.a, p.rho_r.b);
 		}
 		
@@ -244,6 +246,31 @@ double STPModel::getLL(const Params &params, const Scratch &scratch) {
 			   qform.at(0) ) / 2.0;
 }
 
+vec STPModel::getLL(const Samples &samples) {
+	
+	// initialize return
+	int nSamples = samples.beta.n_rows;
+	vec ret = vec(nSamples, fill::zeros);
+	
+	// initialize parameters
+	Params current = Params(consts);
+	
+	// compute log likelihoods
+	for(int i=0; i<nSamples; i++) {
+		
+		// update params
+		current.set(samples, i);
+		
+		// update scratch
+		Scratch scratch = Scratch(current, consts, dat);
+		
+		// compute log likelihood
+		ret.at(i) = getLL(current, scratch);
+	}
+	
+	return ret;
+}
+
 class STPModel::RwSigmasq_r : public mcstat::RWSampler {
 	
 private:
@@ -305,7 +332,13 @@ public:
 									  prior.sigmasq_r.rate) -
 		mcstat::logdinvgamma_unscaled(params->sigmasq_r,
 									  prior.sigmasq_r.shape,
-									  prior.sigmasq_r.rate);;
+									  prior.sigmasq_r.rate);
+		/*mcstat::logdbeta_unscaled(sigmasq_r_prop,
+								  prior.sigmasq_r.shape,
+								  prior.sigmasq_r.rate) -
+		mcstat::logdbeta_unscaled(params->sigmasq_r,
+								  prior.sigmasq_r.shape,
+								  prior.sigmasq_r.rate);*/
 		
 	}
 	
@@ -729,8 +762,6 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 											   const Data &newDat,
 											   bool return_full_alpha) {
 	
-	// TODO: Extend code so it works for full alpha recovery
-	
 	// use some Rsugar to wake up R's random number generator on crossbow
 	rgamma(1, 2.0, 1.0);
 	
@@ -916,4 +947,40 @@ RcppExport SEXP _stpcomposition(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 	
 	// return samples
 	return compositionSamples.toSummarizedList();
+}
+
+RcppExport SEXP _ll(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
+					SEXP Dz_knots, SEXP Dz_to_knots, SEXP p,
+					SEXP ns, SEXP nr, SEXP nr_knots, SEXP nt,
+					SEXP smoothness_y, SEXP smoothness_r,
+					SEXP beta_samples, SEXP sigmasq_y_samples,
+					SEXP sigmasq_r_samples, SEXP sigmasq_eps_samples,
+					SEXP rho_y_samples, SEXP rho_r_samples) {
+	
+	using namespace Rcpp;
+	
+	bool localOnly = false;
+	
+	// extract model configuration
+	
+	Data dat = Data(as<mat>(X), as<mat>(Z), as<vec>(Y));
+	
+	Priors prior = Priors();
+	
+	Constants consts = Constants(as<mat>(Dy), as<mat>(Dz_knots),
+								 as<mat>(Dz_to_knots), as<int>(p), as<int>(ns),
+								 as<int>(nr), as<int>(nr_knots), as<int>(nt),
+								 as<double>(smoothness_y), as<double>(smoothness_r),
+								 localOnly);
+	
+	Samples samples = Samples(as<mat>(beta_samples), as<vec>(sigmasq_y_samples),
+							  as<vec>(sigmasq_r_samples), as<vec>(sigmasq_eps_samples),
+							  as<vec>(rho_y_samples), as<vec>(rho_r_samples),
+							  as<vec>(sigmasq_y_samples));
+	
+	// instantiate model
+	STPModel stpmod = STPModel(dat, prior, consts);
+	
+	// return likelihoods
+	return wrap(stpmod.getLL(samples));
 }

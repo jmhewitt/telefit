@@ -71,8 +71,11 @@ namespace mcstat {
 	// densities
 	//
 	
-	// log inverse gamma density, without normalization constant
+	// log inverse gamma density without normalization constant
 	double logdinvgamma_unscaled(double x, double a, double b);
+	
+	// log beta density without normalization constant
+	double logdbeta_unscaled(double x, double a, double b);
 	
 	
 	//
