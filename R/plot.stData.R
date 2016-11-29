@@ -229,7 +229,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   # get country outlines ggplot format
   if(map=='world') {
     # get raw outline data
-    world.raw = map_data('world', regions='^(?!.*USA).*$')
+    world.raw = map_data('world') %>% filter(region!='USA')
     # duplicate countries for plotting with any map center
     world.raw = rbind(world.raw, world.raw %>% 
                         mutate(long=long-360, group=group+max(group)+1))
@@ -310,7 +310,8 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     
     if(!is.null(coords.knots)) {
       worldmap = worldmap + geom_point(aes(x=lon, y=lat), data = coords.knots,
-                                       col = 2, inherit.aes = F)
+                                       col = 'black', fill = 'white', shape=21,
+                                       inherit.aes = F)
     }
   } else {
     worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
@@ -329,7 +330,8 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     
     if(!is.null(coords.knots)) {
       worldmap = worldmap + geom_point(aes(x=lon, y=lat), data = coords.knots,
-                                       col = 2, inherit.aes = F)
+                                       col = 'black', fill = 'white', shape=21,
+                                       inherit.aes = F)
     }
   }
   
@@ -339,7 +341,8 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     worldmap = worldmap + geom_point(aes(x=lon.Y, y=lat.Y), 
                                      data = data.frame(lon.Y = coord.s[1],
                                                        lat.Y = coord.s[2]),
-                                     col = 2, inherit.aes = F)
+                                     col = 'black', fill = 'white', shape=21, 
+                                     inherit.aes = F)
     
     lon.E = max(lon.E, coord.s[1])
     lon.W = min(lon.W, coord.s[1])

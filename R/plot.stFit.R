@@ -184,10 +184,10 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
                          range = mean(stFit$parameters$samples$rho_r[-(1:burn)]),
                          smoothness = stFit$priors$cov.r$smoothness,
                          nugget = 0)
-    
+
     stData$coords.knots = stFit$coords.knots
-    stData$Z = matrix(log10(c_full), ncol=1)
-    stData$Z.lab = expression(log[10](Cor.))
+    stData$Z = c_full
+    stData$Z.lab = expression(italic(Cor[alpha]))
     
     ret = plot.stData(stData, 'remote', coords.knots = coord.knot,
                       dots=dots, ...) + 
