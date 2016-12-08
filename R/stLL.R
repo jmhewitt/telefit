@@ -56,7 +56,7 @@
 stLL = function( stData, stFit, beta, sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r,
                  X = stData$X, Y = stData$Y, Z = stData$Z, 
                  coords.s = stData$coords.s, coords.r = stData$coords.r,
-                 coords.knots = stFit$coords.knots, miles=T) {
+                 coords.knots = stFit$coords.knots, miles=T, sigmasq_r_eps) {
   
   n = nrow(coords.s)
   r = nrow(coords.r)
@@ -79,5 +79,6 @@ stLL = function( stData, stFit, beta, sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, 
   .Call("_ll", PACKAGE = 'telefit', matrix(Xl, ncol=p), Z, Yl, 
         Dy, Dz_knots, Dz_to_knots, p, n, r, r_knots, t, 
         stFit$priors$cov.s$smoothness, stFit$priors$cov.r$smoothness,
-        matrix(beta, ncol=p), sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r)
+        matrix(beta, ncol=p), sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r,
+        sigmasq_r_eps)
 }

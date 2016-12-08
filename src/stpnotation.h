@@ -9,7 +9,7 @@ using namespace arma;
 
 struct Priors {
 	mcstat::mvnorm beta;
-	mcstat::invgamma sigmasq_y, sigmasq_r, sigmasq_eps;
+	mcstat::invgamma sigmasq_y, sigmasq_r, sigmasq_eps, sigmasq_r_eps;
 	mcstat::uniform rho_y, rho_r;
 	
 	Priors() { }
@@ -17,11 +17,13 @@ struct Priors {
 	Priors(const vec &beta_mu, const mat &beta_Sigma, double sigmasq_y_shape,
 		   double sigmasq_y_rate, double sigmasq_r_shape, double sigmasq_r_rate,
 		   double sigmasq_eps_shape, double sigmasq_eps_rate, double rho_y_a,
-		   double rho_y_b, double rho_r_a, double rho_r_b) {
+		   double rho_y_b, double rho_r_a, double rho_r_b,
+		   double sigmasq_r_eps_shape, double sigmasq_r_eps_rate) {
 		
 		beta = mcstat::mvnorm(beta_mu, beta_Sigma);
 		sigmasq_y = mcstat::invgamma(sigmasq_y_shape, sigmasq_y_rate);
 		sigmasq_r = mcstat::invgamma(sigmasq_r_shape, sigmasq_r_rate);
+		sigmasq_r_eps = mcstat::invgamma(sigmasq_r_eps_shape, sigmasq_r_eps_rate);
 		sigmasq_eps = mcstat::invgamma(sigmasq_eps_shape, sigmasq_eps_rate);
 		rho_y = mcstat::uniform(rho_y_a, rho_y_b);
 		rho_r = mcstat::uniform(rho_r_a, rho_r_b);
@@ -114,7 +116,7 @@ struct CompositionSamples {
 struct Samples {
 	
 	mat beta;
-	vec sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r, ll;
+	vec sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r, ll, sigmasq_r_eps;
 	
 	Samples(Constants &consts, int nSamples) {
 		beta = mat(nSamples, consts.p, fill::zeros);
@@ -125,12 +127,13 @@ struct Samples {
 		if(!consts.localOnly) {
 			sigmasq_r = vec(nSamples, fill::zeros);
 			rho_r = vec(nSamples, fill::zeros);
+			sigmasq_r_eps = vec(nSamples, fill::zeros);
 		}
 	}
 	
 	Samples(const mat &_beta, const vec &_sigmasq_y, const vec &_sigmasq_r,
 			const vec &_sigmasq_eps, const vec &_rho_y, const vec &_rho_r,
-			const vec &_ll) {
+			const vec &_ll, const vec &_sigmasq_r_eps) {
 		beta = _beta;
 		sigmasq_y = _sigmasq_y;
 		sigmasq_r = _sigmasq_r;
@@ -138,6 +141,7 @@ struct Samples {
 		rho_y = _rho_y;
 		rho_r = _rho_r;
 		ll = _ll;
+		sigmasq_r_eps = _sigmasq_r_eps;
 	}
 	
 	List toList() {
@@ -145,6 +149,7 @@ struct Samples {
 			_["beta"] = beta,
 			_["sigmasq_y"] = sigmasq_y,
 			_["sigmasq_r"] = sigmasq_r,
+			_["sigmasq_r_eps"] = sigmasq_r_eps,
 			_["sigmasq_eps"] = sigmasq_eps,
 			_["rho_y"] = rho_y,
 			_["rho_r"] = rho_r,

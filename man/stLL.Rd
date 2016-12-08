@@ -7,7 +7,7 @@
 stLL(stData, stFit, beta, sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r,
   X = stData$X, Y = stData$Y, Z = stData$Z, coords.s = stData$coords.s,
   coords.r = stData$coords.r, coords.knots = stFit$coords.knots,
-  miles = T)
+  miles = T, sigmasq_r_eps)
 }
 \arguments{
 \item{stData}{Object with class 'stData' containing data needed to fit this 

@@ -131,7 +131,8 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
             stFit$parameters$samples$rho_y[inds], 
             stFit$parameters$samples$rho_r[inds],
             stFit$parameters$samples$ll[inds],
-            Xlnew, Znew, localOnly, returnFullAlphas)
+            Xlnew, Znew, localOnly, returnFullAlphas,
+            stFit$parameters$samples$sigmasq_r_eps[inds])
         
     }
   }

@@ -26,7 +26,7 @@ list needs to contain the following values:
       variance=c(shape, rate), nugget=c(shape, rate)) }
       
     \item{cov.r}{ list(smoothness=double, range=c(min, max), 
-      variance=c(shape, rate)) }
+      variance=c(shape, rate), nugget=c(shape, rate)) }
   }}
 
 \item{maxIt}{number of iterations to run the MCMC chain for}
@@ -47,7 +47,7 @@ were observed (lon, lat)}
 the MCMC parameters requiring random walk updates:
   \describe{
     \item{cov.s}{ list(range=double, nugget=double) }
-    \item{cov.r}{ list(range=double, variance=double) }
+    \item{cov.r}{ list(range=double, variance=double, nugget=double) }
   }}
 
 \item{returnll}{TRUE to compute the model log-likelihood at each iteration}

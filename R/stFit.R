@@ -35,13 +35,13 @@
 #'        variance=c(shape, rate), nugget=c(shape, rate)) }
 #'        
 #'      \item{cov.r}{ list(smoothness=double, range=c(min, max), 
-#'        variance=c(shape, rate)) }
+#'        variance=c(shape, rate), nugget=c(shape, rate)) }
 #'    }
 #' @param rw.initsd A list containing initial standard deviation parameters for
 #'  the MCMC parameters requiring random walk updates:
 #'    \describe{
 #'      \item{cov.s}{ list(range=double, nugget=double) }
-#'      \item{cov.r}{ list(range=double, variance=double) }
+#'      \item{cov.r}{ list(range=double, variance=double, nugget=double) }
 #'    }
 #' @param maxIt number of iterations to run the MCMC chain for
 #' @param returnll TRUE to compute the model log-likelihood at each iteration
@@ -86,7 +86,7 @@ stFit = function( stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
   if(is.null(rw.initsd))
     rw.initsd = list(
       cov.s = list(range = .07, nugget = .09),
-      cov.r = list(range = .15, variance = .1)
+      cov.r = list(range = .15, variance = .1, nugget = .09)
     )
   
   # fit model
@@ -100,7 +100,8 @@ stFit = function( stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
               priors$cov.s$smoothness, priors$cov.r$smoothness,
               maxIt, errDump, C, alpha, 
               rw.initsd$cov.s$range, rw.initsd$cov.r$range,
-              rw.initsd$cov.s$nugget, rw.initsd$cov.r$variance, localOnly)
+              rw.initsd$cov.s$nugget, rw.initsd$cov.r$variance, localOnly,
+              priors$cov.r$nugget[1], priors$cov.r$nugget[2], rw.initsd$cov.r$nugget)
   
   
   reslist = list(

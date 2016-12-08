@@ -11,7 +11,7 @@ struct STPModel::Params {
 	
 	Constants consts;
 	vec beta;
-	double sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r;
+	double sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r, sigmasq_r_eps;
 	
 	// default constructor
 	Params() {};
@@ -30,9 +30,11 @@ struct STPModel::Params {
 		if(!consts.localOnly) {
 			sigmasq_r = 1.0 /
 				R::rgamma(p.sigmasq_r.shape, 1.0 / p.sigmasq_r.rate);
-			//sigmasq_r = R::runif(0,1);
-			//sigmasq_r = p.sigmasq_r.shape;
+			sigmasq_r_eps = 1.0 /
+				R::rgamma(p.sigmasq_r_eps.shape, 1.0 / p.sigmasq_r_eps.rate);
 			rho_r = R::runif(p.rho_r.a, p.rho_r.b);
+
+			sigmasq_r_eps = 0.0;
 		}
 		
 	};
@@ -45,6 +47,7 @@ struct STPModel::Params {
 		
 		if(!consts.localOnly) {
 			sigmasq_r = samples.sigmasq_r.at(i);
+			sigmasq_r_eps = samples.sigmasq_r_eps.at(i);
 			rho_r = samples.rho_r.at(i);
 		}
 	}
@@ -55,6 +58,7 @@ struct STPModel::Params {
 							_["beta"] = beta,
 							_["sigmasq_y"] = sigmasq_y,
 							_["sigmasq_r"] = sigmasq_r,
+							_["sigmasq_r_eps"] = sigmasq_r_eps,
 							_["sigmasq_eps"] = sigmasq_eps,
 							_["rho_y"] = rho_y,
 							_["rho_r"] = rho_r
@@ -108,9 +112,9 @@ struct STPModel::CompositionScratch {
 		
 		if(!consts.localOnly) {
 			maternCov( RknotsInv, consts.Dz_knots, params.sigmasq_r, params.rho_r,
-					  consts.smoothness_r, 0 );
+					  consts.smoothness_r, params.sigmasq_r * params.sigmasq_r_eps );
 			maternCov( cknots, consts.Dz_to_knots, params.sigmasq_r, params.rho_r,
-					  consts.smoothness_r, 0 );
+					  consts.smoothness_r, params.sigmasq_r * params.sigmasq_r_eps );
 			RknotsInv = inv_sympd(RknotsInv);
 			
 			Zknots = RknotsInv * cknots.t() * dat.Z;
@@ -203,9 +207,9 @@ struct STPModel::Scratch {
 			eye_nt.eye(consts.nt, consts.nt);
 			
 			maternCov( RknotsInv, consts.Dz_knots, params.sigmasq_r, params.rho_r,
-					  consts.smoothness_r, 0 );
+					  consts.smoothness_r, params.sigmasq_r * params.sigmasq_r_eps );
 			maternCov( cknots, consts.Dz_to_knots, params.sigmasq_r, params.rho_r,
-					  consts.smoothness_r, 0 );
+					  consts.smoothness_r, params.sigmasq_r * params.sigmasq_r_eps );
 			
 			RknotsInv = inv_sympd(RknotsInv);
 			
@@ -271,6 +275,83 @@ vec STPModel::getLL(const Samples &samples) {
 	return ret;
 }
 
+class STPModel::RwSigmasq_r_eps : public mcstat::RWSampler {
+	
+private:
+	Data dat;
+	Priors prior;
+	Constants consts;
+	Params* params;
+	Scratch* scratch;
+	
+	mat CProposed, RknotsInv, eye_nt, cknots, cknotsZ;
+	double CProposed_logdet, one;
+	
+public:
+	
+	RwSigmasq_r_eps() { }
+	
+	RwSigmasq_r_eps(const Data &_dat, const Priors &_prior,
+					const Constants &_consts, Scratch &_scratch, Params &_params,
+					double sd) : RWSampler(sd) {
+		dat = _dat;
+		prior = _prior;
+		consts = _consts;
+		scratch = &_scratch;
+		params = &_params;
+		
+		type = LOG;
+		
+		CProposed = mat(consts.nt, consts.nt, fill::zeros);
+		RknotsInv = mat(consts.nr_knots, consts.nr_knots, fill::zeros);
+		cknots = mat(consts.nr, consts.nr_knots, fill::zeros);
+		eye_nt.eye(consts.nt, consts.nt);
+		one = 1.0;
+	}
+	
+	double logR_posterior(double sigmasq_r_eps_prop) {
+		
+		maternCov( RknotsInv, consts.Dz_knots, params->sigmasq_r, params->rho_r,
+				  consts.smoothness_r, params->sigmasq_r * sigmasq_r_eps_prop );
+		maternCov( cknots, consts.Dz_to_knots, params->sigmasq_r, params->rho_r,
+				  consts.smoothness_r, params->sigmasq_r * sigmasq_r_eps_prop );
+		
+		RknotsInv = inv_sympd(RknotsInv);
+		cknotsZ = cknots.t() * dat.Z;
+		
+		CProposed = inv_sympd( eye_nt + cknotsZ.t() * RknotsInv * cknotsZ );
+		
+		log_det(CProposed_logdet, one, CProposed);
+		
+		vec qform = scratch->resid.t() *
+		mcstat::dgemkmm(CProposed - scratch->C,
+						scratch->SigmaInv,
+						scratch->resid);
+		
+		return 0.5 * ( consts.ns * (CProposed_logdet -
+									scratch->C_logdet) -
+					  qform.at(0) )  +
+		mcstat::logdinvgamma_unscaled(sigmasq_r_eps_prop,
+									  prior.sigmasq_r_eps.shape,
+									  prior.sigmasq_r_eps.rate) -
+		mcstat::logdinvgamma_unscaled(params->sigmasq_r_eps,
+									  prior.sigmasq_r_eps.shape,
+									  prior.sigmasq_r_eps.rate);
+	}
+	
+	// operations to perform if proposal is accepted
+	void update() {
+		scratch->C = CProposed;
+		scratch->C_logdet = CProposed_logdet;
+	}
+	
+	void sample() {
+		params->sigmasq_r_eps = mcstat::RWSampler::sample(params->sigmasq_r_eps);
+	}
+	
+};
+
+
 class STPModel::RwSigmasq_r : public mcstat::RWSampler {
 	
 private:
@@ -308,9 +389,9 @@ public:
 	double logR_posterior(double sigmasq_r_prop) {
 		
 		maternCov( RknotsInv, consts.Dz_knots, sigmasq_r_prop, params->rho_r,
-				  consts.smoothness_r, 0 );
+				  consts.smoothness_r, sigmasq_r_prop * params->sigmasq_r_eps );
 		maternCov( cknots, consts.Dz_to_knots, sigmasq_r_prop, params->rho_r,
-				  consts.smoothness_r, 0 );
+				  consts.smoothness_r, sigmasq_r_prop * params->sigmasq_r_eps );
 		
 		RknotsInv = inv_sympd(RknotsInv);
 		cknotsZ = cknots.t() * dat.Z;
@@ -333,13 +414,6 @@ public:
 		mcstat::logdinvgamma_unscaled(params->sigmasq_r,
 									  prior.sigmasq_r.shape,
 									  prior.sigmasq_r.rate);
-		/*mcstat::logdbeta_unscaled(sigmasq_r_prop,
-								  prior.sigmasq_r.shape,
-								  prior.sigmasq_r.rate) -
-		mcstat::logdbeta_unscaled(params->sigmasq_r,
-								  prior.sigmasq_r.shape,
-								  prior.sigmasq_r.rate);*/
-		
 	}
 	
 	// operations to perform if proposal is accepted
@@ -364,7 +438,7 @@ private:
 	Scratch* scratch;
 	
 	mat CProposed, RknotsInv, eye_nt, cknots, cknotsZ;
-	double CProposed_logdet, one;
+	double CProposed_logdet, one, R;
 	
 public:
 	RwRho_r() { }
@@ -391,9 +465,9 @@ public:
 	double logR_posterior(double rho_r_prop) {
 		
 		maternCov( RknotsInv, consts.Dz_knots, params->sigmasq_r, rho_r_prop,
-				   consts.smoothness_r, 0 );
+				   consts.smoothness_r, params->sigmasq_r * params->sigmasq_r_eps );
 		maternCov( cknots, consts.Dz_to_knots, params->sigmasq_r, rho_r_prop,
-				   consts.smoothness_r, 0 );
+				   consts.smoothness_r, params->sigmasq_r * params->sigmasq_r_eps );
 		
 		RknotsInv = inv_sympd(RknotsInv);
 		cknotsZ = cknots.t() * dat.Z;
@@ -410,7 +484,6 @@ public:
 		return 0.5 * ( consts.ns * (CProposed_logdet -
 									scratch->C_logdet) -
 					  qform.at(0) );
-		
 	}
 	
 	// operations to perform if proposal is accepted
@@ -630,7 +703,7 @@ public:
 
 Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 					  double rho_y_sd, double rho_r_sd, double sigmasq_eps_sd,
-					  double sigmasq_r_sd) {
+					  double sigmasq_r_sd, double sigmasq_r_eps_sd) {
 	
 	// use some Rsugar to wake up R's random number generator on crossbow
 	rgamma(1, 2.0, 1.0);
@@ -652,10 +725,13 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 												current, sigmasq_eps_sd);
 	RwRho_r rwRho_r;
 	RwSigmasq_r rwSigmasq_r;
+	RwSigmasq_r_eps rwSigmasq_r_eps;
 	if(!consts.localOnly) {
 		rwRho_r = RwRho_r(dat, prior, consts, scratch, current, rho_r_sd);
 		rwSigmasq_r = RwSigmasq_r(dat, prior, consts, scratch,
-											  current, rho_r_sd);
+											  current, sigmasq_r_sd);
+		rwSigmasq_r_eps = RwSigmasq_r_eps(dat, prior, consts, scratch,
+									  current, sigmasq_r_eps_sd);
 	}
 	
 	// initialize trackers
@@ -698,6 +774,11 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 			step = 's';
 			rwSigmasq_r.sample();
 			samples.sigmasq_r.at(it) = current.sigmasq_r;
+			
+			// RW sigmasq_r_eps
+			/*step = 'n';
+			rwSigmasq_r_eps.sample();
+			samples.sigmasq_r_eps.at(it) = current.sigmasq_r_eps;*/
 		}
 		
 		// ll
@@ -712,6 +793,7 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 		if(!consts.localOnly) {
 			rwRho_r.adapt(adaptScale, RWrate);
 			rwSigmasq_r.adapt(adaptScale, RWrate);
+			rwSigmasq_r_eps.adapt(adaptScale, RWrate);
 		}
 		
 		// checkpoint behaviors
@@ -751,7 +833,10 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 			std::setprecision(3) << rwRho_r.getSd()  << ")" << endl;
 		Rcout << "  sigmasq_r: (" <<
 			round(rwSigmasq_r.getAcceptanceRate() * 100.0) << "%" << ", " <<
-			std::setprecision(3) << rwSigmasq_r.getSd()  << ")" << endl << endl;
+			std::setprecision(3) << rwSigmasq_r.getSd()  << ")" << endl;
+		Rcout << "  sigmasq_r_eps: (" <<
+			round(rwSigmasq_r_eps.getAcceptanceRate() * 100.0) << "%" << ", " <<
+			std::setprecision(3) << rwSigmasq_r_eps.getSd()  << ")" << endl << endl;
 	}
 	
 	return samples;
@@ -872,7 +957,8 @@ RcppExport SEXP _stpfit(SEXP p, SEXP X, SEXP Z, SEXP Y, SEXP Lambda,
 						SEXP smoothness_r, SEXP nSamples, SEXP errDump,
 						SEXP C, SEXP RWrate, SEXP rho_y_sd, SEXP rho_r_sd,
 						SEXP sigmasq_eps_sd, SEXP sigmasq_r_sd,
-						SEXP localOnly) {
+						SEXP localOnly, SEXP sigmasq_r_eps_shape,
+						SEXP sigmasq_r_eps_rate, SEXP sigmasq_r_eps_sd) {
 	
 	using namespace Rcpp;
 	
@@ -886,7 +972,8 @@ RcppExport SEXP _stpfit(SEXP p, SEXP X, SEXP Z, SEXP Y, SEXP Lambda,
 						  as<double>(sigmasq_r_rate), as<double>(sigmasq_eps_shape),
 						  as<double>(sigmasq_eps_rate), as<double>(rho_y_a),
 						  as<double>(rho_y_b), as<double>(rho_r_a),
-						  as<double>(rho_r_b));
+						  as<double>(rho_r_b), as<double>(sigmasq_r_eps_shape),
+						  as<double>(sigmasq_r_eps_rate));
 	
 
 	
@@ -903,7 +990,8 @@ RcppExport SEXP _stpfit(SEXP p, SEXP X, SEXP Z, SEXP Y, SEXP Lambda,
 								  as<double>(C), as<double>(RWrate),
 								  as<double>(rho_y_sd), as<double>(rho_r_sd),
 								  as<double>(sigmasq_eps_sd),
-								  as<double>(sigmasq_r_sd) );
+								  as<double>(sigmasq_r_sd),
+								 as<double>(sigmasq_r_eps_sd) );
 	
 	// return samples
 	return samples.toList();
@@ -917,7 +1005,8 @@ RcppExport SEXP _stpcomposition(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 								SEXP sigmasq_r_samples, SEXP sigmasq_eps_samples,
 								SEXP rho_y_samples, SEXP rho_r_samples,
 								SEXP ll_samples, SEXP Xnew, SEXP Znew,
-								SEXP localOnly, SEXP full_alpha) {
+								SEXP localOnly, SEXP full_alpha,
+								SEXP sigmasq_r_eps_samples) {
 	
 	using namespace Rcpp;
 	
@@ -938,7 +1027,7 @@ RcppExport SEXP _stpcomposition(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 	Samples samples = Samples(as<mat>(beta_samples), as<vec>(sigmasq_y_samples),
 							  as<vec>(sigmasq_r_samples), as<vec>(sigmasq_eps_samples),
 							  as<vec>(rho_y_samples), as<vec>(rho_r_samples),
-							  as<vec>(ll_samples));
+							  as<vec>(ll_samples), as<vec>(sigmasq_r_eps_samples));
 	
 	// instantiate and run sampler
 	STPModel stpmod = STPModel(dat, prior, consts);
@@ -955,7 +1044,8 @@ RcppExport SEXP _ll(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 					SEXP smoothness_y, SEXP smoothness_r,
 					SEXP beta_samples, SEXP sigmasq_y_samples,
 					SEXP sigmasq_r_samples, SEXP sigmasq_eps_samples,
-					SEXP rho_y_samples, SEXP rho_r_samples) {
+					SEXP rho_y_samples, SEXP rho_r_samples,
+					SEXP sigmasq_r_eps_samples) {
 	
 	using namespace Rcpp;
 	
@@ -976,7 +1066,8 @@ RcppExport SEXP _ll(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 	Samples samples = Samples(as<mat>(beta_samples), as<vec>(sigmasq_y_samples),
 							  as<vec>(sigmasq_r_samples), as<vec>(sigmasq_eps_samples),
 							  as<vec>(rho_y_samples), as<vec>(rho_r_samples),
-							  as<vec>(sigmasq_y_samples));
+							  as<vec>(sigmasq_y_samples),
+							  as<vec>(sigmasq_r_eps_samples));
 	
 	// instantiate model
 	STPModel stpmod = STPModel(dat, prior, consts);

@@ -33,6 +33,7 @@ private:
 	class RwRho_y;
 	class RwRho_r;
 	class RwSigmasq_r;
+	class RwSigmasq_r_eps;
 	class RwSigmasq_eps;
 	class CompAlphaKnot;
 	
@@ -44,7 +45,7 @@ public:
 	
 	Samples fit(int maxit, Function errDump, double C, double RWrate,
 				double rho_y_sd, double rho_r_sd, double sigmasq_eps_sd,
-				double sigmasq_r_sd);
+				double sigmasq_r_sd, double sigmasq_r_eps_sd);
 	
 	CompositionSamples compositionSample(const Samples &samples,
 										 const Data &newDat,
