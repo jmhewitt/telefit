@@ -2,14 +2,25 @@
 % Please edit documentation in R/stSimulate.R
 \name{stSimulate}
 \alias{stSimulate}
-\title{Simulate the spatio-temporal teleconnection model}
+\title{Simulate responses from the spatio-temporal teleconnection model}
 \usage{
-stSimulate(X = NULL, Z = NULL, coords.s = NULL, coords.r = NULL,
-  cov.s = NULL, cov.r = NULL, alpha = NULL, beta = NULL, nt = NULL,
-  ns = NULL, nr = NULL, p = NULL, miles = T)
+stSimulate(dat.train, dat.test, coords.knots, params, miles = T)
+}
+\arguments{
+\item{dat.train}{stData object with training data to simulate new Y values for}
+
+\item{dat.test}{stData object with test data to simulate new Y values for}
+
+\item{params}{A list containing model parameters for use in simulation:
+\describe{
+  \item{beta}{ vector with fixed effect coefficients }
+  \item{cov.s}{ list(smoothness=double, range=double, variance=double, nugget=double) }
+  \item{cov.r}{ list(smoothness=double, range=double, variance=double, nugget=double) }
+}}
 }
 \description{
-This function will let you provide as much information as you'd like, but 
-will fill in the gaps as needed
+This function simulates spatio-temporal data. The intention is that data Y and latent 
+parameters alpha will be generated using provided covariates X and Z; 
+spatial domains coords.s, coords.r, and coords.knots; and model parameters.
 }
 

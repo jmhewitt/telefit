@@ -36,7 +36,6 @@ struct STPModel::Params {
 
 			sigmasq_r_eps = 0.0;
 		}
-		
 	};
 	
 	void set(const Samples &samples, int i) {
@@ -115,6 +114,7 @@ struct STPModel::CompositionScratch {
 					  consts.smoothness_r, params.sigmasq_r * params.sigmasq_r_eps );
 			maternCov( cknots, consts.Dz_to_knots, params.sigmasq_r, params.rho_r,
 					  consts.smoothness_r, params.sigmasq_r * params.sigmasq_r_eps );
+			//cknots = normalise(cknots, 2, 0);
 			RknotsInv = inv_sympd(RknotsInv);
 			
 			Zknots = RknotsInv * cknots.t() * dat.Z;
@@ -210,6 +210,7 @@ struct STPModel::Scratch {
 					  consts.smoothness_r, params.sigmasq_r * params.sigmasq_r_eps );
 			maternCov( cknots, consts.Dz_to_knots, params.sigmasq_r, params.rho_r,
 					  consts.smoothness_r, params.sigmasq_r * params.sigmasq_r_eps );
+			//cknots = normalise(cknots, 2, 0);
 			
 			RknotsInv = inv_sympd(RknotsInv);
 			
@@ -315,6 +316,7 @@ public:
 				  consts.smoothness_r, params->sigmasq_r * sigmasq_r_eps_prop );
 		maternCov( cknots, consts.Dz_to_knots, params->sigmasq_r, params->rho_r,
 				  consts.smoothness_r, params->sigmasq_r * sigmasq_r_eps_prop );
+		//cknots = normalise(cknots, 2, 0);
 		
 		RknotsInv = inv_sympd(RknotsInv);
 		cknotsZ = cknots.t() * dat.Z;
@@ -392,6 +394,7 @@ public:
 				  consts.smoothness_r, sigmasq_r_prop * params->sigmasq_r_eps );
 		maternCov( cknots, consts.Dz_to_knots, sigmasq_r_prop, params->rho_r,
 				  consts.smoothness_r, sigmasq_r_prop * params->sigmasq_r_eps );
+		//cknots = normalise(cknots, 2, 0);
 		
 		RknotsInv = inv_sympd(RknotsInv);
 		cknotsZ = cknots.t() * dat.Z;
@@ -468,6 +471,7 @@ public:
 				   consts.smoothness_r, params->sigmasq_r * params->sigmasq_r_eps );
 		maternCov( cknots, consts.Dz_to_knots, params->sigmasq_r, rho_r_prop,
 				   consts.smoothness_r, params->sigmasq_r * params->sigmasq_r_eps );
+		//cknots = normalise(cknots, 2, 0);
 		
 		RknotsInv = inv_sympd(RknotsInv);
 		cknotsZ = cknots.t() * dat.Z;
@@ -776,9 +780,9 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 			samples.sigmasq_r.at(it) = current.sigmasq_r;
 			
 			// RW sigmasq_r_eps
-			/*step = 'n';
-			rwSigmasq_r_eps.sample();
-			samples.sigmasq_r_eps.at(it) = current.sigmasq_r_eps;*/
+			step = 'n';
+			//rwSigmasq_r_eps.sample();
+			samples.sigmasq_r_eps.at(it) = current.sigmasq_r_eps;
 		}
 		
 		// ll

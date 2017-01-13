@@ -122,7 +122,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     if(is.null(coord.s))
       coord.s = stData$coords.s[round(n/2),]
     
-    Y = data.frame( Y = stData$alpha,
+    Y = data.frame( Y = as.numeric(stData$alpha),
                     lon.Z = stData$coords.r[,1], 
                     lat.Z = stData$coords.r[,2],
                     lon.Y = rep(stData$coords.s[,1], rep(r,n)),
@@ -288,6 +288,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   
   # build base plot
   if(type!='teleconnection_knot') {
+    
     worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
       geom_tile(tile.aes, data = Y  %>% 
                   mutate(lon.Y = ifelse(lon.Y<=0, lon.Y, lon.Y-360)), 
