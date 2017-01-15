@@ -36,7 +36,10 @@
 #'  be sampled in parallel, this parameter lets users specify the number of 
 #'  cores to use to draw teleconnection and prediction samples
 #' @param returnAlphas TRUE to return the teleconnection effects sampled 
-#'  alongside the forecasts.  Note that only basic summary information about the 
+#'  at knot locations.  Note that only basic summary information about the 
+#'  teleconnection effects will be returned.
+#' @param returnFullAlphas TRUE to return the teleconnection effects.  
+#'  Note that only basic summary information about the 
 #'  teleconnection effects will be returned.
 #' @param conf Parameter specifying the HPD level to compute for posterior 
 #'  predictive samples
@@ -61,7 +64,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
                       Xnew = stDataNew$X, Znew = stDataNew$Z,
                       coords.s = stData$coords.s, coords.r = stData$coords.r,
                       returnAlphas = T, cat.probs = c(1/3, 2/3),
-                      returnFullAlphas = T) {
+                      returnFullAlphas = F) {
   
   # extract some configurations
   localOnly = stFit$localOnly
