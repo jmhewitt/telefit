@@ -81,7 +81,8 @@ struct CompositionSamples {
 	
 	bool return_full_alpha, return_forecast, localOnly;
 	
-	mat alpha_knots, alpha;
+	mat alpha_knots;
+	running_stat_vec<vec> alpha;
 	cube forecast, local, remote;
 	
 	CompositionSamples(int nSamples, const Constants &consts,
@@ -94,9 +95,6 @@ struct CompositionSamples {
 		
 		if(!localOnly) {
 			alpha_knots = mat(nSamples, consts.ns * consts.nr_knots, fill::zeros);
-			
-			if(return_full_alpha)
-				alpha = mat(nSamples, consts.ns * consts.nr, fill::zeros);
 		}
 		
 		if(return_forecast) {

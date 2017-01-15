@@ -3,35 +3,25 @@
 
 List CompositionSamples::toSummarizedList() {
 	
-	mat alpha_knots_est, alpha_knots_sd, alpha_est, alpha_sd, alpha_knots_cov;
 	List alpha_knots_sum, alpha_sum;
 	
 	if(!localOnly) {
 		
 		// post process teleconnection knots
 		
-		alpha_knots_est = mean(alpha_knots);
-		alpha_knots_sd = stddev(alpha_knots, 1);
-		//alpha_knots_cov = cov(alpha_knots, 1);
-		
 		alpha_knots_sum = List::create(
-									   _["est"] = alpha_knots_est,
-									   _["sd"] = alpha_knots_sd,
+									   _["est"] = mean(alpha_knots),
+									   _["sd"] = stddev(alpha_knots, 1),
 									   _["nSamples"] = alpha_knots.n_rows
 									   );
-									   //_["cov"] = alpha_knots_cov
-									   //);
 		
 		// post process full teleconnection field
 		
 		if(return_full_alpha) {
-			alpha_est = mean(alpha);
-			alpha_sd = stddev(alpha, 1);
-			
 			alpha_sum = List::create(
-									 _["est"] = alpha_est,
-									 _["sd"] = alpha_sd,
-									 _["nSamples"] = alpha.n_rows
+									 _["est"] = alpha.mean(),
+									 _["sd"] = alpha.stddev(),
+									 _["nSamples"] = alpha.count()
 									 );
 		}
 	}

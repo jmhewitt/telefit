@@ -892,6 +892,14 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 			// alpha_knots
 			compAlphaKnot.sample();
 			compositionSamples.alpha_knots.row(it) = currentComp.alpha_knots.t();
+			
+			// fill in full teleconnection field
+			if(return_full_alpha) {
+				compositionSamples.alpha(mcstat::dgemkmm(compositionScratch.eye_ns,
+														 compositionScratch.cknots *
+														 compositionScratch.RknotsInv,
+														 currentComp.alpha_knots));
+			}
 		}
 		
 		
@@ -905,15 +913,6 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 									 consts.ns).t() *
 									 compositionScratch.RknotsInv *
 									 compositionScratch.cknots.t() * newDat.Z;
-				
-				// fill in full teleconnection field
-				if(return_full_alpha) {
-					compositionSamples.alpha.row(it) =
-					mcstat::dgemkmm(compositionScratch.eye_ns,
-								compositionScratch.cknots *
-								compositionScratch.RknotsInv,
-								currentComp.alpha_knots).t();
-				}
 			}
 			
 			// compute local effects

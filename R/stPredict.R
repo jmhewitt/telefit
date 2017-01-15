@@ -38,9 +38,6 @@
 #' @param returnAlphas TRUE to return the teleconnection effects sampled 
 #'  alongside the forecasts.  Note that only basic summary information about the 
 #'  teleconnection effects will be returned.
-#' @param returnFullAlphas TRUE to return the teleconnection effects sampled 
-#'  alongside the forecasts.  Note that only basic summary information about the 
-#'  teleconnection effects will be returned.
 #' @param conf Parameter specifying the HPD level to compute for posterior 
 #'  predictive samples
 #' @param tLabs Forecast timepoint labels

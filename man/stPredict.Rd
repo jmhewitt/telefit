@@ -62,10 +62,6 @@ teleconnection effects will be returned.}
 
 \item{cat.probs}{vector of probabilities for also returning categorical 
 predictions from the posterior prediction samples; NULL otherwise}
-
-\item{returnFullAlphas}{TRUE to return the teleconnection effects sampled 
-alongside the forecasts.  Note that only basic summary information about the 
-teleconnection effects will be returned.}
 }
 \description{
 Predict response at new timepoints by drawing samples of the response from
