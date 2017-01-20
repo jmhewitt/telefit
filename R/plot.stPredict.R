@@ -10,14 +10,31 @@
 #' @importFrom reshape2 melt
 #' @importFrom fields rdist.earth
 #' 
-#' @param type Either 'prediction', 'residual', 'observed', 'standard_error' 
-#'  (or 'se'), 'eof_alpha',
-#'  'local', 'remote', 'correlation', 'teleconnection', 'teleconnection_knot',
-#'  'teleconnection_knot_transect', 'errors', or 'cat.prediction'
-#'  to specify which part of stPredict to plot. Note that the value for type can
-#'  be an abbreviation since partial matching is used during plotting. 'truth'
-#'  and 'residual' plots are only available if the model has been evaluted and
-#'  the predictions have been compared to another response dataset.
+#' @param type One of the following options to specify what type of plot to build
+#'    \describe{
+#'      \item{prediction} { }
+#'      \item{residual} { }
+#'      \item{observed} { }
+#'      \item{standard_error (or 'se')} { }
+#'      \item{prediction} { }
+#'      \item{local} { }
+#'      \item{remote} { }
+#'      \item{correlation} { }
+#'      \item{teleconnection} { }
+#'      \item{teleconnection_knot} { }
+#'      \item{teleconnection_knot_transect} { }
+#'      \item{errors} { }
+#'      \item{cat.prediction} { }
+#'      \item{truth} { Note: this plot is only available if the model has been
+#'        evaluated and the predictions have been compared to another response
+#'        dataset. }
+#'      \item{residual} { Note: this plot is only available if the model has been
+#'        evaluated and the predictions have been compared to another response
+#'        dataset. }
+#'      \item{eof-alpha_knots}{ A map of the local domain where the plotted colors
+#'        show the remote influence coefficients mapped onto the eof pattern
+#'        specified by the "pattern" argument.   }
+#'    }
 #' @param stPredict Object of class stPredict to plot.
 #' @param t timepoint to plot.  Will automatically plot the first timepoint if
 #'  t=NULL.
@@ -29,7 +46,7 @@
 #'  that will be used to plot annual errors against
 #' @param err.var name of variable in err.comparison for plotting against
 #' @param err.lab label for name of variable in err.comparison for plotting against
-#' @param pattern if type=='eof_alpha', this specified which eof the remote 
+#' @param pattern if type=='eof-alpha_knots', this specified which eof the remote 
 #'  coefficients should be mapped onto and then plotted over the local domain
 #' @param burn number of observations to exclude from graph
 #' @param ... additional arguments to be passed to lower-level plotting functions
@@ -56,7 +73,7 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
   # determine which type of plot is requested
   match.opts = c('prediction', 'residual', 'observed', 'standard_error', 'se', 
                  'local', 'remote', 'correlation', 'teleconnection', 
-                 'cat.prediction', 'teleconnection_knot', 'eof_alpha',
+                 'cat.prediction', 'teleconnection_knot', 'eof-alpha_knots',
                  'teleconnection_knot_transect', 'errors', 'teleconnection_knot_local')
   type = match.opts[pmatch(type, match.opts)]
   
@@ -115,7 +132,7 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
       geom_point(alpha=.5) +
       ylab(paste('Predicted', stPredict$Y.lab)) +
       xlab(paste('Observed', stPredict$Y.lab))
-  } else if( type=='eof_alpha' ) {
+  } else if( type=='eof-alpha_knots' ) {
     
     if(is.null(stData)) {
       stop('stData object required for plotting estimated teleconnection effects.')
@@ -124,28 +141,9 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
       stop('stFit object required for plotting estimated teleconnection effects.')
     }
     
-    # compute eofs
-    eof = prcomp(stData$Z, center = F)
-    W = -eof$x
-    Tmat = -eof$rotation
-    
-    # compute correlation matrices
-    Dz_knots = rdist.earth(stFit$coords.knots, miles=stFit$miles)
-    Dz_to_knots = rdist.earth(stData$coords.r, stFit$coords.knots, miles=stFit$miles)
-    Rst = maternCov( Dz_knots, smoothness = stFit$priors$cov.r$smoothness,
-                     scale = mean(stFit$parameters$samples$sigmasq_r[-(1:burn)]),
-                     range = mean(stFit$parameters$samples$rho_r[-(1:burn)]) )
-    cst = maternCov( Dz_to_knots, smoothness = stFit$priors$cov.r$smoothness,
-                     scale = mean(stFit$parameters$samples$sigmasq_r[-(1:burn)]),
-                    range = mean(stFit$parameters$samples$rho_r[-(1:burn)]) )
-    
-    # compute eof coefficients for all locations in "local" domain
-    A=matrix(stPredict$alpha_knots$alpha, nrow = nrow(stFit$coords.knots))
-    Ast = t(W) %*% cst %*% solve(Rst) %*% A
-    
-    # extract and plot data
-    stData$Y = t(Ast)
-    stData$tLabs = 1:nrow(Ast)
+    # compute and plot data
+    stData$Y = coef.stPredict(stPredict, stFit=stFit, stData=stData, burn=burn)
+    stData$tLabs = 1:ncol(stData$Y)
     stData$Y.lab = 'Coef.'
     ret = plot.stData(stData, type='response', t=pattern) + 
       ggtitle(bquote(alpha*"'"[.(pattern)]))

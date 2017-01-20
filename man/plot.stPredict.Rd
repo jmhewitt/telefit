@@ -11,14 +11,31 @@ plot.stPredict(stPredict, type = "prediction", t = NULL, stFit = NULL,
 \arguments{
 \item{stPredict}{Object of class stPredict to plot.}
 
-\item{type}{Either 'prediction', 'residual', 'observed', 'standard_error' 
-(or 'se'), 'eof_alpha',
-'local', 'remote', 'correlation', 'teleconnection', 'teleconnection_knot',
-'teleconnection_knot_transect', 'errors', or 'cat.prediction'
-to specify which part of stPredict to plot. Note that the value for type can
-be an abbreviation since partial matching is used during plotting. 'truth'
-and 'residual' plots are only available if the model has been evaluted and
-the predictions have been compared to another response dataset.}
+\item{type}{One of the following options to specify what type of plot to build
+\describe{
+  \item{prediction} { }
+  \item{residual} { }
+  \item{observed} { }
+  \item{standard_error (or 'se')} { }
+  \item{prediction} { }
+  \item{local} { }
+  \item{remote} { }
+  \item{correlation} { }
+  \item{teleconnection} { }
+  \item{teleconnection_knot} { }
+  \item{teleconnection_knot_transect} { }
+  \item{errors} { }
+  \item{cat.prediction} { }
+  \item{truth} { Note: this plot is only available if the model has been
+    evaluated and the predictions have been compared to another response
+    dataset. }
+  \item{residual} { Note: this plot is only available if the model has been
+    evaluated and the predictions have been compared to another response
+    dataset. }
+  \item{eof-alpha_knots}{ A map of the local domain where the plotted colors
+    show the remote influence coefficients mapped onto the eof pattern
+    specified by the "pattern" argument.   }
+}}
 
 \item{t}{timepoint to plot.  Will automatically plot the first timepoint if
 t=NULL.}
@@ -36,7 +53,7 @@ that will be used to plot annual errors against}
 
 \item{err.lab}{label for name of variable in err.comparison for plotting against}
 
-\item{pattern}{if type=='eof_alpha', this specified which eof the remote 
+\item{pattern}{if type=='eof-alpha_knots', this specified which eof the remote 
 coefficients should be mapped onto and then plotted over the local domain}
 
 \item{burn}{number of observations to exclude from graph}

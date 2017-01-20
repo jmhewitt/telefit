@@ -97,6 +97,8 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     coords.knots = rbind(coords.knots, coords.knots %>% mutate(lon=lon-360))
   }
     
+  ret = NULL
+    
   # extract dataset to plot
   match.opts = c('response', 'covariate', 'remote', 'teleconnection', 'eof',
                  'eof_scores', 'cat.response', 'teleconnection_knot', 
