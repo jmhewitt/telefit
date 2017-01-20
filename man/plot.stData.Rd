@@ -8,13 +8,14 @@ plot.stData(stData, type = "response", t = NULL, boxsize = NULL,
   p = NULL, map = "world", region = ".", coord.s = NULL,
   coord.r = NULL, zlim = NULL, lab.teleconnection = expression(alpha),
   fill.lab.width = 20, category.breaks = NULL, coords.knots = NULL,
-  signif.telecon = F, dots = NULL, ...)
+  signif.telecon = F, dots = NULL, pattern = 1, ...)
 }
 \arguments{
 \item{stData}{Object of class stData to plot.}
 
 \item{type}{Either 'response', 'cat.response', 'covariate', 'remote', 
-'teleconnection', 'teleconnection_local', or 'teleconnection_knot_local'
+'teleconnection', 'teleconnection_local', 'eof', 'eof_scores', 
+or 'teleconnection_knot_local'
 to specify which part of stData to plot.  Note that 'teleconnection' applies
 only if the stData object contains information about teleconnection effects,
 i.e., if it is a simulated dataset or otherwise modified to include 
@@ -59,6 +60,10 @@ latitude of knot locations to overlay on the 'remote' plot}
 
 \item{signif.telecon}{if TRUE, will highlight significant teleconnection
 effects when type=='teleconnection'}
+
+\item{pattern}{if type=='eof' this specifies which (remote) EOF pattern to plot
+or if type=='eof_scores' this (vector) specifies which (remote) EOF pattern
+scores to plot}
 }
 \value{
 a ggplot object with the specified map

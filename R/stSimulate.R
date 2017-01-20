@@ -19,7 +19,6 @@
 #'      \item{cov.s}{ list(smoothness=double, range=double, variance=double, nugget=double) }
 #'      \item{cov.r}{ list(smoothness=double, range=double, variance=double, nugget=double) }
 #'    }
-
 #' 
 #' 
 

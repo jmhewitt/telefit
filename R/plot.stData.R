@@ -8,6 +8,7 @@
 #' @import ggplot2
 #' @import dplyr
 #' @importFrom stringr str_wrap
+#' @importFrom reshape2 melt
 #' 
 #' @param boxsize size of grid boxes plotted
 #' @param t timepoint to plot.  Will automatically plot the first timepoint if
@@ -21,7 +22,8 @@
 #' @param region name of subregions to include. Defaults to . which includes 
 #'  all subregions. See documentation for map for more details.
 #' @param type Either 'response', 'cat.response', 'covariate', 'remote', 
-#'  'teleconnection', 'teleconnection_local', or 'teleconnection_knot_local'
+#'  'teleconnection', 'teleconnection_local', 'eof', 'eof_scores', 
+#'  or 'teleconnection_knot_local'
 #'  to specify which part of stData to plot.  Note that 'teleconnection' applies
 #'  only if the stData object contains information about teleconnection effects,
 #'  i.e., if it is a simulated dataset or otherwise modified to include 
@@ -43,6 +45,9 @@
 #' @param coord.r if plot type is 'teleconnection_local', specifes the longitude
 #'  and latitude of remote coordinate for which to plot associated teleconnection
 #'  effects.  if NULL, the middle remote coordinate will be plotted.
+#' @param pattern if type=='eof' this specifies which (remote) EOF pattern to plot
+#'  or if type=='eof_scores' this (vector) specifies which (remote) EOF pattern
+#'  scores to plot
 #'  
 #' @return a ggplot object with the specified map
 #'
@@ -54,7 +59,8 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
                         zlim=NULL,
                         lab.teleconnection = expression(alpha),
                         fill.lab.width = 20, category.breaks = NULL,
-                        coords.knots = NULL, signif.telecon = F, dots=NULL, ...) {
+                        coords.knots = NULL, signif.telecon = F, dots=NULL, 
+                        pattern = 1, ...) {
   
   # merge unique list of dots
     dots = c(dots, list(...))
@@ -90,10 +96,11 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     colnames(coords.knots) = c('lon', 'lat')
     coords.knots = rbind(coords.knots, coords.knots %>% mutate(lon=lon-360))
   }
-  
+    
   # extract dataset to plot
-  match.opts = c('response', 'covariate', 'remote', 'teleconnection', 
-                 'cat.response', 'teleconnection_knot', 'teleconnection_knot_local')
+  match.opts = c('response', 'covariate', 'remote', 'teleconnection', 'eof',
+                 'eof_scores', 'cat.response', 'teleconnection_knot', 
+                 'teleconnection_knot_local')
   type = match.opts[pmatch(type, match.opts)]
   if( type=='response' ) {
     Y = data.frame( Y = stData$Y[, match(t, stData$tLabs)],
@@ -109,7 +116,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     scheme.col = list(low = "#008837", mid = '#f7f7f7', high = '#7b3294')
   } else if( type=='remote' ) {
     Y = data.frame( Y = stData$Z[, match(t, stData$tLabs)],
-                    lon.Y = stData$coords.r[,1], 
+                    lon.Y = stData$coords.r[,1],
                     lat.Y = stData$coords.r[,2] )
     lab.col = stData$Z.lab
     # scheme.col = list(low = "#008837", mid = '#f7f7f7', high = '#7b3294')
@@ -196,10 +203,41 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
                     lon.Y = stData$coords.s[,1], 
                     lat.Y = stData$coords.s[,2] )
     lab.col = paste(stData$Y.lab, 'level')
-  } 
+  } else if( type=='eof' ) {
+    # compute eofs
+    eof = prcomp(stData$Z, center = F)
+
+    # build plotting frame
+    Y = data.frame( Y = -eof$x[,pattern],
+                    lon.Y = stData$coords.r[,1],
+                    lat.Y = stData$coords.r[,2] )
+    
+    # set color and scale options
+    lab.col = ''
+    t = paste('EOF', pattern)
+    scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
+  } else if( type=='eof_scores') {
+    # compute eofs
+    eof = prcomp(stData$Z, center = F)
+    
+    dimnames(eof$rotation)[[2]] = 1:ncol(stData$Z)
+    
+    ret = ggplot(melt(eof$rotation, varnames = c('t','EOF')) %>% 
+             filter(EOF %in% pattern) %>% 
+               mutate(EOF = factor(EOF),
+                      t = as.numeric(stData$tLabs[t])), 
+           aes(x=t, y=value, color=EOF)) +
+      geom_line() + 
+      ylab('Score') +
+      xlab('Year')
+  }
+  
+  if(!is.null(ret)) {
+    return(ret)
+  }
   
   # compute truncations and apply wrapping
-  if(type %in% c('remote', 'teleconnection', 'teleconnection_knot')) {
+  if(type %in% c('remote', 'teleconnection', 'eof', 'teleconnection_knot')) {
     if(max(Y$lon.Y)>0) {
       if(min(Y$lon.Y)<0) {
         lon.E = max(Y %>% filter(lon.Y<=0) %>% dplyr::select(lon.Y))
@@ -214,8 +252,6 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     }
     lat.S = min(Y$lat.Y)
     lat.N = max(Y$lat.Y)
-    
-    Y = rbind(Y, Y %>% mutate(lon.Y=lon.Y-360))
   } else {
     lon.W = min(Y$lon.Y)
     lon.E = max(Y$lon.Y)
@@ -288,9 +324,8 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   
   # build base plot
   if(type!='teleconnection_knot') {
-    
     worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
-      geom_tile(tile.aes, data = Y  %>% 
+      geom_raster(tile.aes, data = Y  %>% 
                   mutate(lon.Y = ifelse(lon.Y<=0, lon.Y, lon.Y-360)), 
                 inherit.aes = F) +
       fillscale +
@@ -299,7 +334,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
       xlab('Longitude') +
       ylab('Latitude') 
     
-    if(type %in% c('remote', 'teleconnection') ) {
+    if(type %in% c('remote', 'teleconnection', 'eof') ) {
       worldmap = worldmap + geom_polygon()
     } else {
       worldmap = worldmap + geom_path()

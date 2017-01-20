@@ -8,8 +8,10 @@
 #' @import ggplot2
 #' @import dplyr
 #' @importFrom reshape2 melt
+#' @importFrom fields rdist.earth
 #' 
-#' @param type Either 'prediction', 'residual', 'observed', 'standard_error' (or 'se'), 
+#' @param type Either 'prediction', 'residual', 'observed', 'standard_error' 
+#'  (or 'se'), 'eof_alpha',
 #'  'local', 'remote', 'correlation', 'teleconnection', 'teleconnection_knot',
 #'  'teleconnection_knot_transect', 'errors', or 'cat.prediction'
 #'  to specify which part of stPredict to plot. Note that the value for type can
@@ -27,6 +29,9 @@
 #'  that will be used to plot annual errors against
 #' @param err.var name of variable in err.comparison for plotting against
 #' @param err.lab label for name of variable in err.comparison for plotting against
+#' @param pattern if type=='eof_alpha', this specified which eof the remote 
+#'  coefficients should be mapped onto and then plotted over the local domain
+#' @param burn number of observations to exclude from graph
 #' @param ... additional arguments to be passed to lower-level plotting functions
 #'  
 #' @return a ggplot object with the specified map
@@ -36,7 +41,7 @@
 
 plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL, 
                            stData=NULL, err.comparison=NULL, err.var=NULL,
-                           err.lab=err.var, dots=NULL, ... ) {
+                           err.lab=err.var, pattern=1, dots=NULL, burn=1, ... ) {
 
   # merge unique list of dots
     dots = c(dots, list(...))
@@ -51,7 +56,7 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
   # determine which type of plot is requested
   match.opts = c('prediction', 'residual', 'observed', 'standard_error', 'se', 
                  'local', 'remote', 'correlation', 'teleconnection', 
-                 'cat.prediction', 'teleconnection_knot', 
+                 'cat.prediction', 'teleconnection_knot', 'eof_alpha',
                  'teleconnection_knot_transect', 'errors', 'teleconnection_knot_local')
   type = match.opts[pmatch(type, match.opts)]
   
@@ -110,6 +115,41 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
       geom_point(alpha=.5) +
       ylab(paste('Predicted', stPredict$Y.lab)) +
       xlab(paste('Observed', stPredict$Y.lab))
+  } else if( type=='eof_alpha' ) {
+    
+    if(is.null(stData)) {
+      stop('stData object required for plotting estimated teleconnection effects.')
+    }
+    if(is.null(stFit)) {
+      stop('stFit object required for plotting estimated teleconnection effects.')
+    }
+    
+    # compute eofs
+    eof = prcomp(stData$Z, center = F)
+    W = -eof$x
+    Tmat = -eof$rotation
+    
+    # compute correlation matrices
+    Dz_knots = rdist.earth(stFit$coords.knots, miles=stFit$miles)
+    Dz_to_knots = rdist.earth(stData$coords.r, stFit$coords.knots, miles=stFit$miles)
+    Rst = maternCov( Dz_knots, smoothness = stFit$priors$cov.r$smoothness,
+                     scale = mean(stFit$parameters$samples$sigmasq_r[-(1:burn)]),
+                     range = mean(stFit$parameters$samples$rho_r[-(1:burn)]) )
+    cst = maternCov( Dz_to_knots, smoothness = stFit$priors$cov.r$smoothness,
+                     scale = mean(stFit$parameters$samples$sigmasq_r[-(1:burn)]),
+                    range = mean(stFit$parameters$samples$rho_r[-(1:burn)]) )
+    
+    # compute eof coefficients for all locations in "local" domain
+    A=matrix(stPredict$alpha_knots$alpha, nrow = nrow(stFit$coords.knots))
+    Ast = t(W) %*% cst %*% solve(Rst) %*% A
+    
+    # extract and plot data
+    stData$Y = t(Ast)
+    stData$tLabs = 1:nrow(Ast)
+    stData$Y.lab = 'Coef.'
+    ret = plot.stData(stData, type='response', t=pattern) + 
+      ggtitle(bquote(alpha*"'"[.(pattern)]))
+    
   } else if( type=='teleconnection' ) {
     
     if(is.null(stData)) {

@@ -19,5 +19,6 @@
 #' 
 
 maternCov = function(d, scale = 1, range = 1, smoothness = .5, nugget = 0) {
-  .Call("_maternCov", PACKAGE = 'telefit', d, scale, range, smoothness, nugget)
+  .Call("_maternCov", PACKAGE = 'telefit', as.matrix(d), 
+        scale, range, smoothness, nugget)
 }

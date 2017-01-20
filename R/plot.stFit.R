@@ -15,7 +15,8 @@
 #' @param type Either 'traceplot', 'density', 'pairs', 'teleconnection',
 #'  'teleconnection_local',
 #'  'teleconnection_knot', 'teleconnection_knot_transect',
-#'  'teleconnection_knot_influence',  or 'beta' to specify which part of stFit to plot. 
+#'  'teleconnection_knot_influence', or 'beta' to specify which 
+#'  part of stFit to plot. 
 #'  Note that the value for
 #'  type can be an abbreviation since partial matching is used during plotting.
 #' @param stFit Object of class stFit to plot.
@@ -68,7 +69,8 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
   # determine which type of plot is requested
   match.opts = c('traceplot', 'density', 'pairs', 'teleconnection', 'beta',
                  'teleconnection_knot', 'teleconnection_knot_transect',
-                 'teleconnection_knot_influence', 'teleconnection_knot_local')
+                 'teleconnection_knot_influence', 'teleconnection_knot_local',
+                 'eof_alpha')
   type = match.opts[pmatch(type, match.opts)]
   
   # extract posterior samples if necessary

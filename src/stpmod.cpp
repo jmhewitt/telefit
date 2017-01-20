@@ -33,9 +33,10 @@ struct STPModel::Params {
 			sigmasq_r_eps = 1.0 /
 				R::rgamma(p.sigmasq_r_eps.shape, 1.0 / p.sigmasq_r_eps.rate);
 			rho_r = R::runif(p.rho_r.a, p.rho_r.b);
-
+			
 			sigmasq_r_eps = 0.0;
 		}
+		
 	};
 	
 	void set(const Samples &samples, int i) {

@@ -16,7 +16,8 @@ plot.stFit(stFit, type = "density", stData = NULL, coord.s = NULL,
 \item{type}{Either 'traceplot', 'density', 'pairs', 'teleconnection',
 'teleconnection_local',
 'teleconnection_knot', 'teleconnection_knot_transect',
-'teleconnection_knot_influence',  or 'beta' to specify which part of stFit to plot. 
+'teleconnection_knot_influence', or 'beta' to specify which 
+part of stFit to plot. 
 Note that the value for
 type can be an abbreviation since partial matching is used during plotting.}
 

@@ -6,12 +6,13 @@
 \usage{
 plot.stPredict(stPredict, type = "prediction", t = NULL, stFit = NULL,
   stData = NULL, err.comparison = NULL, err.var = NULL,
-  err.lab = err.var, dots = NULL, ...)
+  err.lab = err.var, pattern = 1, dots = NULL, burn = 1, ...)
 }
 \arguments{
 \item{stPredict}{Object of class stPredict to plot.}
 
-\item{type}{Either 'prediction', 'residual', 'observed', 'standard_error' (or 'se'), 
+\item{type}{Either 'prediction', 'residual', 'observed', 'standard_error' 
+(or 'se'), 'eof_alpha',
 'local', 'remote', 'correlation', 'teleconnection', 'teleconnection_knot',
 'teleconnection_knot_transect', 'errors', or 'cat.prediction'
 to specify which part of stPredict to plot. Note that the value for type can
@@ -34,6 +35,11 @@ that will be used to plot annual errors against}
 \item{err.var}{name of variable in err.comparison for plotting against}
 
 \item{err.lab}{label for name of variable in err.comparison for plotting against}
+
+\item{pattern}{if type=='eof_alpha', this specified which eof the remote 
+coefficients should be mapped onto and then plotted over the local domain}
+
+\item{burn}{number of observations to exclude from graph}
 
 \item{...}{additional arguments to be passed to lower-level plotting functions}
 }
