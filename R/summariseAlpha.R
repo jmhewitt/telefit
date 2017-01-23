@@ -5,9 +5,6 @@
 #' @export
 #' 
 #' 
-#'
-#' 
-#' 
 
 summariseAlpha = function( alpha, prob=.95, coords.s, coords.r ) {
   

@@ -894,6 +894,14 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 			compAlphaKnot.sample();
 			compositionSamples.alpha_knots.row(it) = currentComp.alpha_knots.t();
 			
+			// eof-mapped teleconnection field
+			compositionSamples.eof_alpha_knots(
+				mcstat::dgemkmm(compositionScratch.eye_ns,
+							    dat.W.t() *
+							    compositionScratch.cknots *
+							    compositionScratch.RknotsInv,
+							    currentComp.alpha_knots));
+			
 			// fill in full teleconnection field
 			if(return_full_alpha) {
 				compositionSamples.alpha(mcstat::dgemkmm(compositionScratch.eye_ns,
@@ -1010,13 +1018,13 @@ RcppExport SEXP _stpcomposition(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 								SEXP rho_y_samples, SEXP rho_r_samples,
 								SEXP ll_samples, SEXP Xnew, SEXP Znew,
 								SEXP localOnly, SEXP full_alpha,
-								SEXP sigmasq_r_eps_samples) {
+								SEXP sigmasq_r_eps_samples, SEXP W) {
 	
 	using namespace Rcpp;
 	
 	// extract model configuration
 	
-	Data dat = Data(as<mat>(X), as<mat>(Z), as<vec>(Y));
+	Data dat = Data(as<mat>(X), as<mat>(Z), as<vec>(Y), as<mat>(W));
 	
 	Data newDat = Data(as<mat>(Xnew), as<mat>(Znew));
 	

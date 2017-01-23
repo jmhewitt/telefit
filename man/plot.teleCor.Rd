@@ -4,8 +4,8 @@
 \alias{plot.teleCor}
 \title{Plots teleconnection correlation maps}
 \usage{
-plot.teleCor(teleCor, signif = F, coord.s = NULL, boxsize = NULL,
-  map = "world", region = ".", zlim = NULL, dots = NULL, ...)
+\method{plot}{teleCor}(teleCor, signif = F, coord.s = NULL, map = "world",
+  region = ".", zlim = NULL, dots = NULL, ...)
 }
 \arguments{
 \item{teleCor}{object of class teleCor, containing pointwise correlations}
@@ -18,8 +18,6 @@ printed in bold, and the rest will be printed more lightly}
 latitude of local coordinate for which to plot pointwise correlations 
 (if type=='remote'). if 
 NULL, the middle local coordinate will be plotted.}
-
-\item{boxsize}{size of grid boxes plotted}
 
 \item{map}{name of map provided by the maps package. These include county, 
 france, italy, nz, state, usa, world, world2.  By default, all stData plots

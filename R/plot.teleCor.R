@@ -16,7 +16,6 @@
 #'  latitude of local coordinate for which to plot pointwise correlations 
 #'  (if type=='remote'). if 
 #'  NULL, the middle local coordinate will be plotted.
-#' @param boxsize size of grid boxes plotted
 #' @param map name of map provided by the maps package. These include county, 
 #'  france, italy, nz, state, usa, world, world2.  By default, all stData plots
 #'  will include us state outlines.
@@ -27,7 +26,7 @@
 #' 
 #' @return a ggplot object with the specified map
 
-plot.teleCor = function( teleCor, signif=F, coord.s=NULL, boxsize=NULL, 
+plot.teleCor = function( teleCor, signif=F, coord.s=NULL, 
                          map='world', region='.', zlim=NULL, dots=NULL, ... ) {
   
   # merge unique list of dots
@@ -111,13 +110,7 @@ plot.teleCor = function( teleCor, signif=F, coord.s=NULL, boxsize=NULL,
   # set commands to modify plotting options, if specified
   #
   
-  if(is.null(boxsize)) {
-    tile.aes = aes(x=lon.Z, y=lat.Z, fill=cor)
-  } else {
-    tile.aes = aes(x=lon.Z, y=lat.Z, fill=cor, 
-                   width=boxsize, height=boxsize)
-  }
-    
+  tile.aes = aes(x=lon.Z, y=lat.Z, fill=cor)
   
   if(is.null(zlim)) {
     fillscale = scale_fill_gradient2(lab.col,

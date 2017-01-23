@@ -3,26 +3,28 @@
 
 List CompositionSamples::toSummarizedList() {
 	
-	List alpha_knots_sum, alpha_sum;
+	List alpha_knots_sum, alpha_sum, eof_alpha_knots_sum;
 	
 	if(!localOnly) {
 		
 		// post process teleconnection knots
 		
-		alpha_knots_sum = List::create(
-									   _["est"] = mean(alpha_knots),
-									   _["sd"] = stddev(alpha_knots, 1),
-									   _["nSamples"] = alpha_knots.n_rows
-									   );
+		alpha_knots_sum = List::create( _["est"] = mean(alpha_knots),
+									    _["sd"] = stddev(alpha_knots, 1),
+									    _["nSamples"] = alpha_knots.n_rows );
+		
+		// post process eof-mapped teleconnection field
+		
+		eof_alpha_knots_sum = List::create( _["est"] = eof_alpha_knots.mean(),
+										    _["sd"] = eof_alpha_knots.stddev(),
+										    _["nSamples"] = eof_alpha_knots.count() );
 		
 		// post process full teleconnection field
 		
 		if(return_full_alpha) {
-			alpha_sum = List::create(
-									 _["est"] = alpha.mean(),
-									 _["sd"] = alpha.stddev(),
-									 _["nSamples"] = alpha.count()
-									 );
+			alpha_sum = List::create( _["est"] = alpha.mean(),
+									  _["sd"] = alpha.stddev(),
+									  _["nSamples"] = alpha.count() );
 		}
 	}
 	
@@ -32,15 +34,11 @@ List CompositionSamples::toSummarizedList() {
 	List forecast_sum;
  
 	if(localOnly) {
-		forecast_sum = List::create(
-									_["forecast"] = forecast
-									);
+		forecast_sum = List::create( _["forecast"] = forecast );
 	} else {
-		forecast_sum = List::create(
-									_["forecast"] = forecast,
-									_["local"] = local,
-									_["remote"] = remote
-									);
+		forecast_sum = List::create( _["forecast"] = forecast,
+									 _["local"] = local,
+									 _["remote"] = remote );
 	}
 	
 	
@@ -50,17 +48,20 @@ List CompositionSamples::toSummarizedList() {
 	if( (!localOnly) & return_full_alpha & return_forecast ) {
 		ret = List::create(
 			_["alpha_knots"] = alpha_knots_sum,
+			_["eof_alpha_knots"] = eof_alpha_knots_sum,
 			_["alpha"] = alpha_sum,
 			_["forecast"] = forecast_sum
 		);
 	} else if( (!localOnly) & return_full_alpha ) {
 		ret = List::create(
 			_["alpha_knots"] = alpha_knots_sum,
+			_["eof_alpha_knots"] = eof_alpha_knots_sum,
 			_["alpha"] = alpha_sum
 		);
 	} else if(return_forecast & (!localOnly)) {
 		ret = List::create(
 			_["alpha_knots"] = alpha_knots_sum,
+			_["eof_alpha_knots"] = eof_alpha_knots_sum,
 			_["forecast"] = forecast_sum
 		);
 	} else if(return_forecast & localOnly) {

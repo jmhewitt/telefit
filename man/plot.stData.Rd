@@ -4,11 +4,11 @@
 \alias{plot.stData}
 \title{Plot stData objects}
 \usage{
-plot.stData(stData, type = "response", t = NULL, boxsize = NULL,
-  p = NULL, map = "world", region = ".", coord.s = NULL,
-  coord.r = NULL, zlim = NULL, lab.teleconnection = expression(alpha),
+\method{plot}{stData}(stData, type = "response", t = NULL, p = NULL,
+  map = "world", region = ".", coord.s = NULL, coord.r = NULL,
+  zlim = NULL, lab.teleconnection = expression(alpha),
   fill.lab.width = 20, category.breaks = NULL, coords.knots = NULL,
-  signif.telecon = F, dots = NULL, pattern = 1, ...)
+  signif.telecon = F, dots = NULL, pattern = 1, lwd = 1.75, ...)
 }
 \arguments{
 \item{stData}{Object of class stData to plot.}
@@ -24,8 +24,6 @@ be an abbreviation since partial matching is used during plotting.}
 
 \item{t}{timepoint to plot.  Will automatically plot the first timepoint if
 t=NULL.}
-
-\item{boxsize}{size of grid boxes plotted}
 
 \item{p}{column index of local covariate to plot if type='covariate'. Will 
 automatically assume the local covariate data includes an intercept and will
@@ -58,12 +56,14 @@ responses into categories}
 \item{coords.knots}{if plot type is 'remote', specifies the longitude and
 latitude of knot locations to overlay on the 'remote' plot}
 
-\item{signif.telecon}{if TRUE, will highlight significant teleconnection
-effects when type=='teleconnection'}
+\item{signif.telecon}{if TRUE, will highlight significant grid cells if the
+plotting data contain a signif column}
 
 \item{pattern}{if type=='eof' this specifies which (remote) EOF pattern to plot
 or if type=='eof_scores' this (vector) specifies which (remote) EOF pattern
 scores to plot}
+
+\item{lwd}{line width for when plotting with signif.telecon==T}
 }
 \value{
 a ggplot object with the specified map

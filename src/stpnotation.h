@@ -31,7 +31,7 @@ struct Priors {
 };
 
 struct Data {
-	mat X, Z;
+	mat X, Z, W;
 	vec Y;
 	
 	Data() { }
@@ -47,6 +47,14 @@ struct Data {
 		X = _X;
 		Z = _Z;
 		Y = _Y;
+	}
+	
+	// intended to be used for composition sampling
+	Data(const mat &_X, const mat &_Z, const vec &_Y, const mat &_W) {
+		X = _X;
+		Z = _Z;
+		Y = _Y;
+		W = _W;
 	}
 };
 
@@ -82,7 +90,7 @@ struct CompositionSamples {
 	bool return_full_alpha, return_forecast, localOnly;
 	
 	mat alpha_knots;
-	running_stat_vec<vec> alpha;
+	running_stat_vec<vec> alpha, eof_alpha_knots;
 	cube forecast, local, remote;
 	
 	CompositionSamples(int nSamples, const Constants &consts,

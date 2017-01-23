@@ -4,35 +4,52 @@
 \alias{plot.stPredict}
 \title{Plot stPredict objects}
 \usage{
-plot.stPredict(stPredict, type = "prediction", t = NULL, stFit = NULL,
-  stData = NULL, err.comparison = NULL, err.var = NULL,
-  err.lab = err.var, pattern = 1, dots = NULL, burn = 1, ...)
+\method{plot}{stPredict}(stPredict, type = "prediction", t = NULL,
+  stFit = NULL, stData = NULL, err.comparison = NULL, err.var = NULL,
+  err.lab = err.var, pattern = 1, dots = NULL, burn = 1,
+  signif.telecon = F, ...)
 }
 \arguments{
 \item{stPredict}{Object of class stPredict to plot.}
 
 \item{type}{One of the following options to specify what type of plot to build
 \describe{
-  \item{prediction} { }
-  \item{residual} { }
-  \item{observed} { }
-  \item{standard_error (or 'se')} { }
-  \item{prediction} { }
-  \item{local} { }
-  \item{remote} { }
-  \item{correlation} { }
-  \item{teleconnection} { }
-  \item{teleconnection_knot} { }
-  \item{teleconnection_knot_transect} { }
-  \item{errors} { }
-  \item{cat.prediction} { }
-  \item{truth} { Note: this plot is only available if the model has been
+  \item{prediction}{ Spatial plot of predicted response variable for 
+    a given timepoint t. }
+  \item{residual}{ Spatial plot of residual for a given timepoint t.  
+    Note: this plot is only available if the model has been
     evaluated and the predictions have been compared to another response
     dataset. }
-  \item{residual} { Note: this plot is only available if the model has been
+  \item{observed}{ Spatial plot of observed response variable for a given
+    timepoint t. Note: this plot is only available if the model has been
+    evaluated and the predictions have been compared to another response
+    dataset.  }
+  \item{standard_error (or 'se')}{ Spatial plot of prediction standard 
+    errors for a given timepoint t.}
+  \item{local}{ Spatial plot of the local components of the
+    response variable for a given timepoint t.}
+  \item{remote}{ Spatial plot of the remote components of the 
+    response variable for a given timepoint t.}
+  \item{correlation}{ Scatterplot of observed vs. predicted response 
+    variables for a given timepoint t.  Note: this plot is only available 
+    if the model has been evaluated and the predictions have been compared 
+    to another response dataset.   }
+  \item{teleconnection}{ Spatial plot of remote coefficients associated
+    with a location coord.s in the spatial response domain. }
+  \item{teleconnection_knot}{ Spatial plot of remote knot coefficients 
+    associated with a location coord.s in the spatial response domain. }
+  \item{teleconnection_knot_transect}{ }
+  \item{errors}{ Series of plots that measure overall prediction error 
+    across prediction timepoints. }
+  \item{cat.prediction}{ Spatial plot of the predicted response variable
+    category (i.e., above/below average) for a given timepoint t. }
+  \item{truth}{ Note: this plot is only available if the model has been
     evaluated and the predictions have been compared to another response
     dataset. }
-  \item{eof-alpha_knots}{ A map of the local domain where the plotted colors
+  \item{residual}{ Note: this plot is only available if the model has been
+    evaluated and the predictions have been compared to another response
+    dataset. }
+  \item{eof_alpha_knots}{ A map of the local domain where the plotted colors
     show the remote influence coefficients mapped onto the eof pattern
     specified by the "pattern" argument.   }
 }}
@@ -53,7 +70,7 @@ that will be used to plot annual errors against}
 
 \item{err.lab}{label for name of variable in err.comparison for plotting against}
 
-\item{pattern}{if type=='eof-alpha_knots', this specified which eof the remote 
+\item{pattern}{if type=='eof_alpha_knots', this specified which eof the remote 
 coefficients should be mapped onto and then plotted over the local domain}
 
 \item{burn}{number of observations to exclude from graph}

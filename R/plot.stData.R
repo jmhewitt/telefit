@@ -10,7 +10,6 @@
 #' @importFrom stringr str_wrap
 #' @importFrom reshape2 melt
 #' 
-#' @param boxsize size of grid boxes plotted
 #' @param t timepoint to plot.  Will automatically plot the first timepoint if
 #'  t=NULL.
 #' @param p column index of local covariate to plot if type='covariate'. Will 
@@ -40,27 +39,28 @@
 #'  responses into categories
 #' @param coords.knots if plot type is 'remote', specifies the longitude and
 #'  latitude of knot locations to overlay on the 'remote' plot
-#' @param signif.telecon if TRUE, will highlight significant teleconnection
-#'  effects when type=='teleconnection'
+#' @param signif.telecon if TRUE, will highlight significant grid cells if the
+#'  plotting data contain a signif column
 #' @param coord.r if plot type is 'teleconnection_local', specifes the longitude
 #'  and latitude of remote coordinate for which to plot associated teleconnection
 #'  effects.  if NULL, the middle remote coordinate will be plotted.
 #' @param pattern if type=='eof' this specifies which (remote) EOF pattern to plot
 #'  or if type=='eof_scores' this (vector) specifies which (remote) EOF pattern
 #'  scores to plot
+#' @param lwd line width for when plotting with signif.telecon==T
 #'  
 #' @return a ggplot object with the specified map
 #'
 #' 
 #' 
 
-plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,  
+plot.stData = function( stData, type='response', t=NULL, p=NULL,  
                         map='world', region='.', coord.s=NULL, coord.r=NULL,
                         zlim=NULL,
                         lab.teleconnection = expression(alpha),
                         fill.lab.width = 20, category.breaks = NULL,
                         coords.knots = NULL, signif.telecon = F, dots=NULL, 
-                        pattern = 1, ...) {
+                        pattern = 1, lwd=1.75, ...) {
   
   # merge unique list of dots
     dots = c(dots, list(...))
@@ -108,6 +108,9 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     Y = data.frame( Y = stData$Y[, match(t, stData$tLabs)],
                     lon.Y = stData$coords.s[,1], 
                     lat.Y = stData$coords.s[,2] )
+    if(signif.telecon) { 
+      Y = cbind(Y, signif = attr(stData$Y, 'signif')[, match(t, stData$tLabs)])
+    }
     lab.col = stData$Y.lab
     scheme.col = list(low = "#a6611a", mid = '#f5f5f5', high = '#018571')
   } else if( type=='covariate' ) {
@@ -281,12 +284,8 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
   #
   
   if(type!='teleconnection_knot') {
-    if(is.null(boxsize)) {
-      tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y)
-    }
-    else {
-      tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y, width=boxsize, height=boxsize)
-    }
+    tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y)
+    alpha = ifelse(signif.telecon, .2, 1)
   } else {
     if(signif.telecon) {
       point.aes = aes(x=lon.Y, y=lat.Y, fill=Y, stroke=signif)
@@ -329,7 +328,7 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
       geom_raster(tile.aes, data = Y  %>% 
                   mutate(lon.Y = ifelse(lon.Y<=0, lon.Y, lon.Y-360)), 
-                inherit.aes = F) +
+                inherit.aes = F, alpha = alpha) +
       fillscale +
       scale_x_continuous(trans = lon_trans()) +
       scale_y_continuous(trans = lat_trans()) +
@@ -341,6 +340,14 @@ plot.stData = function( stData, type='response', t=NULL, boxsize=NULL, p=NULL,
     } else {
       worldmap = worldmap + geom_path()
     }
+    
+    # add significant overlays, if applicable
+    if(signif.telecon)
+      if(sum(Y$signif) > 0) {
+        worldmap = worldmap + 
+          geom_tile(tile.aes, data = Y %>% filter(signif==T),
+                      inherit.aes = F, color='black', lwd=lwd, alpha = 1)
+      }
     
     worldmap = worldmap + 
       theme_grey() +

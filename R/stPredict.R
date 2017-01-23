@@ -107,6 +107,11 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     Xlnew = as.matrix(arrayToLong(Xnew, coords.s, 1)[,-(1:3)])
   }
   
+  # compute (remote) eofs
+  eof = prcomp(stData$Z, center = F)
+  W = -eof$x
+  Tmat = -eof$rotation
+  
   registerDoMC(ncores)
   mcoptions = list(preschedule=FALSE)
   
@@ -132,7 +137,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
             stFit$parameters$samples$rho_r[inds],
             stFit$parameters$samples$ll[inds],
             Xlnew, Znew, localOnly, returnFullAlphas,
-            stFit$parameters$samples$sigmasq_r_eps[inds])
+            stFit$parameters$samples$sigmasq_r_eps[inds], W)
         
     }
   }
@@ -146,15 +151,21 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
       # convert results away from unnecessary matrix format
       composition$alpha_knots$est = as.numeric(composition$alpha_knots$est)
       composition$alpha_knots$sd = as.numeric(composition$alpha_knots$sd)
+      composition$eof_alpha_knots$est = as.numeric(composition$eof_alpha_knots$est)
+      composition$eof_alpha_knots$sd = as.numeric(composition$eof_alpha_knots$sd)
       
       # compute approximate intervals, etc.
       composition$alpha_knots$summary = summariseAlpha(composition$alpha_knots, 
                                                        prob, coords.s, 
                                                        stFit$coords.knots)
+      composition$eof_alpha_knots$summary = 
+        summariseEOFAlpha(composition$eof_alpha_knots, prob, coords.s)
       
       # remove information redundant with the summary
       composition$alpha_knots$est = NULL
       composition$alpha_knots$sd = NULL
+      composition$eof_alpha_knots$est = NULL
+      composition$eof_alpha_knots$sd = NULL
     }
     
     if(returnFullAlphas) {
@@ -242,6 +253,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   if(!localOnly) {
     ret$alpha_knots = composition$alpha_knots$summary
     ret$alpha_knots_cov = composition$alpha_knots$cov
+    ret$eof_alpha_knots = composition$eof_alpha_knots$summary
   }
   class(ret) = 'stPredict'
   

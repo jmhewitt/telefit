@@ -31,6 +31,10 @@ mergeComposition = function(xfull, yfull) {
       x = xfull$alpha_knots
       y = yfull$alpha_knots
       
+      # extract eof-mapped alpha parts
+      xeof = xfull$eof_alpha_knots
+      yeof = yfull$eof_alpha_knots
+      
       z = list(
         est = mergeMean(x$est, y$est, x$nSamples, y$nSamples),
         sd = sqrt(mergeVar(x$sd^2, y$sd^2, x$est, y$est, x$nSamples, y$nSamples)),
@@ -38,11 +42,20 @@ mergeComposition = function(xfull, yfull) {
         samples = rbind(x$samples, y$samples)
       )
       
+      zeof = list(
+        est = mergeMean(xeof$est, yeof$est, xeof$nSamples, yeof$nSamples),
+        sd = sqrt(mergeVar(xeof$sd^2, yeof$sd^2, xeof$est, yeof$est, 
+                           xeof$nSamples, yeof$nSamples)),
+        nSamples = xeof$nSamples + yeof$nSamples,
+        samples = rbind(xeof$samples, yeof$samples)
+      )
+      
       if(!is.null(x$cov)) {
         z$cov = mergeCovmat(x$cov, y$cov, x$est, x$est, y$est, y$est, x$nSamples, y$nSamples)
       }
       
       xfull$alpha_knots = z
+      xfull$eof_alpha_knots = zeof
     }
     
     # merge full-field teleconnection effects
