@@ -9,9 +9,6 @@
 #'
 #' @export
 #' 
-#' @importFrom raster brick mask aggregate crop
-#' @importFrom SDMTools aspect slope
-#' 
 #' @param type whether to return the raw data, anomalies (data minus temporal 
 #' average at each location), or standardized anomalies (anomalies divided by
 #' temporal standard deviation at each location)
@@ -34,8 +31,8 @@ extractRegion = function(sgdf, extent,
                          aspect=F, aspect.categories=NULL,
                          slope=F) {
   
-  # require(raster)
-  # require(SDMTools)
+  require(raster)
+  require(SDMTools)
   
   # convert sgdf to a raster object
   sgdf = brick(sgdf)
