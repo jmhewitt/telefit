@@ -20,14 +20,21 @@
 #'  will include us state outlines.
 #' @param region name of subregions to include. Defaults to . which includes 
 #'  all subregions. See documentation for map for more details.
-#' @param type Either 'response', 'cat.response', 'covariate', 'remote', 
-#'  'teleconnection', 'teleconnection_local', 'eof', 'eof_scores', 
-#'  or 'teleconnection_knot_local'
-#'  to specify which part of stData to plot.  Note that 'teleconnection' applies
-#'  only if the stData object contains information about teleconnection effects,
-#'  i.e., if it is a simulated dataset or otherwise modified to include 
-#'  estimates of teleconnection effects.  Note that the value for type can
-#'  be an abbreviation since partial matching is used during plotting.
+#' @param type One of the following options to specify what type of plot to build
+#'    \describe{
+#'      \item{response}{  }
+#'      \item{cat.response}{  }
+#'      \item{covariate}{  }
+#'      \item{remote}{  }
+#'      \item{teleconnection}{ This plot only applies if the stData object 
+#'      contains information about teleconnection effects,
+#'      i.e., if it is a simulated dataset or otherwise modified to include 
+#'      estimates of teleconnection effects. }
+#'      \item{teleconnection_local}{  }
+#'      \item{eof}{  }
+#'      \item{eof_scores}{  }
+#'      \item{teleconnection_knot_local}{ }
+#'    }
 #' @param stData Object of class stData to plot.
 #' @param coord.s if plot type is 'teleconnection', specifies the longitude and 
 #'  latitude of local coordinate for which to plot teleconnection effects. if 
@@ -227,7 +234,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     
     dimnames(eof$rotation)[[2]] = 1:ncol(stData$Z)
     
-    ret = ggplot(melt(eof$rotation, varnames = c('t','EOF')) %>% 
+    ret = ggplot(melt(-eof$rotation, varnames = c('t','EOF')) %>% 
              filter(EOF %in% pattern) %>% 
                mutate(EOF = factor(EOF),
                       t = as.numeric(stData$tLabs[t])), 
