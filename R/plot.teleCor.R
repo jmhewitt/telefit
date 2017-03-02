@@ -67,7 +67,7 @@ plot.teleCor = function( teleCor, signif=F, coord.s=NULL,
   scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   
   if(signif) {
-    alpha = .2
+    alpha = .4
   } else {
     alpha = 1
   }

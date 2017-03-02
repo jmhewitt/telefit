@@ -8,19 +8,29 @@
   map = "world", region = ".", coord.s = NULL, coord.r = NULL,
   zlim = NULL, lab.teleconnection = expression(alpha),
   fill.lab.width = 20, category.breaks = NULL, coords.knots = NULL,
-  signif.telecon = F, dots = NULL, pattern = 1, lwd = 1.75, ...)
+  signif.telecon = F, dots = NULL, pattern = 1, lwd = 1.75,
+  cutoff = 0.9, ...)
 }
 \arguments{
 \item{stData}{Object of class stData to plot.}
 
-\item{type}{Either 'response', 'cat.response', 'covariate', 'remote', 
-'teleconnection', 'teleconnection_local', 'eof', 'eof_scores', 
-or 'teleconnection_knot_local'
-to specify which part of stData to plot.  Note that 'teleconnection' applies
-only if the stData object contains information about teleconnection effects,
-i.e., if it is a simulated dataset or otherwise modified to include 
-estimates of teleconnection effects.  Note that the value for type can
-be an abbreviation since partial matching is used during plotting.}
+\item{type}{One of the following options to specify what type of plot to build
+\describe{
+  \item{response}{  }
+  \item{cat.response}{  }
+  \item{covariate}{  }
+  \item{remote}{  }
+  \item{teleconnection}{ This plot only applies if the stData object 
+  contains information about teleconnection effects,
+  i.e., if it is a simulated dataset or otherwise modified to include 
+  estimates of teleconnection effects. }
+  \item{teleconnection_local}{  }
+  \item{eof}{  }
+  \item{eof_scores}{  }
+  \item{eof_scree}{ }
+  \item{eof_cor}{ This plot shows pointwise correlations with EOF patterns. }
+  \item{teleconnection_knot_local}{ }
+}}
 
 \item{t}{timepoint to plot.  Will automatically plot the first timepoint if
 t=NULL.}
@@ -64,6 +74,9 @@ or if type=='eof_scores' this (vector) specifies which (remote) EOF pattern
 scores to plot}
 
 \item{lwd}{line width for when plotting with signif.telecon==T}
+
+\item{cutoff}{Used to denote where this proportion of variance is achieved in
+the eof_scree plots}
 }
 \value{
 a ggplot object with the specified map

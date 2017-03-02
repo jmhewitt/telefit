@@ -14,13 +14,18 @@
 \arguments{
 \item{stFit}{Object of class stFit to plot.}
 
-\item{type}{Either 'traceplot', 'density', 'pairs', 'teleconnection',
-'teleconnection_local',
-'teleconnection_knot', 'teleconnection_knot_transect',
-'teleconnection_knot_influence', or 'beta' to specify which 
-part of stFit to plot. 
-Note that the value for
-type can be an abbreviation since partial matching is used during plotting.}
+\item{type}{One of the following options to specify what type of plot to build
+\describe{
+  \item{traceplot}{  }
+  \item{density}{  }
+  \item{pairs}{  }
+  \item{teleconnection}{  }
+  \item{teleconnection_local}{  }
+  \item{teleconnection_knot}{  }
+  \item{teleconnection_knot_transect}{  }
+  \item{teleconnection_knot_influence}{  }
+  \item{beta}{ }
+}}
 
 \item{stData}{Object of class stData to provide coordinate and related
 information for plotting estimated teleconnection effects}

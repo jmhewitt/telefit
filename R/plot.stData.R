@@ -9,6 +9,7 @@
 #' @import dplyr
 #' @importFrom stringr str_wrap
 #' @importFrom reshape2 melt
+#' @importFrom cowplot plot_grid
 #' 
 #' @param t timepoint to plot.  Will automatically plot the first timepoint if
 #'  t=NULL.
@@ -33,6 +34,8 @@
 #'      \item{teleconnection_local}{  }
 #'      \item{eof}{  }
 #'      \item{eof_scores}{  }
+#'      \item{eof_scree}{ }
+#'      \item{eof_cor}{ This plot shows pointwise correlations with EOF patterns. }
 #'      \item{teleconnection_knot_local}{ }
 #'    }
 #' @param stData Object of class stData to plot.
@@ -55,6 +58,8 @@
 #'  or if type=='eof_scores' this (vector) specifies which (remote) EOF pattern
 #'  scores to plot
 #' @param lwd line width for when plotting with signif.telecon==T
+#' @param cutoff Used to denote where this proportion of variance is achieved in
+#'   the eof_scree plots
 #'  
 #' @return a ggplot object with the specified map
 #'
@@ -67,7 +72,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
                         lab.teleconnection = expression(alpha),
                         fill.lab.width = 20, category.breaks = NULL,
                         coords.knots = NULL, signif.telecon = F, dots=NULL, 
-                        pattern = 1, lwd=1.75, ...) {
+                        pattern = 1, lwd=1.75, cutoff=.9, ...) {
   
   # merge unique list of dots
     dots = c(dots, list(...))
@@ -109,7 +114,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
   # extract dataset to plot
   match.opts = c('response', 'covariate', 'remote', 'teleconnection', 'eof',
                  'eof_scores', 'cat.response', 'teleconnection_knot', 
-                 'teleconnection_knot_local')
+                 'teleconnection_knot_local', 'eof_scree', 'eof_cor')
   type = match.opts[pmatch(type, match.opts)]
   if( type=='response' ) {
     Y = data.frame( Y = stData$Y[, match(t, stData$tLabs)],
@@ -216,11 +221,8 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
                     lat.Y = stData$coords.s[,2] )
     lab.col = paste(stData$Y.lab, 'level')
   } else if( type=='eof' ) {
-    # compute eofs
-    eof = prcomp(stData$Z, center = F)
-
     # build plotting frame
-    Y = data.frame( Y = -eof$x[,pattern],
+    Y = data.frame( Y = eof(stData$Z)$patterns[,pattern],
                     lon.Y = stData$coords.r[,1],
                     lat.Y = stData$coords.r[,2] )
     
@@ -229,12 +231,8 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     t = paste('EOF', pattern)
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='eof_scores') {
-    # compute eofs
-    eof = prcomp(stData$Z, center = F)
     
-    dimnames(eof$rotation)[[2]] = 1:ncol(stData$Z)
-    
-    ret = ggplot(melt(-eof$rotation, varnames = c('t','EOF')) %>% 
+    ret = ggplot(melt(eof(stData$Z)$scores, varnames = c('t','EOF')) %>% 
              filter(EOF %in% pattern) %>% 
                mutate(EOF = factor(EOF),
                       t = as.numeric(stData$tLabs[t])), 
@@ -242,6 +240,38 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
       geom_line() + 
       ylab('Score') +
       xlab('Year')
+  } else if( type=='eof_scree') {
+    
+    e = eof(stData$Z)
+    
+    ret = cowplot::plot_grid(
+      ggplot(data.frame(EOF=1:length(e$sd), sd=e$sd), aes(x=EOF, y=sd)) +
+        geom_line() + 
+        ylab('Standard deviation') +
+        xlab('EOF') + 
+        ggtitle('EOF standard deviations'),
+      ggplot(data.frame(EOF=1:length(e$sd), cum=cumsum(e$sd^2)/sum(e$sd^2)),
+             aes(x=EOF, y=cum)) +
+        geom_line() +
+        ylab('Proportion of variance') +
+        xlab('EOF') +
+        ggtitle('EOF contributions') +
+        geom_hline(yintercept = cutoff, lty=2),
+      ncol=2
+    )
+      
+  }  else if( type=='eof_cor' ) {
+  
+    # build plotting frame
+    Y = data.frame( Y = as.numeric(cor(eof(stData$Z)$scores[,pattern], 
+                                       t(stData$Y))),
+                    lon.Y = stData$coords.s[,1],
+                    lat.Y = stData$coords.s[,2] )
+    
+    # set color and scale options
+    lab.col = 'Cor.'
+    t = paste('Pointwise correlations with EOF', pattern)
+    scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   }
   
   if(!is.null(ret)) {

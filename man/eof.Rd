@@ -4,26 +4,15 @@
 \alias{eof}
 \title{Performs an EOF decomposition of the data}
 \usage{
-eof(Z, center = T, scale = T)
+eof(X, center = F, scale = F)
 }
 \arguments{
-\item{Z}{A spatio-temporal observation matrix of a field for which spatial 
-EOFs will be computed.  Each column should have all spatial observations
-for a given timepoint.}
+\item{X}{[variable x observation] matrix of data for which to compute EOFs}
 }
 \value{
-A list with the following components:  
- 
- patterns (columns of Phi)
- amplitudes (sc)
- cumvar (cumulative proportion of variance explained by each pattern)
- mu (climatology)
+A list containing EOF patterns as columns, and their scores
 }
 \description{
-Based on Wikle's text
-}
-\details{
-Each column in the amplitude contains the time series for one EOF pattern
-Each column in the pattern contains the spatial loadings for one EOF
+Performs an EOF decomposition of the data
 }
 
