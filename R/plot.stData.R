@@ -383,7 +383,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
       if(sum(Y$signif) > 0) {
         worldmap = worldmap + 
           geom_tile(tile.aes, data = Y %>% filter(signif==T),
-                      inherit.aes = F, color='black', lwd=lwd, alpha = 1)
+                    inherit.aes = F, color='black', lwd=lwd, alpha = 1) 
       }
     
     worldmap = worldmap + 

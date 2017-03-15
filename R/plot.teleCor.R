@@ -143,7 +143,7 @@ plot.teleCor = function( teleCor, signif=F, coord.s=NULL,
     if(nrow(cor.frame %>% filter(signif==T)) > 0) {
       worldmap = worldmap + 
         geom_tile(tile.aes, data = cor.frame %>% filter(signif==T),
-                  inherit.aes = F, color='black', lwd=1.75, alpha = 1)
+                  inherit.aes = F, alpha = 1)
     }
   
   # add coord.s to the plot and modify truncation
