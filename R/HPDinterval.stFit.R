@@ -10,7 +10,14 @@
 #'  
 
 HPDinterval.stFit = function(stFit, burn = 1, prob = .95) {
-  lapply(stFit$parameters$samples, function(s) {
+  res = lapply(stFit$parameters$samples, function(s) {
     HPDinterval(mcmc(as.matrix(s[-(1:burn),])))
   })
+  
+  # add names for the betas
+  if(!is.null(stFit$parameters$beta.names)) {
+    rownames(res$beta) = stFit$parameters$beta.names
+  }
+  
+  res
 }

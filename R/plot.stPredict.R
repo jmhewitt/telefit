@@ -166,7 +166,7 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
     stData$Y.lab = 'Coef.'
     ret = plot.stData(stData, type='response', t=pattern, 
                       signif.telecon = signif.telecon, dots=dots) + 
-      ggtitle(bquote(alpha*"'"[.(pattern)]))
+      ggtitle(bquote(alpha*"'"(~bold(".")~","~.(pattern))))
     
   } else if( type=='teleconnection' ) {
     
