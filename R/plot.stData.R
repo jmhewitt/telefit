@@ -51,6 +51,7 @@
 #'  latitude of knot locations to overlay on the 'remote' plot
 #' @param signif.telecon if TRUE, will highlight significant grid cells if the
 #'  plotting data contain a signif column
+#' @param signif.level significance level for eof_cor significance highlighting
 #' @param coord.r if plot type is 'teleconnection_local', specifes the longitude
 #'  and latitude of remote coordinate for which to plot associated teleconnection
 #'  effects.  if NULL, the middle remote coordinate will be plotted.
@@ -72,7 +73,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
                         lab.teleconnection = expression(alpha),
                         fill.lab.width = 20, category.breaks = NULL,
                         coords.knots = NULL, signif.telecon = F, dots=NULL, 
-                        pattern = 1, lwd=1.75, cutoff=.9, ...) {
+                        pattern = 1, lwd=1.75, cutoff=.9, signif.level=.05, ...) {
   
   # merge unique list of dots
     dots = c(dots, list(...))
@@ -263,10 +264,15 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
   }  else if( type=='eof_cor' ) {
   
     # build plotting frame
-    Y = data.frame( Y = as.numeric(cor(eof(stData$Z)$scores[,pattern], 
-                                       t(stData$Y))),
+    sc = eof(stData$Z)$scores[,pattern]
+    Y = data.frame( Y = as.numeric(cor(sc, t(stData$Y))),
                     lon.Y = stData$coords.s[,1],
                     lat.Y = stData$coords.s[,2] )
+    
+    if(signif.telecon) {
+      Y$signif = apply(dat.train$Y, 1, 
+                       function(y) { cor.test(y, sc)$p.value }) < signif.level
+    }
     
     # set color and scale options
     lab.col = 'Cor.'

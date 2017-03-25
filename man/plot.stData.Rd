@@ -9,7 +9,7 @@
   zlim = NULL, lab.teleconnection = expression(alpha),
   fill.lab.width = 20, category.breaks = NULL, coords.knots = NULL,
   signif.telecon = F, dots = NULL, pattern = 1, lwd = 1.75,
-  cutoff = 0.9, ...)
+  cutoff = 0.9, signif.level = 0.05, ...)
 }
 \arguments{
 \item{stData}{Object of class stData to plot.}
@@ -77,6 +77,8 @@ scores to plot}
 
 \item{cutoff}{Used to denote where this proportion of variance is achieved in
 the eof_scree plots}
+
+\item{signif.level}{significance level for eof_cor significance highlighting}
 }
 \value{
 a ggplot object with the specified map
