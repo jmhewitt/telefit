@@ -10,8 +10,10 @@
 #' @export
 #' 
 #' @param type whether to return the raw data, anomalies (data minus temporal 
-#' average at each location), or standardized anomalies (anomalies divided by
-#' temporal standard deviation at each location)
+#' average at each location), standardized anomalies (anomalies divided by
+#' temporal standard deviation at each location), or spatially standardized
+#' data (data minus overall spatial average divided by spatial std. dev.; each
+#' year gets its own spatial standardization )
 #' @param extent raster::extent object featuring region to extract
 #' @param aggfact if provided, will spatially average the data
 #' @param mask if an sgdf is provided, the data will be masked before
@@ -40,9 +42,6 @@ extractRegion = function(sgdf, extent,
   # mask data
   if(!is.null(mask))
     sgdf = mask(sgdf, brick(mask))
-  
-  # crop data
-  sgdf = crop(sgdf, extent)
 
   # extract and aggregate the data
   if(!is.null(aggfact) && aggfact > 1)
@@ -67,11 +66,25 @@ extractRegion = function(sgdf, extent,
     }
   }
   
+  # crop data
+  sgdf = crop(sgdf, extent)
+  
   # compute anomalies
-  if(!is.na(pmatch(type, 'std.anomaly')))
+  match.opts = c('response', 'std.anomaly', 'anomaly', 'spatial.anomaly', 
+                 'spatial.std.anomaly')
+  type = match.opts[pmatch(type, match.opts)]
+  if( type=='std.anomaly' ) {
     sgdf@data@values = t(scale(t(sgdf@data@values), center=T, scale=T))
-  else if(!is.na(pmatch(type, 'anomaly')))
+  }
+  else if( type=='anomaly') {
     sgdf@data@values = t(scale(t(sgdf@data@values), center=T, scale=F))
+  }
+  else if( type=='spatial.anomaly') {
+    sgdf@data@values = scale(sgdf@data@values, center=T, scale=F)
+  }
+  else if( type=='spatial.std.anomaly') {
+    sgdf@data@values = scale(sgdf@data@values, center=T, scale=T)
+  }
   
   sgdf
 }
