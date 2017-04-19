@@ -125,7 +125,8 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
       Y = cbind(Y, signif = attr(stData$Y, 'signif')[, match(t, stData$tLabs)])
     }
     lab.col = stData$Y.lab
-    scheme.col = list(low = "#a6611a", mid = '#f5f5f5', high = '#018571')
+    # scheme.col = list(low = "#a6611a", mid = '#f5f5f5', high = '#018571')
+    scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='covariate' ) {
     Y = data.frame( Y = stData$X[, p, match(t, stData$tLabs)],
                     lon.Y = stData$coords.s[,1], 

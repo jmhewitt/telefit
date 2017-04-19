@@ -40,6 +40,9 @@ extractRegion = function(sgdf, extent,
   # mask data
   if(!is.null(mask))
     sgdf = mask(sgdf, brick(mask))
+  
+  # crop data
+  sgdf = crop(sgdf, extent)
 
   # extract and aggregate the data
   if(!is.null(aggfact) && aggfact > 1)
@@ -63,9 +66,6 @@ extractRegion = function(sgdf, extent,
       sgdf[[i]] = slope(sgdf[[i]], latlon = T)
     }
   }
-  
-  # crop data
-  sgdf = crop(sgdf, extent)
   
   # compute anomalies
   if(!is.na(pmatch(type, 'std.anomaly')))
