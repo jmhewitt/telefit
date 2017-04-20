@@ -61,6 +61,8 @@
 #' @param lwd line width for when plotting with signif.telecon==T
 #' @param cutoff Used to denote where this proportion of variance is achieved in
 #'   the eof_scree plots
+#' @param alpha the level of fading that should be applied to insignificant
+#'   grid boxes when plotting significant effects
 #'  
 #' @return a ggplot object with the specified map
 #'
@@ -73,7 +75,8 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
                         lab.teleconnection = expression(alpha),
                         fill.lab.width = 20, category.breaks = NULL,
                         coords.knots = NULL, signif.telecon = F, dots=NULL, 
-                        pattern = 1, lwd=1.75, cutoff=.9, signif.level=.05, ...) {
+                        pattern = 1, lwd=1.75, cutoff=.9, signif.level=.05, 
+                        alpha = .2, ...) {
   
   # merge unique list of dots
     dots = c(dots, list(...))
@@ -329,7 +332,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
   
   if(type!='teleconnection_knot') {
     tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y)
-    alpha = ifelse(signif.telecon, .2, 1)
+    alpha = ifelse(signif.telecon, alpha, 1)
   } else {
     if(signif.telecon) {
       point.aes = aes(x=lon.Y, y=lat.Y, fill=Y, stroke=signif)
@@ -399,7 +402,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     
     if(!is.null(coords.knots)) {
       worldmap = worldmap + geom_point(aes(x=lon, y=lat), data = coords.knots,
-                                       col = 'black', fill = 'white', shape=21,
+                                       col = 'black', fill = 'black', shape=21,
                                        inherit.aes = F)
     }
   } else {

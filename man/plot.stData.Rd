@@ -9,7 +9,7 @@
   zlim = NULL, lab.teleconnection = expression(alpha),
   fill.lab.width = 20, category.breaks = NULL, coords.knots = NULL,
   signif.telecon = F, dots = NULL, pattern = 1, lwd = 1.75,
-  cutoff = 0.9, signif.level = 0.05, ...)
+  cutoff = 0.9, signif.level = 0.05, alpha = 0.2, ...)
 }
 \arguments{
 \item{stData}{Object of class stData to plot.}
@@ -79,6 +79,9 @@ scores to plot}
 the eof_scree plots}
 
 \item{signif.level}{significance level for eof_cor significance highlighting}
+
+\item{alpha}{the level of fading that should be applied to insignificant
+grid boxes when plotting significant effects}
 }
 \value{
 a ggplot object with the specified map

@@ -11,8 +11,10 @@ extractRegion(sgdf, extent, type = "response", aggfact = NULL,
 \item{extent}{raster::extent object featuring region to extract}
 
 \item{type}{whether to return the raw data, anomalies (data minus temporal 
-average at each location), or standardized anomalies (anomalies divided by
-temporal standard deviation at each location)}
+average at each location), standardized anomalies (anomalies divided by
+temporal standard deviation at each location), or spatially standardized
+data (data minus overall spatial average divided by spatial std. dev.; each
+year gets its own spatial standardization )}
 
 \item{aggfact}{if provided, will spatially average the data}
 
