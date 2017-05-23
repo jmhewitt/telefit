@@ -66,4 +66,3 @@ Storch, H. Von, and Zwiers, F.W., 1999, Statistical Analysis in Climate Research
 \seealso{
 \link{eof} For details about EOF decompositions.
 }
-

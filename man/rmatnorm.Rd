@@ -20,4 +20,3 @@ Draw random matrices from the matrix normal distribution \deqn{MN(M, U, V)}
 Note that an observation, \eqn{X}, from this equation has the following 
 distribution when vectorized \deqn{vec(X) ~ N(vec(M), kron(V, U) )}
 }
-

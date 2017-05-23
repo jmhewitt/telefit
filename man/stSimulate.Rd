@@ -23,4 +23,3 @@ This function simulates spatio-temporal data. The intention is that data Y and l
 parameters alpha will be generated using provided covariates X and Z; 
 spatial domains coords.s, coords.r, and coords.knots; and model parameters.
 }
-

@@ -14,4 +14,3 @@ Provides basic measures for evalutating the fit.  Includes Brier skill score
 against the climatology, MSPE, PPL, overall correlation, and a computation
 of the coverage probabilities for confidence intervals
 }
-

@@ -20,4 +20,3 @@ This function combines the sample mean information from two samples (of
 the same phenomena) to return the sample mean of the union of the two 
 samples.
 }
-

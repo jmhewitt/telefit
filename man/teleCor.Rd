@@ -23,4 +23,3 @@ list with a matrix 'cor' containing correlations.  The columns index
 \description{
 Compute pointwise correlations for an exploratory teleconnection analysis
 }
-

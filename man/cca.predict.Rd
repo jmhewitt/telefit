@@ -27,4 +27,3 @@ Cook, E.R., Briffa, K.R., and Jones, P.D., 1994, Spatial regression methods in d
 \seealso{
 \link{cca} For details about canonical correlation analyses.
 }
-

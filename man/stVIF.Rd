@@ -20,4 +20,3 @@ samples}
 \description{
 VIFs will be computed at the posterior mean of all covariance parameters.
 }
-

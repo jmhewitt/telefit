@@ -24,4 +24,3 @@ process derivatives.}
 This function evaluates the Matern covariance function for the elements of 
 a (potentially non-square) spatial distance matrix
 }
-

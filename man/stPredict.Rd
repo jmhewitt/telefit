@@ -73,4 +73,3 @@ the posterior predictive distribution.  Since this requires sampling
 teleconnection effects, this method can return estimates of the 
 teleconnection effects as a by-product.
 }
-

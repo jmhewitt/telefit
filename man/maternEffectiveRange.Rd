@@ -18,4 +18,3 @@ process derivatives.}
 \description{
 Compute effective range for Matern correlation to drop to a specified level
 }
-

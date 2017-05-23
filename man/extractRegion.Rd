@@ -40,4 +40,3 @@ Extract region from a SpatialGridDataFrame
 
 
 }
-

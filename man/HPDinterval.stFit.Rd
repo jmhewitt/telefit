@@ -16,4 +16,3 @@
 \description{
 Compute Highest posterior density intervals from posterior samples
 }
-

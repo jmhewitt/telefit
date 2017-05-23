@@ -14,4 +14,3 @@ rwishart(V, n)
 \description{
 Random wishart matrix
 }
-

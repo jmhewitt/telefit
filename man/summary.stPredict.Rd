@@ -17,4 +17,3 @@ summary if NULL.}
 \description{
 This function prints basic summary info for telefit stPredict objects
 }
-

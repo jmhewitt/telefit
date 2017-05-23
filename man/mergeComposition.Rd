@@ -14,4 +14,3 @@ mergeComposition(xfull, yfull)
 \description{
 Combine results from composition sampler
 }
-

@@ -9,4 +9,3 @@ lon_trans()
 \description{
 Formatting for longitude scales in ggplot spatial maps
 }
-

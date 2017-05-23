@@ -16,4 +16,3 @@
 \description{
 Compute point estimates for parameters from posterior samples
 }
-

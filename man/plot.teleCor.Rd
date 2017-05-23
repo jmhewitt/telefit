@@ -34,4 +34,3 @@ a ggplot object with the specified map
 \description{
 This function provides basic plotting for analyses returned from cor.tel
 }
-

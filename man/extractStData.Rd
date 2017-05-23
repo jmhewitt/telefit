@@ -76,4 +76,3 @@ observations as the pointwise temporal average)}
 \description{
 Basic extraction of SpatialGridDataFrame data for teleconnection analysis
 }
-

@@ -89,4 +89,3 @@ a ggplot object with the specified map
 \description{
 This function provides basic plotting for telefit package data.
 }
-

@@ -14,4 +14,3 @@ errDump(x, fname = "error_samplerState.RData")
 \description{
 Wrapper for a function to dump errors from C++
 }
-

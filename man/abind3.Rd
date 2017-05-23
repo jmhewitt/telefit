@@ -13,4 +13,3 @@ a 3d matrix}
 \description{
 This function extends the abind function from the abind package.
 }
-

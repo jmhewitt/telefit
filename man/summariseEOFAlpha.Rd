@@ -10,4 +10,3 @@ summariseEOFAlpha(eof_alpha, prob = 0.95, coords.s)
 This function computes approximate normal intervals, etc. for fitted 
 eof-mapped alphas.
 }
-

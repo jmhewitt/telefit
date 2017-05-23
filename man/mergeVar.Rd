@@ -31,4 +31,3 @@ instead of n-1 (the unbiased estimator).
 \references{
 Chan, T.F., Golub, G.H., and LeVeque, R.J., 1979, Updating formulae and a pairwise algorithm for computing sample variances: Technical Report, Stanford University .
 }
-

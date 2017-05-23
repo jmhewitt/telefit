@@ -16,4 +16,3 @@ arrayToLong(X, coords, yrs)
 \description{
 Reshape array of data matrices into long format
 }
-

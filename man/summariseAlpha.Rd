@@ -9,4 +9,3 @@ summariseAlpha(alpha, prob = 0.95, coords.s, coords.r)
 \description{
 This function computes approximate normal intervals, etc. for fitted alphas.
 }
-

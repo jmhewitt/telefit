@@ -69,4 +69,3 @@ predictions from the posterior prediction samples; NULL otherwise}
 \description{
 Compute log likelihood for model
 }
-

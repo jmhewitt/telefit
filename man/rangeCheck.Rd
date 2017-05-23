@@ -13,4 +13,3 @@ rangeCheck(coords.local, coords.remote, Z, miles = T, smoothness.local = 2,
 Note that the remote range numbers don't necessarily mean anything since the
 full model is quite generous.  All the same, it's informative.
 }
-

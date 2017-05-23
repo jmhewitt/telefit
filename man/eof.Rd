@@ -15,4 +15,3 @@ A list containing EOF patterns as columns, and their scores
 \description{
 Performs an EOF decomposition of the data
 }
-

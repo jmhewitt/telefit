@@ -9,4 +9,3 @@ dgemkmm(A, B, C)
 \description{
 Evaluate kron(A,B) * C without storing kron(A,B)
 }
-

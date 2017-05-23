@@ -73,4 +73,3 @@ will be based (lon, lat)}
 \description{
 Fits the teleconnection model with L = Sigma
 }
-
