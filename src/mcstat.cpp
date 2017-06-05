@@ -6,7 +6,7 @@ double mcstat::logit(double x) { return log( x / (1.0 - x) ); }
 
 double mcstat::invlogit(double x) {
 	double expX = exp(x);
-	return isinf(expX)!=0 ? 1 : expX / (1.0 + expX);
+	return std::isinf(expX)!=0 ? 1 : expX / (1.0 + expX);
 }
 
 double mcstat::logdinvgamma_unscaled(double x, double a, double b) {
