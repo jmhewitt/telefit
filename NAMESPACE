@@ -2,6 +2,7 @@
 
 S3method(HPDinterval,stFit)
 S3method(coef,stFit)
+S3method(coef,stPredict)
 S3method(plot,stData)
 S3method(plot,stFit)
 S3method(plot,stPredict)
