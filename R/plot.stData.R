@@ -274,7 +274,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
                     lat.Y = stData$coords.s[,2] )
     
     if(signif.telecon) {
-      Y$signif = apply(dat.train$Y, 1, 
+      Y$signif = apply(stData$Y, 1, 
                        function(y) { cor.test(y, sc)$p.value }) < signif.level
     }
     
