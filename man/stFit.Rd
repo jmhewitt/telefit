@@ -7,7 +7,7 @@
 stFit(stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
   Z = stData$Z, coords.s = stData$coords.s, coords.r = stData$coords.r,
   rw.initsd = NULL, returnll = T, miles = T, C = 1, alpha = 0.44,
-  localOnly = F, varying = T, nknots = 75, remoteOnly = F, coords.knots)
+  localOnly = F, varying = F, nknots = 75, remoteOnly = F, coords.knots)
 }
 \arguments{
 \item{stData}{Object with class 'stData' containing data needed to fit this 
@@ -62,7 +62,7 @@ for kilometers}
 \item{localOnly}{TRUE to fit the model without the teleconnection effects
 (typically for evaluating impact of teleconnection effects)}
 
-\item{varying}{TRUE to fit the model with spatially varying local coefficients}
+\item{varying}{(depreceated) TRUE to fit the model with spatially varying local coefficients}
 
 \item{remoteOnly}{TRUE to fit the model without local effects.  This will 
 fit a local intercept, but will not incorporate local covariates.}
