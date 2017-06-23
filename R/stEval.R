@@ -5,7 +5,8 @@
 #' of the coverage probabilities for confidence intervals
 #'
 #' @param clim the climatology for the location in Y
-#'
+#' @param Y observed values of the response
+#' @param forecast stPredict object containing predictions for Y
 #'
 #' @export
 #'
@@ -31,7 +32,7 @@ stEval = function(forecast, Y, clim) {
   
   
   # evaluation for categorical predictions
-  eval.cat = function(pred, obs) {
+  eval.cat = function(pred, pred.dist, obs) {
     
     # compute probability of correct prediction
     pc = mean(pred==obs)
@@ -44,11 +45,18 @@ stEval = function(forecast, Y, clim) {
       pe = pe + mean(pred==i) * mean(obs==i)
     }
     
+    if(!is.null(pred.dist)) {
+      crps.cat = mean(rowSums( (pred.dist - cbind(obs<=1, obs<=2, obs<=3))^2 ))
+    } else {
+      crps.cat = NA
+    }
+    
     # format return
     data.frame(
       pct.correct = pc,
       heidke.skill = (pc - pe)/(1 - pe),
-      heidke.skill.alt = (pc - 1/3)/(1 - 1/3)
+      heidke.skill.alt = (pc - 1/3)/(1 - 1/3),
+      crps.cat = crps.cat
     )
   }
   
@@ -62,7 +70,7 @@ stEval = function(forecast, Y, clim) {
     
     # evaluate categorical errors
     if(!is.null(forecast$cat.probs)) {
-      fcst.cat.eval = eval.cat(fcst$pred$Y.cat, Y.cat[,t])
+      fcst.cat.eval = eval.cat(fcst$pred$Y.cat, fcst$pred.cat, Y.cat[,t])
     }
     
     # compute residual
@@ -85,6 +93,7 @@ stEval = function(forecast, Y, clim) {
       fcst$err$cat.correct = fcst.cat.eval$pct.correct
       fcst$err$cat.heidke = fcst.cat.eval$heidke.skill
       fcst$err$cat.heidke.alt = fcst.cat.eval$heidke.skill.alt
+      fcst$err$crps.cat = fcst.cat.eval$crps.cat
     }
     
     # brier skill score if climatology was provided for reference forecast
@@ -103,6 +112,7 @@ stEval = function(forecast, Y, clim) {
   Y.cat = as.numeric(Y.cat)
   Y.hat = as.numeric(sapply(forecast$pred, function(f) { f$pred$Y }))
   Y.cat.hat = as.numeric(sapply(forecast$pred, function(f) { f$pred$Y.cat }))
+  Y.cat.hat.dist = foreach(p=forecast$pred, .combine='rbind') %do% {p$pred.cat}
   resid = as.numeric(sapply(forecast$pred, function(f) { f$pred$resid }))
   se = as.numeric(sapply(forecast$pred, function(f) { f$pred$se }))
   coverages = as.numeric(sapply(forecast$pred, function(f) { f$pred$covered }))
@@ -115,10 +125,11 @@ stEval = function(forecast, Y, clim) {
   attr(forecast, 'err.coverage') = mean(coverages, na.rm = T)
   attr(forecast, 'err.bss') = 1 - mean(resid^2) / mean(clim.resid^2)
   if(!is.null(forecast$cat.probs)) {
-    fcst.cat.eval = eval.cat(pred = Y.cat.hat, obs = Y.cat)
+    fcst.cat.eval = eval.cat(pred = Y.cat.hat, obs = Y.cat, pred.dist = Y.cat.hat.dist)
     attr(forecast, 'err.cat') = fcst.cat.eval$pct.correct
     attr(forecast, 'err.heidke') = fcst.cat.eval$heidke.skill
     attr(forecast, 'err.heidke.alt') = fcst.cat.eval$heidke.skill.alt
+    attr(forecast, 'err.crps.cat') = fcst.cat.eval$crps.cat
   }
   
   

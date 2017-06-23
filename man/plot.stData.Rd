@@ -29,6 +29,7 @@
   \item{eof_scores}{  }
   \item{eof_scree}{ }
   \item{eof_cor}{ This plot shows pointwise correlations with EOF patterns. }
+  \item{local_cor}{ This plot shows pointwise correlations with local covariates. }
   \item{teleconnection_knot_local}{ }
 }}
 

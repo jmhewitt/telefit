@@ -202,14 +202,19 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     forecast.hpd = HPDinterval(forecast.mcmc, prob = conf)
 
     if(!is.null(cat.probs)) {
-      # build categorical predictions (process by location)
-      Y.cat = foreach(s = 1:nrow(composition$forecast$forecast),
-                      .combine='rbind') %do% {
+      
+      # build categorical predictive distribution (process by location)
+      pred.cat = foreach(s = 1:nrow(composition$forecast$forecast),
+                           .combine='rbind') %do% {
         # extract posterior samples for specified location and timepoint
         y = composition$forecast$forecast[s,t,]
-        # return label for posterior mode of categories
-        1 + as.numeric(names(which.max(table(findInterval(y,category.breaks[s,])))))
+        # return posterior probabilities of categories
+        table(findInterval(y,category.breaks[s,]))/length(y)
       }
+      colnames(pred.cat) = 1 + as.numeric(colnames(pred.cat))
+      
+      # extract categorical predictions (process by location)
+      Y.cat = apply(pred.cat, 1, which.max)
     }
 
     pred = data.frame(
@@ -227,6 +232,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     
     r = list(
       pred = pred,
+      pred.cat = pred.cat,
       yrLab = tLabs[t]
     )
     r

@@ -36,6 +36,7 @@
 #'      \item{eof_scores}{  }
 #'      \item{eof_scree}{ }
 #'      \item{eof_cor}{ This plot shows pointwise correlations with EOF patterns. }
+#'      \item{local_cor}{ This plot shows pointwise correlations with local covariates. }
 #'      \item{teleconnection_knot_local}{ }
 #'    }
 #' @param stData Object of class stData to plot.
@@ -118,7 +119,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
   # extract dataset to plot
   match.opts = c('response', 'covariate', 'remote', 'teleconnection', 'eof',
                  'eof_scores', 'cat.response', 'teleconnection_knot', 
-                 'teleconnection_knot_local', 'eof_scree', 'eof_cor')
+                 'teleconnection_knot_local', 'eof_scree', 'eof_cor', 'local_cor')
   type = match.opts[pmatch(type, match.opts)]
   if( type=='response' ) {
     Y = data.frame( Y = stData$Y[, match(t, stData$tLabs)],
@@ -281,6 +282,25 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     # set color and scale options
     lab.col = 'Cor.'
     t = paste('Pointwise correlations with EOF', pattern)
+    scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
+  } else if( type=='local_cor' ) {
+    
+    # build plotting frame
+    Y = foreach(i = 1:nrow(stData$coords.s), .combine='rbind') %do% {
+      r = data.frame( Y = cor(stData$Y[i,], stData$X[i,p,]),
+                      lon.Y = stData$coords.s[i,1],
+                      lat.Y = stData$coords.s[i,2] )
+      
+      if(signif.telecon) {
+        r$signif = cor.test(stData$Y[i,], stData$X[i,p,])$p.value < signif.level
+      }
+      
+      r
+    }
+    
+    # set color and scale options
+    lab.col = 'Cor.'
+    t = paste('Pointwise correlations with', colnames(stData$X)[p])
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   }
   

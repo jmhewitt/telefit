@@ -7,6 +7,10 @@
 stEval(forecast, Y, clim)
 }
 \arguments{
+\item{forecast}{stPredict object containing predictions for Y}
+
+\item{Y}{observed values of the response}
+
 \item{clim}{the climatology for the location in Y}
 }
 \description{
