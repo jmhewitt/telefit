@@ -28,6 +28,8 @@
 #'        response variable for a given timepoint t.}
 #'      \item{remote}{ Spatial plot of the remote components of the 
 #'        response variable for a given timepoint t.}
+#'      \item{w}{ Spatial plot of the spatial noise component of the reponse 
+#'        variable for a given timepoint t.}
 #'      \item{correlation}{ Scatterplot of observed vs. predicted response 
 #'        variables for a given timepoint t.  Note: this plot is only available 
 #'        if the model has been evaluated and the predictions have been compared 
@@ -91,7 +93,8 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
   match.opts = c('prediction', 'residual', 'observed', 'standard_error', 'se', 
                  'local', 'remote', 'correlation', 'teleconnection', 
                  'cat.prediction', 'teleconnection_knot', 'eof_alpha_knots',
-                 'teleconnection_knot_transect', 'errors', 'teleconnection_knot_local')
+                 'teleconnection_knot_transect', 'errors', 'teleconnection_knot_local',
+                 'w')
   type = match.opts[pmatch(type, match.opts)]
   
   # create a basic stData object for plotting
@@ -140,6 +143,10 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
   } else if( type=='remote' ) {
     stData$Y = pred$pred$Y.remote
     stData$Y.lab = paste('Remote contribution to', stPredict$Y.lab)
+    ret = plot.stData(stData, dots=dots, ...)
+  } else if( type=='w' ) { 
+    stData$Y = pred$pred$Y - (pred$pred$Y.local + pred$pred$Y.remote)
+    stData$Y.lab = paste('Spatial noise contribution to', stPredict$Y.lab)
     ret = plot.stData(stData, dots=dots, ...)
   } else if( type=='correlation' ) {
     ret = ggplot(pred$pred, aes(y=Y, x=Y+resid)) +

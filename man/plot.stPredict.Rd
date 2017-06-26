@@ -30,6 +30,8 @@
     response variable for a given timepoint t.}
   \item{remote}{ Spatial plot of the remote components of the 
     response variable for a given timepoint t.}
+  \item{w}{ Spatial plot of the spatial noise component of the reponse 
+    variable for a given timepoint t.}
   \item{correlation}{ Scatterplot of observed vs. predicted response 
     variables for a given timepoint t.  Note: this plot is only available 
     if the model has been evaluated and the predictions have been compared 
