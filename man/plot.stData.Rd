@@ -17,6 +17,7 @@
 \item{type}{One of the following options to specify what type of plot to build
 \describe{
   \item{response}{  }
+  \item{sd.response}{ Plot standard deviation of response variable at each location. }
   \item{cat.response}{  }
   \item{covariate}{  }
   \item{remote}{  }

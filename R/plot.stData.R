@@ -24,6 +24,7 @@
 #' @param type One of the following options to specify what type of plot to build
 #'    \describe{
 #'      \item{response}{  }
+#'      \item{sd.response}{ Plot standard deviation of response variable at each location. }
 #'      \item{cat.response}{  }
 #'      \item{covariate}{  }
 #'      \item{remote}{  }
@@ -119,7 +120,8 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
   # extract dataset to plot
   match.opts = c('response', 'covariate', 'remote', 'teleconnection', 'eof',
                  'eof_scores', 'cat.response', 'teleconnection_knot', 
-                 'teleconnection_knot_local', 'eof_scree', 'eof_cor', 'local_cor')
+                 'teleconnection_knot_local', 'eof_scree', 'eof_cor', 'local_cor',
+                 'sd.response')
   type = match.opts[pmatch(type, match.opts)]
   if( type=='response' ) {
     Y = data.frame( Y = stData$Y[, match(t, stData$tLabs)],
@@ -128,6 +130,13 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     if(signif.telecon) { 
       Y = cbind(Y, signif = attr(stData$Y, 'signif')[, match(t, stData$tLabs)])
     }
+    lab.col = stData$Y.lab
+    # scheme.col = list(low = "#a6611a", mid = '#f5f5f5', high = '#018571')
+    scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
+  } else if( type=='sd.response' ) {
+    Y = data.frame( Y = apply(stData$Y, 1, sd),
+                    lon.Y = stData$coords.s[,1], 
+                    lat.Y = stData$coords.s[,2] )
     lab.col = stData$Y.lab
     # scheme.col = list(low = "#a6611a", mid = '#f5f5f5', high = '#018571')
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
