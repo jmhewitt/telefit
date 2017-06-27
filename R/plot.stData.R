@@ -137,7 +137,8 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     Y = data.frame( Y = apply(stData$Y, 1, sd),
                     lon.Y = stData$coords.s[,1], 
                     lat.Y = stData$coords.s[,2] )
-    lab.col = stData$Y.lab
+    lab.col = paste('S.D.', stData$Y.lab)
+    t = 'Response S.D.'
     # scheme.col = list(low = "#a6611a", mid = '#f5f5f5', high = '#018571')
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='covariate' ) {
