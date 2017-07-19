@@ -111,7 +111,7 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
   
   # extract data for the right timepoint to plot
   if(length(stPredict$tLabs)==1) {
-    pred = stPredict$pred
+    pred = stPredict$pred[[1]]
     stData$tLabs = stPredict$tLabs
   } else {
     pred = stPredict$pred[[match(t, stPredict$tLabs)]]
