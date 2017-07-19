@@ -46,6 +46,8 @@ mergeComposition = function(xfull, yfull) {
         est = mergeMean(xeof$est, yeof$est, xeof$nSamples, yeof$nSamples),
         sd = sqrt(mergeVar(xeof$sd^2, yeof$sd^2, xeof$est, yeof$est, 
                            xeof$nSamples, yeof$nSamples)),
+        negProb = mergeMean(xeof$negProb, yeof$negProb, xeof$nSamples, yeof$nSamples),
+        posProb = mergeMean(xeof$posProb, yeof$posProb, xeof$nSamples, yeof$nSamples),
         nSamples = xeof$nSamples + yeof$nSamples,
         samples = rbind(xeof$samples, yeof$samples)
       )

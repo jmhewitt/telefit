@@ -35,6 +35,8 @@ summariseEOFAlpha = function( eof_alpha, prob=.95, coords.s ) {
     lower = lower,
     upper = upper,
     signif = sig,
+    posProb = eof_alpha$posProb,
+    negProb = eof_alpha$negProb,
     pattern = 1:L,
     lon.Y = rep(coords.s[,1], rep(L,n)),
     lat.Y = rep(coords.s[,2], rep(L,n))

@@ -376,7 +376,9 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     lab.col = str_wrap(lab.col, width=fill.lab.width)
   }
   
-  if(type=='cat.response') {
+  if(type=='sd.response') {
+    fillscale = scale_fill_distiller(lab.col, palette='YlOrRd', direction=1)
+  } else if(type=='cat.response') {
     fillscale = scale_fill_manual(lab.col, values = scheme.col)
   } else if(is.null(zlim)) {
     fillscale = scale_fill_gradient2(lab.col,

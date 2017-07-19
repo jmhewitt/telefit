@@ -1,5 +1,6 @@
 #include "stpmod.h"
 #include "covs.h"
+#include <iomanip>
 
 STPModel::STPModel(Data &_dat, Priors &_prior, Constants &_consts) {
 	dat = _dat;
@@ -85,6 +86,7 @@ struct STPModel::CompositionScratch {
 	Data dat;
 	
 	mat RknotsInv, cknots, Zknots, Sigma, RknotsInvZZknots, Sigma_cholU, eye_ns;
+	vec eof_alpha_knots, neg_eof_alpha_knots, pos_eof_alpha_knots, zero_eof_alpha_knots;
 	
 	CompositionScratch() { }
 	
@@ -93,6 +95,7 @@ struct STPModel::CompositionScratch {
 		dat = _dat;
 		
 		Sigma = mat(consts.ns, consts.ns, fill::zeros);
+		zero_eof_alpha_knots = vec(consts.ns * consts.nt, fill::zeros);
 		
 		if(!consts.localOnly) {
 			RknotsInv = mat(consts.nr_knots, consts.nr_knots, fill::zeros);
@@ -123,6 +126,21 @@ struct STPModel::CompositionScratch {
 			RknotsInvZZknots = RknotsInv + Zknots * Zknots.t();
 		}
 	}
+	
+	void updateEOFAlphaKnots(vec alpha_knots) {
+		
+		// map alpha knots to eof space
+		
+		eof_alpha_knots = mcstat::dgemkmm(eye_ns, dat.W.t() * cknots * RknotsInv,
+										  alpha_knots);
+		
+		// identify positive and negative entries
+		
+		neg_eof_alpha_knots = conv_to<vec>::from(eof_alpha_knots < zero_eof_alpha_knots);
+		pos_eof_alpha_knots = conv_to<vec>::from(eof_alpha_knots > zero_eof_alpha_knots);
+		
+	}
+	
 	
 };
 
@@ -178,6 +196,10 @@ public:
 								  randn<mat>(consts.nr_knots, consts.ns) *
 								  compositionScratch->Sigma_cholU
 								  ));
+		
+		// map parameter to eof space
+		compositionScratch->updateEOFAlphaKnots(compositionParams->alpha_knots);
+		
 	}
 };
 
@@ -895,12 +917,17 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 			compositionSamples.alpha_knots.row(it) = currentComp.alpha_knots.t();
 			
 			// eof-mapped teleconnection field
-			compositionSamples.eof_alpha_knots(
-				mcstat::dgemkmm(compositionScratch.eye_ns,
-							    dat.W.t() *
-							    compositionScratch.cknots *
-							    compositionScratch.RknotsInv,
-							    currentComp.alpha_knots));
+			compositionSamples.eof_alpha_knots(compositionScratch.eof_alpha_knots);
+			compositionSamples.eof_alpha_knots_negprob(compositionScratch.neg_eof_alpha_knots);
+			compositionSamples.eof_alpha_knots_posprob(compositionScratch.pos_eof_alpha_knots);
+			
+			/*
+			if(eof_alpha_multipletesting) {
+				
+				compositionScratch.neg_eof_alpha_knots
+				compositionScratch.pos_eof_alpha_knots
+			}
+			*/
 			
 			// fill in full teleconnection field
 			if(return_full_alpha) {

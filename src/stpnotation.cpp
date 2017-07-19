@@ -17,7 +17,9 @@ List CompositionSamples::toSummarizedList() {
 		
 		eof_alpha_knots_sum = List::create( _["est"] = eof_alpha_knots.mean(),
 										    _["sd"] = eof_alpha_knots.stddev(),
-										    _["nSamples"] = eof_alpha_knots.count() );
+										    _["nSamples"] = eof_alpha_knots.count(),
+										    _["negProb"] = eof_alpha_knots_negprob.mean(),
+										    _["posProb"] = eof_alpha_knots_posprob.mean() );
 		
 		// post process full teleconnection field
 		

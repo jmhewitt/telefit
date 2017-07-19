@@ -138,7 +138,6 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
             stFit$parameters$samples$ll[inds],
             Xlnew, Znew, localOnly, returnFullAlphas,
             stFit$parameters$samples$sigmasq_r_eps[inds], W)
-        
     }
   }
   
@@ -148,11 +147,14 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   # post process teleconnection effects
   if(!localOnly) {
     if(returnAlphas) {
+      
       # convert results away from unnecessary matrix format
       composition$alpha_knots$est = as.numeric(composition$alpha_knots$est)
       composition$alpha_knots$sd = as.numeric(composition$alpha_knots$sd)
       composition$eof_alpha_knots$est = as.numeric(composition$eof_alpha_knots$est)
       composition$eof_alpha_knots$sd = as.numeric(composition$eof_alpha_knots$sd)
+      composition$eof_alpha_knots$posProb = as.numeric(composition$eof_alpha_knots$posProb)
+      composition$eof_alpha_knots$negProb = as.numeric(composition$eof_alpha_knots$negProb)
       
       # compute approximate intervals, etc.
       composition$alpha_knots$summary = summariseAlpha(composition$alpha_knots, 
@@ -166,6 +168,8 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
       composition$alpha_knots$sd = NULL
       composition$eof_alpha_knots$est = NULL
       composition$eof_alpha_knots$sd = NULL
+      composition$eof_alpha_knots$negProb = NULL
+      composition$eof_alpha_knots$posProb = NULL
     }
     
     if(returnFullAlphas) {
@@ -183,7 +187,6 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
       composition$alpha$sd = NULL
     }
   }
-  
   
   # compute empirical breakpoints at each location to define forecast categories
   if(!is.null(cat.probs)) {
