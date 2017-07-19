@@ -30,7 +30,7 @@
 #' 
 #' 
 
-cca.predict.alt = function(X, Y, X.new, k.x, k.y) {
+cca.predict = function(X, Y, X.new, k.x, k.y) {
   
   nXp = scale(t(X))
   nYq = scale(t(Y))
