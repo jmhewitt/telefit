@@ -32,7 +32,8 @@
 #'      contains information about teleconnection effects,
 #'      i.e., if it is a simulated dataset or otherwise modified to include 
 #'      estimates of teleconnection effects. }
-#'      \item{teleconnection_local}{  }
+#'      \item{remote_cor}{ This plot shows pointwise correlations between a local
+#'       coordinate and the remote covariates.  }
 #'      \item{eof}{  }
 #'      \item{eof_scores}{  }
 #'      \item{eof_scree}{ }
@@ -65,6 +66,7 @@
 #'   the eof_scree plots
 #' @param alpha the level of fading that should be applied to insignificant
 #'   grid boxes when plotting significant effects
+#' @param fill.lab Optional label to override the default fill scale labels
 #'  
 #' @return a ggplot object with the specified map
 #'
@@ -73,7 +75,7 @@
 
 plot.stData = function( stData, type='response', t=NULL, p=NULL,  
                         map='world', region='.', coord.s=NULL, coord.r=NULL,
-                        zlim=NULL,
+                        zlim=NULL, fill.lab=NULL,
                         lab.teleconnection = expression(alpha),
                         fill.lab.width = 20, category.breaks = NULL,
                         coords.knots = NULL, signif.telecon = F, dots=NULL, 
@@ -121,7 +123,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
   match.opts = c('response', 'covariate', 'remote', 'teleconnection', 'eof',
                  'eof_scores', 'cat.response', 'teleconnection_knot', 
                  'teleconnection_knot_local', 'eof_scree', 'eof_cor', 'local_cor',
-                 'sd.response')
+                 'sd.response', 'remote_cor')
   type = match.opts[pmatch(type, match.opts)]
   if( type=='response' ) {
     Y = data.frame( Y = stData$Y[, match(t, stData$tLabs)],
@@ -130,14 +132,14 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     if(signif.telecon) { 
       Y = cbind(Y, signif = attr(stData$Y, 'signif')[, match(t, stData$tLabs)])
     }
-    lab.col = stData$Y.lab
+    lab.col = ifelse(is.null(fill.lab), stData$Y.lab, fill.lab) 
     # scheme.col = list(low = "#a6611a", mid = '#f5f5f5', high = '#018571')
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='sd.response' ) {
     Y = data.frame( Y = apply(stData$Y, 1, sd),
                     lon.Y = stData$coords.s[,1], 
                     lat.Y = stData$coords.s[,2] )
-    lab.col = paste('S.D.', stData$Y.lab)
+    lab.col = ifelse(is.null(fill.lab), paste('S.D.', stData$Y.lab), fill.lab) 
     t = 'Response S.D.'
     # scheme.col = list(low = "#a6611a", mid = '#f5f5f5', high = '#018571')
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
@@ -145,13 +147,13 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     Y = data.frame( Y = stData$X[, p, match(t, stData$tLabs)],
                     lon.Y = stData$coords.s[,1], 
                     lat.Y = stData$coords.s[,2] )
-    lab.col = stData$X.lab
+    lab.col = ifelse(is.null(fill.lab), stData$X.lab, fill.lab) 
     scheme.col = list(low = "#008837", mid = '#f7f7f7', high = '#7b3294')
   } else if( type=='remote' ) {
     Y = data.frame( Y = stData$Z[, match(t, stData$tLabs)],
                     lon.Y = stData$coords.r[,1],
                     lat.Y = stData$coords.r[,2] )
-    lab.col = stData$Z.lab
+    lab.col = ifelse(is.null(fill.lab), stData$Z.lab, fill.lab) 
     # scheme.col = list(low = "#008837", mid = '#f7f7f7', high = '#7b3294')
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='teleconnection' ) {
@@ -170,7 +172,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
       filter(lon.Y==coord.s[1], lat.Y==coord.s[2]) %>% 
       mutate(lon.Y=lon.Z, lat.Y=lat.Z )
     
-    lab.col = lab.teleconnection
+    lab.col = ifelse(is.null(fill.lab), lab.teleconnection, fill.lab) 
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='teleconnection_knot' ) {
     
@@ -180,16 +182,19 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     if(is.null(coord.s))
       coord.s = stData$coords.s[round(n/2),]
     
+    coord.s.ind = which.min(rdist.earth(matrix(coord.s, ncol=2), stData$coords.s))
+    
     Y = data.frame( Y = stData$alpha_knots,
                     signif = ifelse(stData$alpha_knots_signif, 3, 0),
                     lon.Z = stData$coords.knots[,1], 
                     lat.Z = stData$coords.knots[,2],
                     lon.Y = rep(stData$coords.s[,1], rep(r_knots,n)),
                     lat.Y = rep(stData$coords.s[,2], rep(r_knots,n)) ) %>% 
-      filter(lon.Y==coord.s[1], lat.Y==coord.s[2]) %>% 
+      filter(lon.Y==stData$coords.s[coord.s.ind, 1], 
+             lat.Y==stData$coords.s[coord.s.ind, 2]) %>% 
       mutate(lon.Y=lon.Z, lat.Y=lat.Z )
     
-    lab.col = lab.teleconnection
+    lab.col = ifelse(is.null(fill.lab), lab.teleconnection, fill.lab) 
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='teleconnection_knot_local' ) {
     
@@ -206,7 +211,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
                     lat.Y = rep(stData$coords.s[,2], rep(r_knots,n)) ) %>% 
       filter(lon.Z==coord.r[1], lat.Z==coord.r[2])
     
-    lab.col = lab.teleconnection
+    lab.col = ifelse(is.null(fill.lab), lab.teleconnection, fill.lab) 
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='cat.response' ) {
     
@@ -235,7 +240,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     Y = data.frame( Y = Y.cat,
                     lon.Y = stData$coords.s[,1], 
                     lat.Y = stData$coords.s[,2] )
-    lab.col = paste(stData$Y.lab, 'level')
+    lab.col = ifelse(is.null(fill.lab), paste(stData$Y.lab, 'level'), fill.lab) 
   } else if( type=='eof' ) {
     # build plotting frame
     Y = data.frame( Y = eof(stData$Z)$patterns[,pattern],
@@ -243,7 +248,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
                     lat.Y = stData$coords.r[,2] )
     
     # set color and scale options
-    lab.col = ''
+    lab.col = ifelse(is.null(fill.lab), '', fill.lab) 
     t = paste('EOF', pattern)
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='eof_scores') {
@@ -290,7 +295,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     }
     
     # set color and scale options
-    lab.col = 'Cor.'
+    lab.col = ifelse(is.null(fill.lab), 'Cor.', fill.lab)
     t = paste('Pointwise correlations with EOF', pattern)
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
   } else if( type=='local_cor' ) {
@@ -309,9 +314,36 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     }
     
     # set color and scale options
-    lab.col = 'Cor.'
+    lab.col = ifelse(is.null(fill.lab), 'Cor.', fill.lab)
     t = paste('Pointwise correlations with', colnames(stData$X)[p])
     scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
+  } else if( type=='remote_cor' ) {
+    
+    n = nrow(stData$coords.s)
+    
+    if(is.null(coord.s))
+      coord.s = stData$coords.s[round(n/2),]
+    
+    coord.s.ind = which.min(rdist.earth(matrix(coord.s, ncol=2), stData$coords.s))
+    
+    # build plotting frame
+    Y = foreach(i = 1:nrow(stData$coords.r), .combine='rbind') %do% {
+      r = data.frame( Y = cor(stData$Z[i,], stData$Y[coord.s.ind,]),
+                      lon.Y = stData$coords.r[i,1],
+                      lat.Y = stData$coords.r[i,2] )
+      
+      if(signif.telecon) {
+        r$signif = cor.test(stData$Z[i,], stData$Y[coord.s.ind,])$p.value < signif.level
+      }
+      
+      r
+    }
+    
+    # set color and scale options
+    lab.col = ifelse(is.null(fill.lab), 'Cor.', fill.lab)
+    t = paste('Pointwise correlations with', round(coord.s,1))
+    scheme.col = list(low = "#0571b0", mid = '#f7f7f7', high = '#ca0020')
+    
   }
   
   if(!is.null(ret)) {
@@ -319,7 +351,8 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
   }
   
   # compute truncations and apply wrapping
-  if(type %in% c('remote', 'teleconnection', 'eof', 'teleconnection_knot')) {
+  if(type %in% c('remote', 'teleconnection', 'eof', 'teleconnection_knot', 
+                 'remote_cor')) {
     if(max(Y$lon.Y)>0) {
       if(min(Y$lon.Y)<0) {
         lon.E = max(Y %>% filter(lon.Y<=0) %>% dplyr::select(lon.Y))
@@ -414,7 +447,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
       xlab('Longitude') +
       ylab('Latitude') 
     
-    if(type %in% c('remote', 'teleconnection', 'eof') ) {
+    if(type %in% c('remote', 'teleconnection', 'eof', 'remote_cor') ) {
       worldmap = worldmap + geom_polygon()
     } else {
       worldmap = worldmap + geom_path()

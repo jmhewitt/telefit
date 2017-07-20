@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{stData}(stData, type = "response", t = NULL, p = NULL,
   map = "world", region = ".", coord.s = NULL, coord.r = NULL,
-  zlim = NULL, lab.teleconnection = expression(alpha),
+  zlim = NULL, fill.lab = NULL, lab.teleconnection = expression(alpha),
   fill.lab.width = 20, category.breaks = NULL, coords.knots = NULL,
   signif.telecon = F, dots = NULL, pattern = 1, lwd = 1.75,
   cutoff = 0.9, signif.level = 0.05, alpha = 0.2, ...)
@@ -25,7 +25,8 @@
   contains information about teleconnection effects,
   i.e., if it is a simulated dataset or otherwise modified to include 
   estimates of teleconnection effects. }
-  \item{teleconnection_local}{  }
+  \item{remote_cor}{ This plot shows pointwise correlations between a local
+   coordinate and the remote covariates.  }
   \item{eof}{  }
   \item{eof_scores}{  }
   \item{eof_scree}{ }
@@ -57,6 +58,8 @@ and latitude of remote coordinate for which to plot associated teleconnection
 effects.  if NULL, the middle remote coordinate will be plotted.}
 
 \item{zlim}{c(min, max) vector that specifies the colorscale limits}
+
+\item{fill.lab}{Optional label to override the default fill scale labels}
 
 \item{lab.teleconnection}{label used for fill scale in teleconnection plot}
 
