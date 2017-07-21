@@ -164,6 +164,9 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     if(is.null(coord.s))
       coord.s = stData$coords.s[round(n/2),]
     
+    coord.s.ind = which.min(rdist.earth(matrix(coord.s, ncol=2), stData$coords.s))
+    coord.s = dat.train$coords.s[coord.s.ind,]
+    
     Y = data.frame( Y = as.numeric(stData$alpha),
                     lon.Z = stData$coords.r[,1], 
                     lat.Z = stData$coords.r[,2],

@@ -129,25 +129,11 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
     
     coord.s = unlist(coord.s)
     
-    if(signif.telecon) {
-      teleCor = list(
-        cor = matrix(stFit$alpha$summary$alpha, nrow = nrow(stData$coords.s),
-                     byrow = T),
-        coords.s = stData$coords.s,
-        coords.r = stData$coords.r,
-        signif = matrix(stFit$alpha$summary$signif, nrow = nrow(stData$coords.s),
-                        byrow = T)
-      )
-      class(teleCor) = 'teleCor'
+    stData$alpha = stFit$alpha$summary$alpha
+    ret = plot.stData(stData, type='teleconnection', lab.teleconnection = 'alpha', 
+                      dots=dots, signif.telecon = signif.telecon, ...) + 
+      ggtitle('Estimated teleconnection effects')
       
-      ret = plot.teleCor(teleCor, signif = T, dots=dots, ...)
-      
-    } else {
-      stData$alpha = stFit$alpha$summary$alpha
-      ret = plot.stData(stData, type='teleconnection', lab.teleconnection = 'alpha', 
-                        dots=dots, ...) + 
-        ggtitle('Estimated teleconnection effects')
-    }
     
   } else if(type=='teleconnection_knot_local') {
     

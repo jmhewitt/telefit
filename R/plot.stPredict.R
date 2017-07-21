@@ -187,7 +187,7 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
     stFit$alpha$summary = stPredict$alpha
     
     ret = plot.stFit(stFit = stFit, stData = stData, type='teleconnection', 
-                     dots=dots, ...)
+                     dots=dots, signif.telecon = signif.telecon, ...)
   } else if( type=='teleconnection_knot') {
     
     if(is.null(stData)) {

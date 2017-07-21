@@ -260,6 +260,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     category.breaks = category.breaks
   )
   if(!localOnly) {
+    ret$alpha = composition$alpha$summary
     ret$alpha_knots = composition$alpha_knots$summary
     ret$alpha_knots_cov = composition$alpha_knots$cov
     ret$eof_alpha_knots = composition$eof_alpha_knots$summary
