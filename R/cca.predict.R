@@ -50,6 +50,7 @@ cca.predict = function(X, Y, X.new, k.x, k.y) {
     if(nrow(X) < ncol(X)) {
       X = X / sqrt(n-1)
       e = eigen(X %*% t(X))
+      e$values[e$values<0]=0
       list(vectors = sweep(t(X) %*% e$vectors, 2, sqrt(e$values), FUN = "/"), 
            values = e$values)
     } else {
@@ -78,6 +79,7 @@ cca.predict = function(X, Y, X.new, k.x, k.y) {
   # Cook eq. 19
   B.e = eigen(solve(qRq) %*% t(pRq) %*% solve(pRp) %*% pRq)
   B = B.e$vectors
+  B.e$values[B.e$values<0]=0
   qLambdaq = diag(B.e$values)
   
   # Glahn (1968) eq. 13

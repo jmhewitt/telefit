@@ -130,6 +130,7 @@ plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL,
     coord.s = unlist(coord.s)
     
     stData$alpha = stFit$alpha$summary$alpha
+    stData$alpha_signif = stFit$alpha$summary$signif
     ret = plot.stData(stData, type='teleconnection', lab.teleconnection = 'alpha', 
                       dots=dots, signif.telecon = signif.telecon, ...) + 
       ggtitle('Estimated teleconnection effects')

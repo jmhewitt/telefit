@@ -168,6 +168,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     coord.s = dat.train$coords.s[coord.s.ind,]
     
     Y = data.frame( Y = as.numeric(stData$alpha),
+                    signif = stData$alpha_signif,
                     lon.Z = stData$coords.r[,1], 
                     lat.Z = stData$coords.r[,2],
                     lon.Y = rep(stData$coords.s[,1], rep(r,n)),

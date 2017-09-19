@@ -37,6 +37,7 @@ stEval = function(forecast, Y, clim) {
     # compute probability of correct prediction
     pc = mean(pred==obs)
     
+    
     # compute probability of correct prediction (reference forecast)
     pe = 0
     # loop over all categories seen in this timepoint's preds. and obs.
@@ -46,7 +47,13 @@ stEval = function(forecast, Y, clim) {
     }
     
     if(!is.null(pred.dist)) {
-      crps.cat = mean(rowSums( (pred.dist - cbind(obs<=1, obs<=2, obs<=3))^2 ))
+      # compute CDF
+      pred.cdf = pred.dist
+      for(i in 1:ncol(pred.dist)) {
+        pred.cdf[,i] = rowSums(as.matrix(pred.dist[,1:i], ncol=i))
+      }
+      
+      crps.cat = mean(rowSums( (pred.cdf - cbind(obs<=1, obs<=2, obs<=3))^2 ))
     } else {
       crps.cat = NA
     }
