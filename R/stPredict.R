@@ -112,7 +112,12 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   W = -eof$x
   Tmat = -eof$rotation
   
-  registerDoMC(ncores)
+  # set up basic parallel backend if none is registered
+  if(!getDoParRegistered()) {
+    registerDoMC(ncores)
+  }
+  
+  # make looping more efficient
   mcoptions = list(preschedule=FALSE)
   
   # estimate chunksize that will minimize number of function calls
@@ -121,7 +126,11 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   # draw composition samples
   composition = foreach( inds = ichunk(burn:maxIt, chunkSize = chunkSize),
                          .combine = mergeComposition,
-                         .options.multicore=mcoptions ) %dopar% {
+                         .options.multicore=mcoptions, 
+                         .export = c('Xl', 'Z', 'Yl', 'Dy', 'Dz_knots', 
+                          'Dz_to_knots', 'p', 'n', 'r', 'r_knots', 't',  'stFit', 
+                          'Xlnew', 'Znew', 'localOnly', 'returnFullAlphas', 
+                          'W') ) %dorng% {
     inds = unlist(inds)            
                            
     if(stFit$varying) {
@@ -193,10 +202,14 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     category.breaks = t(apply(stData$Y, 1,
                               function(r) { quantile(r, probs = cat.probs)}))
   }
-
-  # package results
+                         
+  # package results (exactly split task across ncores)
   nt0 = ncol(composition$forecast$forecast)
-  Y = foreach(t= 1:nt0) %dopar% {
+  chunkSize = ceiling(nt0/ncores)
+  Y = foreach(inds = ichunk(1:nt0, chunkSize = chunkSize), .combine='c',
+              .export = c('cat.probs', 'category.breaks', 'composition', 
+                          'tLabs')) %dopar% {
+      foreach(t = unlist(inds)) %do% {
 
     # TODO: move this code somewhere where it can be called outside of sampling
 
@@ -239,7 +252,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
       yrLab = tLabs[t]
     )
     r
-  }
+  }}
 
   attr(composition$forecast$forecast, 'dimnames') = NULL
   if(!localOnly) {

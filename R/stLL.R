@@ -3,11 +3,6 @@
 #'
 #' @export
 #' 
-#' @importFrom coda mcmc HPDinterval
-#' @importFrom doMC registerDoMC
-#' @import doRNG
-#' @importFrom itertools ichunk
-#' @import foreach
 #' @importFrom fields rdist.earth
 #' 
 #' @useDynLib telefit
