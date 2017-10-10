@@ -27,14 +27,6 @@ teleCor = function( stData = NULL, Y = stData$Y, Z = stData$Z,
     registerDoMC(ncores)
   }
   
-  
-  chunkSize = ceiling(nt0/ncores)
-  Y = foreach(inds = ichunk(1:nt0, chunkSize = chunkSize), .combine='c',
-              .export = c('cat.probs', 'category.breaks', 'composition', 
-                          'tLabs')) %dopar% {
-                            foreach(t = unlist(inds)) %do% {
-                              
-                              
   # compute pointwise correlation of local variate with each remote location
   # (use chunkSize to exactly split tasks across ncores)
   chunkSize = ceiling(ny/ncores)
