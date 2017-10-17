@@ -50,6 +50,8 @@ stVIF = function( stData, stFit, burn ) {
     nugget = 0
   )
   
+  R_knots.inv = solve(R_knots)
+  
   cknots = maternCov(
     d = rdist.earth(coords.r, coords.knots, miles=miles),
     scale = mean(stFit$parameters$samples$sigmasq_r[-(1:burn)]),
@@ -70,11 +72,11 @@ stVIF = function( stData, stFit, burn ) {
   SigmaInv = solve(Sigma)
   
   cknotsZ = t(cknots) %*% Z
-  C = solve( diag(nt) + t(cknotsZ) %*% solve(R_knots) %*% cknotsZ )
+  C = solve( diag(nt) + t(cknotsZ) %*% R_knots.inv %*% cknotsZ )
   
   
   #
-  # compute vifs
+  # compute vifs for betas
   #
   
   # format design matrix
@@ -93,5 +95,26 @@ stVIF = function( stData, stFit, burn ) {
   # label vifs
   names(res) = beta.names
   
-  res
+  
+  
+  #
+  # compute vifs for alphas
+  #
+  
+  # format variance components
+  Zst = R_knots.inv %*% cknotsZ
+  alpha.precision = 1/mean(stFit$parameters$samples$sigmasq_r[-(1:burn)])
+  
+  # compute vifs
+  res.alpha = 
+    diag(solve(R_knots.inv + Zst %*% t(Zst))) /
+    sapply(1:nrow(Zst), function(i) {
+      1 / (alpha.precision + t(Zst[i,]) %*% Zst[i,])
+    })
+  
+  
+  list(
+    beta = res,
+    alpha = res.alpha
+  )
 }
