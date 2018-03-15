@@ -112,6 +112,11 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   W = -eof$x
   Tmat = -eof$rotation
   
+  # normalize eofs
+  # sc = apply(W, 2, function(x){sqrt(t(x)%*%x)})
+  # W = sweep(W, 2, sc, '/')
+  # Tmat = sweep(Tmat, 2, sc, '*')
+  
   # set up basic parallel backend if none is registered
   if(!getDoParRegistered()) {
     registerDoMC(ncores)

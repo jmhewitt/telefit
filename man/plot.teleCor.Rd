@@ -4,7 +4,7 @@
 \alias{plot.teleCor}
 \title{Plots teleconnection correlation maps}
 \usage{
-\method{plot}{teleCor}(teleCor, signif = F, coord.s = NULL, map = "world",
+plot.teleCor(teleCor, signif = F, coord.s = NULL, map = "world",
   region = ".", zlim = NULL, dots = NULL, ...)
 }
 \arguments{

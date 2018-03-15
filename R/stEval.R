@@ -4,6 +4,8 @@
 #' against the climatology, MSPE, PPL, overall correlation, and a computation
 #' of the coverage probabilities for confidence intervals
 #'
+#' @importFrom coda mcmc HPDinterval
+#' 
 #' @param clim the climatology for the location in Y
 #' @param Y observed values of the response
 #' @param forecast stPredict object containing predictions for Y
@@ -14,7 +16,7 @@
 
 
 stEval = function(forecast, Y, clim) {
-  
+
   # ensure Y is in matrix format
   nt = ncol(Y)
   if(is.null(nt)) {
@@ -96,6 +98,12 @@ stEval = function(forecast, Y, clim) {
       coverage = mean(fcst$pred$covered, na.rm = T)
     )
     
+    if(!is.null(forecast$samples)) {
+      fcst$err$crps = mean(
+        crps_sample(Y[,t], forecast$samples$forecast[,t,])
+      )
+    }
+    
     if(!is.null(forecast$cat.probs)) {
       fcst$err$cat.correct = fcst.cat.eval$pct.correct
       fcst$err$cat.heidke = fcst.cat.eval$heidke.skill
@@ -138,7 +146,6 @@ stEval = function(forecast, Y, clim) {
     attr(forecast, 'err.heidke.alt') = fcst.cat.eval$heidke.skill.alt
     attr(forecast, 'err.crps.cat') = fcst.cat.eval$crps.cat
   }
-  
   
   forecast
 }

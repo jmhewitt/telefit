@@ -4,8 +4,8 @@
 \alias{plot.stPredict}
 \title{Plot stPredict objects}
 \usage{
-\method{plot}{stPredict}(stPredict, type = "prediction", t = NULL,
-  stFit = NULL, stData = NULL, err.comparison = NULL, err.var = NULL,
+plot.stPredict(stPredict, type = "prediction", t = NULL, stFit = NULL,
+  stData = NULL, err.comparison = NULL, err.var = NULL,
   err.lab = err.var, pattern = 1, dots = NULL, burn = 1,
   signif.telecon = F, ...)
 }

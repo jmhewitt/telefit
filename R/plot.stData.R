@@ -46,6 +46,7 @@
 #'  latitude of local coordinate for which to plot teleconnection effects. if 
 #'  NULL, the middle local coordinate will be plotted.
 #' @param zlim c(min, max) vector that specifies the colorscale limits
+#' @param zmid number that specifies the midpoint of the colorscale
 #' @param lab.teleconnection label used for fill scale in teleconnection plot
 #' @param fill.lab.width line width for fill scale label
 #' @param category.breaks [ncoords x ncats] list of breakpoints used for binning
@@ -80,7 +81,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
                         fill.lab.width = 20, category.breaks = NULL,
                         coords.knots = NULL, signif.telecon = F, dots=NULL, 
                         pattern = 1, lwd=1.75, cutoff=.9, signif.level=.05, 
-                        alpha = .2, ...) {
+                        alpha = .2, zmid = 0, ...) {
   
   # merge unique list of dots
     dots = c(dots, list(...))
@@ -423,22 +424,26 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
     fillscale = scale_fill_gradient2(lab.col,
                                      low = scheme.col$low, 
                                      mid = scheme.col$mid, 
-                                     high = scheme.col$high)
+                                     high = scheme.col$high,
+                                     midpoint = zmid)
     colscale = scale_color_gradient2(lab.col,
                                      low = scheme.col$low, 
                                      mid = scheme.col$mid, 
-                                     high = scheme.col$high)
+                                     high = scheme.col$high,
+                                     midpoint = zmid)
   } else  {
     fillscale = scale_fill_gradient2(lab.col,
                                      low = scheme.col$low, 
                                      mid = scheme.col$mid, 
                                      high = scheme.col$high,
-                                     limits = zlim)
+                                     limits = zlim,
+                                     midpoint = zmid)
     colscale = scale_color_gradient2(lab.col,
                                      low = scheme.col$low, 
                                      mid = scheme.col$mid, 
                                      high = scheme.col$high,
-                                     limits = zlim)
+                                     limits = zlim,
+                                     midpoint = zmid)
   } 
   
   # build base plot

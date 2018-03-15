@@ -269,8 +269,8 @@ double STPModel::getLL(const Params &params, const Scratch &scratch) {
 		vec qform = scratch.resid.t() * mcstat::dgemkmm(scratch.C,
 														scratch.SigmaInv,
 														scratch.resid);
-		return - ( consts.ns / scratch.C_logdet +
-			   consts.nt / scratch.SigmaInv_logdet +
+		return - ( - consts.ns * scratch.C_logdet -
+			   consts.nt * scratch.SigmaInv_logdet +
 			   qform.at(0) ) / 2.0;
 }
 
