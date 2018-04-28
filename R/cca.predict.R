@@ -1,7 +1,7 @@
 #' Make predictions using canonical correlation analysis (CCA)
 #'
 #' @export
-#'
+#' 
 #' @param X An \code{(nvars x nobs)} data frame or matrix in which each column
 #'    contains all observations of measured (predictor) variables for a given 
 #'    timepoint or sample.  For example, if X represents a spatial variable that

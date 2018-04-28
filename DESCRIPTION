@@ -8,6 +8,8 @@ Maintainer: Who to complain to <joshua.hewitt@colostate.edu>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
 Imports:
-    Rcpp (>= 0.12.4)
-LinkingTo: Rcpp, RcppArmadillo
+    Rcpp (>= 0.12.4), abind, coda, cowplot, doMC, doRNG, dplyr, fields, 
+    itertools, mvtnorm, raster, scoringRules, stringr, RcppEigen (>= 0.3.3.3.1)
+LinkingTo: Rcpp, RcppArmadillo, RcppEigen
 RoxygenNote: 6.0.1
+Suggests: testthat
