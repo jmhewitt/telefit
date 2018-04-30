@@ -95,7 +95,7 @@ public:
 								 cfg->params.theta);
 		
 		// save MCMC output
-		return cfg->data.X * cfg->params.beta + vectorise(w);
+	    return cfg->data.X * cfg->params.beta + vectorise(w);
 	}
 };
 
@@ -137,5 +137,6 @@ RcppExport SEXP _svcpredict (SEXP _samples, SEXP Xn, SEXP Zn, SEXP d, SEXP nu) {
 	sampler.run(cfg.consts.nSamples);
 	
 	// return samples
+	sampler.getSamples();
 	return sampler.getSamples();
 }

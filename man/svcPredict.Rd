@@ -4,7 +4,30 @@
 \alias{svcPredict}
 \title{Make predictions using a fitted varying coefficient model}
 \usage{
-svcPredict(fit, Xn, Zn, burn = 0)
+svcPredict(fit, Xn = NULL, Zn = NULL, stData = NULL, stDataNew = NULL,
+  burn = 0, cat.probs = c(1/3, 2/3), conf = 0.95)
+}
+\arguments{
+\item{fit}{svcFit object containing posterior samples}
+
+\item{Xn}{[nr*nt, p] matrix of local covariates at new timepoint}
+
+\item{Zn}{[nr, nt] matrix of remote covariates at new timepoints}
+
+\item{stData}{Object with class 'stData' containing data needed to fit this 
+model. The data is used to compute empirical quantiles for making 
+categorical predictions.}
+
+\item{stDataNew}{object of class stData that includes information needed for 
+making forecasts.}
+
+\item{burn}{number of posterior samples to burn from fit}
+
+\item{cat.probs}{vector of probabilities for also returning categorical 
+predictions from the posterior prediction samples; NULL otherwise}
+
+\item{conf}{Parameter specifying the HPD level to compute for posterior 
+predictive samples}
 }
 \description{
 Make predictions using a fitted varying coefficient model
@@ -134,7 +157,7 @@ wn = kronSamp(diag(nt0), H)
 yn =  xbn + ztn + wn
 
 # predict responses
-pred = svcPredict(fit, Xn, zn)
+pred = svcPredict(fit, Xn, zn, burn = burn)
 yh = colMeans(mcmc(pred$samples$y[-(1:burn),]))
 
 # R^2

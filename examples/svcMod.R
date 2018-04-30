@@ -122,7 +122,7 @@ wn = kronSamp(diag(nt0), H)
 yn =  xbn + ztn + wn
 
 # predict responses
-pred = svcPredict(fit, Xn, zn)
+pred = svcPredict(fit, Xn, zn, burn = burn)
 yh = colMeans(mcmc(pred$samples$y[-(1:burn),]))
 
 # R^2

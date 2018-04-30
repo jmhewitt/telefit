@@ -4,6 +4,8 @@
 #' a (potentially non-square) spatial distance matrix
 #'
 #' @useDynLib telefit
+#' 
+#' @export
 #'
 #' @param d A numeric vector or matrix of distances at which the Matern 
 #'        correlation function should be evaluated.
@@ -13,9 +15,6 @@
 #' @param smoothness Matern smoothness parameter.  Controls the number of 
 #'        process derivatives.
 #' @param nugget Spatial covariance nugget.  
-#'
-#'
-#' 
 #' 
 
 maternCov = function(d, scale = 1, range = 1, smoothness = .5, nugget = 0) {

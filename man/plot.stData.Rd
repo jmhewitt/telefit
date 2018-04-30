@@ -9,7 +9,8 @@ plot.stData(stData, type = "response", t = NULL, p = NULL,
   zlim = NULL, fill.lab = NULL, lab.teleconnection = expression(alpha),
   fill.lab.width = 20, category.breaks = NULL, coords.knots = NULL,
   signif.telecon = F, dots = NULL, pattern = 1, lwd = 1.75,
-  cutoff = 0.9, signif.level = 0.05, alpha = 0.2, zmid = 0, ...)
+  cutoff = 0.9, signif.level = 0.05, alpha = 0.2, zmid = 0,
+  contour = c(F, F), ...)
 }
 \arguments{
 \item{stData}{Object of class stData to plot.}
@@ -89,6 +90,9 @@ the eof_scree plots}
 grid boxes when plotting significant effects}
 
 \item{zmid}{number that specifies the midpoint of the colorscale}
+
+\item{contour}{c(TRUE, TRUE) to plot local and remote responses as contours
+vs. observations}
 }
 \value{
 a ggplot object with the specified map
