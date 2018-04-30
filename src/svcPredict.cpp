@@ -16,7 +16,7 @@ struct Data {
 	    Z, // each column has remote covariates for one timepoint (kxnt)
 	    d; // matrix containing interpoint distances (NxN)
 	
-	mat T,	// posterior samples
+	mat *T,	// posterior samples
 		beta,
 		theta;
 	vec sigmasq,
@@ -114,7 +114,8 @@ RcppExport SEXP _svcpredict (SEXP _samples, SEXP Xn, SEXP Zn, SEXP d, SEXP nu) {
 	cfg.data.Z = as<mat>(Zn);
 	cfg.data.d = as<mat>(d);
 	
-	cfg.data.T = as<mat>(samples["T"]);
+	mat T = as<mat>(samples["T"]);
+	cfg.data->T = T;
 	cfg.data.beta = as<mat>(samples["beta"]);
 	cfg.data.theta = as<mat>(samples["theta"]);
 	cfg.data.sigmasq = as<vec>(samples["sigmasq"]);
@@ -124,7 +125,7 @@ RcppExport SEXP _svcpredict (SEXP _samples, SEXP Xn, SEXP Zn, SEXP d, SEXP nu) {
 	cfg.consts.nSamples = cfg.data.rho.size();
 	cfg.consts.N = cfg.data.d.n_rows;
 	cfg.consts.nt = cfg.data.Z.n_cols;
-	cfg.consts.k = sqrt(cfg.data.T.n_cols);
+	cfg.consts.k = sqrt(cfg.data->T.n_cols);
 	
 	cfg.params.nu = as<double>(nu);
 	
