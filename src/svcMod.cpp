@@ -17,7 +17,7 @@ struct Data {
 	vec y; // each row has response for one location + timepoint (Nntx1)
 	mat X; // each row has local covariates for one location + timepoint (Nntxp)
 	mat Z; // each column has remote covariates for one timepoint (kxnt)
-	mat d; // matrix containing interpoint distances (NxN)
+	mat* d; // matrix containing interpoint distances (NxN)
 };
 
 struct Params {
@@ -254,7 +254,7 @@ public:
 		
 		rhoNew = rho;
 		
-		maternCov( H, cfg->dat.d, cfg->params.sigmasq, rhoNew, cfg->consts.nu,
+		maternCov( H, *(cfg->dat.d), cfg->params.sigmasq, rhoNew, cfg->consts.nu,
 				  cfg->params.sigmasq * cfg->params.sigmasqeps );
 		log_det(logdetH, one, H);
 		Hinv = inv_sympd(H);
@@ -305,7 +305,7 @@ public:
 		
 		sigmasqepsNew = sseps;
 		
-		maternCov( H, cfg->dat.d, cfg->params.sigmasq, cfg->params.rho,
+		maternCov( H, *(cfg->dat.d), cfg->params.sigmasq, cfg->params.rho,
 				   cfg->consts.nu, cfg->params.sigmasq * sseps );
 		log_det(logdetH, one, H);
 		Hinv = inv_sympd(H);
@@ -345,9 +345,10 @@ RcppExport SEXP _svcfit (SEXP Y, SEXP X, SEXP Z, SEXP D, SEXP nuT, SEXP Psi,
 	cfg.dat.y = as<vec>(Y);
 	cfg.dat.X = as<mat>(X);
 	cfg.dat.Z = as<mat>(Z);
-	cfg.dat.d = as<mat>(D);
+	mat d = as<mat>(D);
+	cfg.dat.d = &d;
 	
-	cfg.consts.N = cfg.dat.d.n_rows;
+	cfg.consts.N = cfg.dat.d->n_rows;
 	cfg.consts.nt = cfg.dat.Z.n_cols;
 	cfg.consts.k = cfg.dat.Z.n_rows;
 	cfg.consts.nu = as<double>(nu);
@@ -396,7 +397,7 @@ RcppExport SEXP _svcfit (SEXP Y, SEXP X, SEXP Z, SEXP D, SEXP nuT, SEXP Psi,
 	}
 	
 	cfg.scratch.H = mat(cfg.consts.N, cfg.consts.N, fill::zeros);
-	maternCov( cfg.scratch.H, cfg.dat.d, cfg.params.sigmasq, cfg.params.rho,
+	maternCov( cfg.scratch.H, *(cfg.dat.d), cfg.params.sigmasq, cfg.params.rho,
 			  cfg.consts.nu, cfg.params.sigmasq * cfg.params.sigmasqeps );
 	cfg.scratch.Hinv = inv_sympd(cfg.scratch.H);
 	double one = 1.0;
