@@ -115,7 +115,7 @@ RcppExport SEXP _svcpredict (SEXP _samples, SEXP Xn, SEXP Zn, SEXP d, SEXP nu) {
 	cfg.data.d = as<mat>(d);
 	
 	mat T = as<mat>(samples["T"]);
-	cfg.data->T = T;
+	cfg.data.T = &T;
 	cfg.data.beta = as<mat>(samples["beta"]);
 	cfg.data.theta = as<mat>(samples["theta"]);
 	cfg.data.sigmasq = as<vec>(samples["sigmasq"]);
@@ -125,7 +125,7 @@ RcppExport SEXP _svcpredict (SEXP _samples, SEXP Xn, SEXP Zn, SEXP d, SEXP nu) {
 	cfg.consts.nSamples = cfg.data.rho.size();
 	cfg.consts.N = cfg.data.d.n_rows;
 	cfg.consts.nt = cfg.data.Z.n_cols;
-	cfg.consts.k = sqrt(cfg.data->T.n_cols);
+	cfg.consts.k = sqrt(cfg.data.T->n_cols);
 	
 	cfg.params.nu = as<double>(nu);
 	
