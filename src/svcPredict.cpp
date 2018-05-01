@@ -99,14 +99,13 @@ public:
 };
 
 
-RcppExport SEXP _svcpredict (SEXP _samples, SEXP _Xn, SEXP _Zn, SEXP _d,
-							 SEXP nu) {
+RcppExport SEXP _svcpredict (SEXP _T, SEXP _beta, SEXP _theta, SEXP _sigmasq,
+							 SEXP _sigmasqeps, SEXP _rho, SEXP _Xn, SEXP _Zn,
+							 SEXP _d, SEXP nu) {
 	
 	using namespace Rcpp;
 	
 	// extract model configuration
-	
-	List samples = as<List>(_samples);
 	
 	Config cfg = Config();
 	
@@ -117,12 +116,13 @@ RcppExport SEXP _svcpredict (SEXP _samples, SEXP _Xn, SEXP _Zn, SEXP _d,
 	cfg.data.Z = &Z;
 	cfg.data.d = &d;
 	
-	mat T = as<mat>(samples["T"]);
-	mat beta = as<mat>(samples["beta"]);
-	mat theta = as<mat>(samples["theta"]);
-	vec sigmasq = as<vec>(samples["sigmasq"]);
-	vec sigmasqeps = as<vec>(samples["sigmasqeps"]);
-	vec rho = as<vec>(samples["rho"]);
+	mat T = as<mat>(_T);
+	mat beta = as<mat>(_beta);
+	mat theta = as<mat>(_theta);
+	vec sigmasq = as<vec>(_sigmasq);
+	vec sigmasqeps = as<vec>(_sigmasqeps);
+	vec rho = as<vec>(_rho);
+	
 	cfg.data.T = &T;
 	cfg.data.beta = &beta;
 	cfg.data.theta = &theta;
