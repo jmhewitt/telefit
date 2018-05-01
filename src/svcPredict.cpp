@@ -12,16 +12,16 @@ using namespace Rcpp;
 using namespace arma;
 
 struct Data {
-	mat X, // each row has local covariates for one location + timepoint (Nntxp)
-	    Z, // each column has remote covariates for one timepoint (kxnt)
-	    d; // matrix containing interpoint distances (NxN)
+	mat *X, // each row has local covariates for 1 location + timepoint (Nntxp)
+	    *Z, // each column has remote covariates for one timepoint (kxnt)
+	    *d; // matrix containing interpoint distances (NxN)
 	
 	mat *T,	// posterior samples
-		beta,
-		theta;
-	vec sigmasq,
-		sigmasqeps,
-		rho;
+		*beta,
+		*theta;
+	vec *sigmasq,
+		*sigmasqeps,
+		*rho;
 };
 
 struct Params {
@@ -34,13 +34,13 @@ struct Params {
 		   nu;		   // spatial covariance smoothness
 	
 	void set(const Data &samples, int i, int Tdim) {
-		beta = samples.beta.row(i).t();
-		theta = samples.theta.row(i).t();
+		beta = samples.beta->row(i).t();
+		theta = samples.theta->row(i).t();
 		//T = mat(samples.T.row(i));
 		//T.reshape(Tdim, Tdim);
-		sigmasq = samples.sigmasq.at(i);
-		sigmasqeps = samples.sigmasqeps.at(i);
-		rho = samples.rho.at(i);
+		sigmasq = samples.sigmasq->at(i);
+		sigmasqeps = samples.sigmasqeps->at(i);
+		rho = samples.rho->at(i);
 	}
 };
 
@@ -77,10 +77,9 @@ public:
 	vec sample() {
 		
 		// extract posterior parameter sample
-		
 		cfg->params.set(cfg->data, it++, cfg->consts.k);
 		
-		maternCov( H, cfg->data.d, cfg->params.sigmasq, cfg->params.rho,
+		maternCov( H, *(cfg->data.d), cfg->params.sigmasq, cfg->params.rho,
 				   cfg->params.nu,
 				   cfg->params.sigmasq * cfg->params.sigmasqeps );
 		
@@ -91,16 +90,17 @@ public:
 		
 		for(int i=0; i<cfg->consts.nt; i++)
 			zTheta.rows(i * cfg->consts.N, (i+1) * cfg->consts.N - 1) =
-				mcstat2::dgeikmm(cfg->consts.N, cfg->data.Z.col(i).t(),
-								 cfg->params.theta);
+				mcstat2::dgeikmm(cfg->consts.N, cfg->data.Z->col(i).t(),
+								 cfg->params.theta );
 		
 		// save MCMC output
-	    return cfg->data.X * cfg->params.beta + vectorise(w);
+		return *(cfg->data.X) * cfg->params.beta + zTheta + vectorise(w);
 	}
 };
 
 
-RcppExport SEXP _svcpredict (SEXP _samples, SEXP Xn, SEXP Zn, SEXP d, SEXP nu) {
+RcppExport SEXP _svcpredict (SEXP _samples, SEXP _Xn, SEXP _Zn, SEXP _d,
+							 SEXP nu) {
 	
 	using namespace Rcpp;
 	
@@ -110,21 +110,29 @@ RcppExport SEXP _svcpredict (SEXP _samples, SEXP Xn, SEXP Zn, SEXP d, SEXP nu) {
 	
 	Config cfg = Config();
 	
-	cfg.data.X = as<mat>(Xn);
-	cfg.data.Z = as<mat>(Zn);
-	cfg.data.d = as<mat>(d);
+	mat X = as<mat>(_Xn);
+	mat Z = as<mat>(_Zn);
+	mat d = as<mat>(_d);
+	cfg.data.X = &X;
+	cfg.data.Z = &Z;
+	cfg.data.d = &d;
 	
 	mat T = as<mat>(samples["T"]);
+	mat beta = as<mat>(samples["beta"]);
+	mat theta = as<mat>(samples["theta"]);
+	vec sigmasq = as<vec>(samples["sigmasq"]);
+	vec sigmasqeps = as<vec>(samples["sigmasqeps"]);
+	vec rho = as<vec>(samples["rho"]);
 	cfg.data.T = &T;
-	cfg.data.beta = as<mat>(samples["beta"]);
-	cfg.data.theta = as<mat>(samples["theta"]);
-	cfg.data.sigmasq = as<vec>(samples["sigmasq"]);
-	cfg.data.sigmasqeps = as<vec>(samples["sigmasqeps"]);
-	cfg.data.rho = as<vec>(samples["rho"]);
+	cfg.data.beta = &beta;
+	cfg.data.theta = &theta;
+	cfg.data.sigmasq = &sigmasq;
+	cfg.data.sigmasqeps = &sigmasqeps;
+	cfg.data.rho = &rho;
 	
-	cfg.consts.nSamples = cfg.data.rho.size();
-	cfg.consts.N = cfg.data.d.n_rows;
-	cfg.consts.nt = cfg.data.Z.n_cols;
+	cfg.consts.nSamples = cfg.data.rho->size();
+	cfg.consts.N = cfg.data.d->n_rows;
+	cfg.consts.nt = cfg.data.Z->n_cols;
 	cfg.consts.k = sqrt(cfg.data.T->n_cols);
 	
 	cfg.params.nu = as<double>(nu);
@@ -138,6 +146,5 @@ RcppExport SEXP _svcpredict (SEXP _samples, SEXP Xn, SEXP Zn, SEXP d, SEXP nu) {
 	sampler.run(cfg.consts.nSamples);
 	
 	// return samples
-	sampler.getSamples();
 	return sampler.getSamples();
 }
