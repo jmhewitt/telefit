@@ -51,50 +51,53 @@ struct Consts {
 		k;		  // dimension of T
 };
 
-struct Config {
-	Data data; Params params; Consts consts;
-};
 
 class YSampler : public mcstat2::Sampler {
 
 private:
 	
-	Config *cfg;
+	Data *data;
+	Params *params;
+	Consts *consts;
 	int it;
 	mat H;
 	vec zTheta;
 	
 public:
 	
-	YSampler(Config &_cfg) { name = "y"; type = VECTOR; cfg = &_cfg;
+	YSampler(Data &_data, Params &_params, Consts &_consts) {
+		name = "y"; type = VECTOR;
+		data = &_data;
+		params = &_params;
+		consts = &_consts;
 	 it = 0;
-	 H = mat(cfg->consts.N, cfg->consts.N, fill::zeros);
-	 zTheta = vec(cfg->consts.nt * cfg->consts.N, fill::zeros);
+	 H = mat(consts->N, consts->N, fill::zeros);
+	 zTheta = vec(consts->nt * consts->N, fill::zeros);
 	}
 	
-	int getSize() { return cfg->consts.N * cfg->consts.nt; }
+	int getSize() { return consts->N * consts->nt; }
 	
 	vec sample() {
 		
 		// extract posterior parameter sample
-		cfg->params.set(cfg->data, it++, cfg->consts.k);
+		params->set(*data, it++, consts->k);
 		
-		maternCov( H, *(cfg->data.d), cfg->params.sigmasq, cfg->params.rho,
-				   cfg->params.nu,
-				   cfg->params.sigmasq * cfg->params.sigmasqeps );
+		maternCov( H, *(data->d), params->sigmasq, params->rho,
+				   params->nu,
+				   params->sigmasq * params->sigmasqeps );
 		
 		// sample spatial noise
-		mat w = mcstat2::mvrnorm(H, cfg->consts.nt, false);
+		mat w = mcstat2::mvrnorm(H, consts->nt, false);
 		
 		// compute posterior mean component
 		
-		for(int i=0; i<cfg->consts.nt; i++)
-			zTheta.rows(i * cfg->consts.N, (i+1) * cfg->consts.N - 1) =
-				mcstat2::dgeikmm(cfg->consts.N, cfg->data.Z->col(i).t(),
-								 cfg->params.theta );
+		for(int i=0; i<consts->nt; i++)
+			zTheta.rows(i * consts->N, (i+1) * consts->N - 1) =
+				mcstat2::dgeikmm(consts->N, data->Z->col(i).t(),
+								 params->theta );
 		
 		// save MCMC output
-		return *(cfg->data.X) * cfg->params.beta + zTheta + vectorise(w);
+		return *(data->X) * params->beta + zTheta + vectorise(w);
 	}
 };
 
@@ -107,14 +110,16 @@ RcppExport SEXP _svcpredict (SEXP _T, SEXP _beta, SEXP _theta, SEXP _sigmasq,
 	
 	// extract model configuration
 	
-	Config cfg = Config();
+	Data data = Data();
+	Params params = Params();
+	Consts consts = Consts();
 	
 	mat X = as<mat>(_Xn);
 	mat Z = as<mat>(_Zn);
 	mat d = as<mat>(_d);
-	cfg.data.X = &X;
-	cfg.data.Z = &Z;
-	cfg.data.d = &d;
+	data.X = &X;
+	data.Z = &Z;
+	data.d = &d;
 	
 	mat T = as<mat>(_T);
 	mat beta = as<mat>(_beta);
@@ -123,41 +128,27 @@ RcppExport SEXP _svcpredict (SEXP _T, SEXP _beta, SEXP _theta, SEXP _sigmasq,
 	vec sigmasqeps = as<vec>(_sigmasqeps);
 	vec rho = as<vec>(_rho);
 	
-	cfg.data.T = &T;
-	cfg.data.beta = &beta;
-	cfg.data.theta = &theta;
-	cfg.data.sigmasq = &sigmasq;
-	cfg.data.sigmasqeps = &sigmasqeps;
-	cfg.data.rho = &rho;
+	data.T = &T;
+	data.beta = &beta;
+	data.theta = &theta;
+	data.sigmasq = &sigmasq;
+	data.sigmasqeps = &sigmasqeps;
+	data.rho = &rho;
 	
-	cfg.consts.nSamples = cfg.data.rho->size();
-	cfg.consts.N = cfg.data.d->n_rows;
-	cfg.consts.nt = cfg.data.Z->n_cols;
-	cfg.consts.k = sqrt(cfg.data.T->n_cols);
+	consts.nSamples = data.rho->size();
+	consts.N = data.d->n_rows;
+	consts.nt = data.Z->n_cols;
+	consts.k = sqrt(data.T->n_cols);
 	
-	cfg.params.nu = as<double>(nu);
+	params.nu = as<double>(nu);
 	
 	// instantiate and run samplers
 	
-	YSampler ys = YSampler(cfg);
+	YSampler ys = YSampler(data, params, consts);
 	
 	mcstat2::GibbsSampler sampler = mcstat2::GibbsSampler();
 	sampler.addSampler(ys);
-	sampler.run(cfg.consts.nSamples);
-	
-	// clear pointers
-	
-	cfg.data.X = NULL;
-	cfg.data.Z = NULL;
-	cfg.data.d = NULL;
-	
-	cfg.data.T = NULL;
-	cfg.data.beta = NULL;
-	cfg.data.theta = NULL;
-	cfg.data.sigmasq = NULL;
-	cfg.data.sigmasqeps = NULL;
-	cfg.data.rho = NULL;
-	
+	sampler.run(consts.nSamples);
 	
 	// return samples
 	return sampler.getSamples();
