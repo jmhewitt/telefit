@@ -41,6 +41,7 @@ Make predictions using a fitted varying coefficient model
 # autocorrelation. this example is mainly for code demonstration purposes only
 # since this example does not remedy this issue.
 
+library(telefit)
 library(fields)
 library(mvtnorm)
 
@@ -158,25 +159,25 @@ yn =  xbn + ztn + wn
 
 # predict responses
 pred = svcPredict(fit, Xn, zn, burn = burn)
-yh = colMeans(mcmc(pred$samples$y[-(1:burn),]))
+yh = colMeans(mcmc(pred$y[-(1:burn),]))
 
 # R^2
 1 - var(yh - yn)/var(yn)
 
 # coverage
-yh.hpd = HPDinterval(mcmc(pred$samples$y[-(1:burn),]))
+yh.hpd = HPDinterval(mcmc(pred$y[-(1:burn),]))
 coverage = numeric(length(yn))
 for(i in 1:length(coverage))
   coverage[i] = (yh.hpd[i,1] <= yn[i]) && (yh.hpd[i,2] >= yn[i])
 mean(coverage)
 
 # example posterior densities
-plot(mcmc(pred$samples$y[-(1:burn),1:4]))
+plot(mcmc(pred$y[-(1:burn),1:2]))
 
 # example posterior densities overlapped with response
 par(mfrow=c(2,2))
 for(i in 1:4) {
-  plot(density(pred$samples$y[-(1:burn),i]), main=i)
+  plot(density(pred$y[-(1:burn),i]), main=i)
   abline(v = yn[i], lty=3)
 }
 
