@@ -145,6 +145,20 @@ RcppExport SEXP _svcpredict (SEXP _T, SEXP _beta, SEXP _theta, SEXP _sigmasq,
 	sampler.addSampler(ys);
 	sampler.run(cfg.consts.nSamples);
 	
+	// clear pointers
+	
+	cfg.data.X = NULL;
+	cfg.data.Z = NULL;
+	cfg.data.d = NULL;
+	
+	cfg.data.T = NULL;
+	cfg.data.beta = NULL;
+	cfg.data.theta = NULL;
+	cfg.data.sigmasq = NULL;
+	cfg.data.sigmasqeps = NULL;
+	cfg.data.rho = NULL;
+	
+	
 	// return samples
 	return sampler.getSamples();
 }
