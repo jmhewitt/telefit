@@ -44,10 +44,13 @@ svcPredict = function(fit, Xn=NULL, Zn=NULL, stData=NULL, stDataNew=NULL,
   }
   
   # draw from posterior predictive distribution
-  res = .Call("_svcpredict", PACKAGE = 'telefit', fit$parameters$samples$T, 
-              fit$parameters$samples$beta, fit$parameters$samples$theta,
-              fit$parameters$samples$sigmasq, fit$parameters$samples$sigmasqeps,
-              fit$parameters$samples$rho, Xn, Zn, D, fit$priors$cov$nu)
+  res = .Call("_svcpredict", PACKAGE = 'telefit', 
+              matrix(fit$parameters$samples$T, ncol = length(fit$priors$T$Psi)), 
+              matrix(fit$parameters$samples$beta, 
+                     ncol = nrow(fit$priors$beta$Linv)),
+              fit$parameters$samples$theta, fit$parameters$samples$sigmasq,
+              fit$parameters$samples$sigmasqeps, fit$parameters$samples$rho, 
+              Xn, Zn, D, fit$priors$cov$nu)
   
   # if not working directly with stXXX objects, return basic output
   if(is.null(stData))
