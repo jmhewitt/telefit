@@ -26,12 +26,13 @@ void mcstat2::MCMCCheckpoint::run() {
 		
 		// compute percent complete
 		double pctComplete = (double) it / (double) nSamples * 100.0;
+		if(it==1) {
+			pctComplete /= (double) thin;
+		}
 		
 		// compute remaining time
 		double total = (lap - start) / (double) CLOCKS_PER_SEC;
-		double remaining = (it==1) ?
-			(100.0 - pctComplete) * (total / thin / pctComplete) / 60.0 :
-			(100.0 - pctComplete) * (total / pctComplete) / 60.0;
+		double remaining = (100.0 - pctComplete) * (total / pctComplete) / 60.0;
 		
 		
 		// output information
