@@ -2,9 +2,16 @@
 
 using namespace Rcpp;
 
-mcstat2::MCMCCheckpoint::MCMCCheckpoint(int _nSamples) {
+mcstat2::MCMCCheckpoint::MCMCCheckpoint(int _nSamples, int _thin) {
 	nSamples = _nSamples;
+	thin = _thin;
 	checkPointIt = (int) nSamples * 0.1;
+	it = 0;
+	start = std::clock();
+	lap = start;
+}
+
+void mcstat2::MCMCCheckpoint::reset() {
 	it = 0;
 	start = std::clock();
 	lap = start;
@@ -22,7 +29,10 @@ void mcstat2::MCMCCheckpoint::run() {
 		
 		// compute remaining time
 		double total = (lap - start) / (double) CLOCKS_PER_SEC;
-		double remaining = (100.0 - pctComplete) * (total / pctComplete) / 60.0;
+		double remaining = (it==1) ?
+			(100.0 - pctComplete) * (total / thin / pctComplete) / 60.0 :
+			(100.0 - pctComplete) * (total / pctComplete) / 60.0;
+		
 		
 		// output information
 		Rcout << round(pctComplete) << "% complete" << " (" <<
@@ -61,7 +71,7 @@ void mcstat2::GibbsSampler::run(int nSamples) {
 	rgamma(1, 2.0, 1.0);
 	
 	// initialize trackers
-	mcstat2::MCMCCheckpoint checkpoint = mcstat2::MCMCCheckpoint(nSamples);
+	mcstat2::MCMCCheckpoint checkpoint = mcstat2::MCMCCheckpoint(nSamples, thin);
 	
 	// initialize samples
 	for(auto sampler = samplers.begin(); sampler != samplers.end(); ++sampler) {
@@ -80,6 +90,9 @@ void mcstat2::GibbsSampler::run(int nSamples) {
 	int saved = 0;
 	std::string step;
 	try{
+		// reset timers
+		checkpoint.reset();
+		
 		// gibbs iterations
 		for(it=0; it < totSamples; it++) {
 			

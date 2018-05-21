@@ -11,13 +11,14 @@ namespace mcstat2 {
 	class MCMCCheckpoint {
 		
 	private:
-		int it, checkPointIt, nSamples;
+		int it, thin, checkPointIt, nSamples;
 		std::clock_t lap, start;
 		
 	public:
 		
-		MCMCCheckpoint(int nSamples);
+		MCMCCheckpoint(int nSamples, int thin);
 		
+		void reset();
 		void run();
 		void finish();
 	};
