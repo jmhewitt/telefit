@@ -2,8 +2,8 @@
 #'
 #' This function provides basic plotting for telefit package data.
 #' 
-#'
 #' @export
+#' @method plot stData
 #' 
 #' @import ggplot2
 #' @import dplyr
@@ -68,6 +68,11 @@
 #' @param alpha the level of fading that should be applied to insignificant
 #'   grid boxes when plotting significant effects
 #' @param fill.lab Optional label to override the default fill scale labels
+#' @param contour c(TRUE, TRUE) to plot local and remote responses as contours
+#'   vs. observations
+#' @param dots additional named arguments with defaults to pass to additional 
+#'   functions
+#' @param ... additional arguments to pass to functions
 #'  
 #' @return a ggplot object with the specified map
 #'
@@ -81,7 +86,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
                         fill.lab.width = 20, category.breaks = NULL,
                         coords.knots = NULL, signif.telecon = F, dots=NULL, 
                         pattern = 1, lwd=1.75, cutoff=.9, signif.level=.05, 
-                        alpha = .2, zmid = 0, ...) {
+                        alpha = .2, zmid = 0, contour = c(F,F), ...) {
   
   # merge unique list of dots
     dots = c(dots, list(...))
@@ -401,13 +406,14 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
   #
   
   if(type!='teleconnection_knot') {
-    tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y)
+    # tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y, z=Y, color=factor(..level..))
+    tile.aes = aes(x=lon.Y, y=lat.Y, fill=Y, z=Y)
     alpha = ifelse(signif.telecon, alpha, 1)
   } else {
     if(signif.telecon) {
-      point.aes = aes(x=lon.Y, y=lat.Y, fill=Y, stroke=signif)
+      point.aes = aes(x=lon.Y, y=lat.Y, fill=Y, z=Y, stroke=signif, color=..level..)
     } else {
-      point.aes = aes(x=lon.Y, y=lat.Y, fill=Y, stroke=0)
+      point.aes = aes(x=lon.Y, y=lat.Y, fill=Y, z=Y, stroke=0, color=..level..)
     }
   }
   
@@ -448,10 +454,18 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
   
   # build base plot
   if(type!='teleconnection_knot') {
-    worldmap = ggplot(world, aes(x=long, y=lat, group=group)) +
-      geom_raster(tile.aes, data = Y  %>% 
-                  mutate(lon.Y = ifelse(lon.Y<=0, lon.Y, lon.Y-360)), 
-                inherit.aes = F, alpha = alpha) +
+    worldmap = ggplot(world, aes(x=long, y=lat, group=group))
+    if(contour[1]) {
+      worldmap = worldmap + geom_contour(tile.aes, 
+        data = Y  %>% mutate(lon.Y = ifelse(lon.Y<=0, lon.Y, lon.Y-360)), 
+        inherit.aes = F, alpha = alpha)
+    } else {
+      worldmap = worldmap + geom_raster(tile.aes, 
+        data = Y  %>% mutate(lon.Y = ifelse(lon.Y<=0, lon.Y, lon.Y-360)), 
+        inherit.aes = F, alpha = alpha)
+    }
+    
+    worldmap = worldmap +
       fillscale +
       scale_x_continuous(trans = lon_trans()) +
       scale_y_continuous(trans = lat_trans()) +

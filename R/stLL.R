@@ -14,44 +14,33 @@
 #'  entered if not using a stData object.
 #' @param stData Object with class 'stData' containing data needed to fit this 
 #'  model. The data need only be manually entered if not using a stData object.
-#' @param stDataNew object of class stData that includes information needed for 
-#'  making forecasts.  If response data is included, this function will 
-#'  automatically run stEval using the empirical climatology as the reference
-#'  forecast
-#' @param burn number of posterior samples to burn before drawing composition
-#'  samples
-#' @param prob confidence level for approximate confidence intervals of 
-#'  teleconnection effects (only needed if returnAlphas==TRUE)
-#' @param ncores Since the teleconnection effects and posterior predictions can 
-#'  be sampled in parallel, this parameter lets users specify the number of 
-#'  cores to use to draw teleconnection and prediction samples
-#' @param returnAlphas TRUE to return the teleconnection effects sampled 
-#'  alongside the forecasts.  Note that only basic summary information about the 
-#'  teleconnection effects will be returned.
-#' @param returnFullAlphas TRUE to return the teleconnection effects sampled 
-#'  alongside the forecasts.  Note that only basic summary information about the 
-#'  teleconnection effects will be returned.
-#' @param conf Parameter specifying the HPD level to compute for posterior 
-#'  predictive samples
-#' @param tLabs Forecast timepoint labels
 #' @param X [ns, p, nt] array of design matrices with local covariates
 #' @param Y [ns, nt] matrix with response data
 #' @param Z [nr, nt] matrix with remote covariates
-#' @param Xnew [ns, p, nt0] array of design matrices with local covariates 
-#'  at forecast timepoints
-#' @param Znew [nr, nt0] matrix with remote covariates at forecast timepoints
 #' @param coords.s matrix with coordinates where responses were 
 #'  observed (lon, lat)
 #' @param coords.r matrix with coordinates where remote covariates
 #'  were observed (lon, lat)
-#' @param cat.probs vector of probabilities for also returning categorical 
-#'  predictions from the posterior prediction samples; NULL otherwise
-#'  
+#' @param coords.knots matrix with coordinates of knots for remote covariates
+#'  (lon, lat)
+#' @param miles TRUE if distances should be computed in miles (kilometers otherwise)
+#' @param beta values of \eqn{\beta} at which to evaluate the likelihood
+#' @param sigmasq_y values of \eqn{\sigma^2_w} at which to evaluate the
+#'  likelihood
+#' @param sigmasq_r values of \eqn{\sigma^2_\alpha} at which to evaluate the
+#'  likelihood
+#' @param sigmasq_eps values of \eqn{\sigma^2_\varepsilon} at which to evaluate 
+#' the likelihood
+#' @param sigmasq_r_eps values of \eqn{\sigma^2_{\alpha_\varepsilon}} at which 
+#' to evaluate the likelihood
+#' @param rho_y values of \eqn{\rho_w} at which to evaluate  the likelihood
+#' @param rho_r values of \eqn{\rho_\alpha} at which to evaluate the likelihood
+#' 
   
-stLL = function( stData, stFit, beta, sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r,
-                 X = stData$X, Y = stData$Y, Z = stData$Z, 
+stLL = function( stData, stFit, beta, sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, 
+                 rho_r, X = stData$X, Y = stData$Y, Z = stData$Z, 
                  coords.s = stData$coords.s, coords.r = stData$coords.r,
-                 coords.knots = stFit$coords.knots, miles=T, sigmasq_r_eps) {
+                 coords.knots = stFit$coords.knots, miles=TRUE, sigmasq_r_eps) {
   
   n = nrow(coords.s)
   r = nrow(coords.r)

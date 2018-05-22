@@ -8,6 +8,8 @@ extractRegion(sgdf, extent, type = "response", aggfact = NULL,
   mask = NULL, aspect = F, aspect.categories = NULL, slope = F)
 }
 \arguments{
+\item{sgdf}{SpatialGridDataFrame containing data to extract}
+
 \item{extent}{raster::extent object featuring region to extract}
 
 \item{type}{whether to return the raw data, anomalies (data minus temporal 
@@ -19,13 +21,18 @@ year gets its own spatial standardization )}
 \item{aggfact}{if provided, will spatially average the data}
 
 \item{mask}{if an sgdf is provided, the data will be masked before
-extraction, aggregation, and anomaly computation
-@param aspect TRUE to return the aspect of the surface at each location 
- instead of the value of the surface itself
-@param aspect.categories if aspect==TRUE, this specifies the number of 
- discrete categories to divide aspect numbers (0-360) into.  NULL if the
- original scale (0-360) should be kept. By design, the aspect categories
- will be centered on north in the first category.}
+extraction, aggregation, and anomaly computation}
+
+\item{aspect}{TRUE to return the aspect of the surface at each location 
+instead of the value of the surface itself}
+
+\item{aspect.categories}{if aspect==TRUE, this specifies the number of 
+discrete categories to divide aspect numbers (0-360) into.  NULL if the
+original scale (0-360) should be kept. By design, the aspect categories
+will be centered on north in the first category.}
+
+\item{slope}{TRUE to return the slope of the surface at each location instead
+of the value of the surface itself}
 }
 \value{
 a modified SpatialGridDataFrame, sgdf, with the climatology for each
@@ -37,6 +44,5 @@ Extract region from a SpatialGridDataFrame
 }
 \examples{
 # Show an example where you plot the climatology grid too!
-
 
 }

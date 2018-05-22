@@ -39,6 +39,10 @@ extracting data from X and Y.}
 from Z.  Locations in mask.s with NA values will be ignored when 
 extracting data from Z.}
 
+\item{aggfact.s}{If provided, will spatially average Y and X data}
+
+\item{aggfact.r}{If provided, will spatially average Z data}
+
 \item{intercept}{If TRUE, an intercept will be added to the design matrix}
 
 \item{type.s}{'response' 'anomaly' or 'std.anomaly' or a vector of these
@@ -51,27 +55,35 @@ observations as the pointwise temporal average)}
 options depending on whether
 data extracted from Z should be the observed data, anomalies, or
 standardized anomalies (where the climatology is computed from the 
-observations as the pointwise temporal average)
-@param X.lab name for X data (optional)
-@param Y.lab name for Y data (optional)
-@param Z.lab name for Z data (optional)
-@param aspect TRUE or vector of logicals (one for each X object)
- to return the aspect of the surface at each location 
- instead of the value of the surface itself
-@param aspect.categories if aspect==TRUE, this specifies the number of 
- discrete categories to divide aspect numbers (0-360) into.  NULL if the
- original scale (0-360) should be kept. By design, the aspect categories
- will be centered on north in the first category.
-@param slope TRUE or vector of logicals (one for each X object)
- to return the slope of the surface at each location 
- instead of the value of the surface itself
-@param colnames.X names of columns of X
-@param formula formula object to specify how to create the design matrix}
+observations as the pointwise temporal average)}
 
 \item{type.s.y}{'response' 'anomaly' or 'std.anomaly' depending on whether
 data extracted from Y should be the observed data, anomalies, or
 standardized anomalies (where the climatology is computed from the 
 observations as the pointwise temporal average)}
+
+\item{X.lab}{name for X data (optional)}
+
+\item{Y.lab}{name for Y data (optional)}
+
+\item{Z.lab}{name for Z data (optional)}
+
+\item{aspect}{TRUE or vector of logicals (one for each X object)
+to return the aspect of the surface at each location 
+instead of the value of the surface itself}
+
+\item{aspect.categories}{if aspect==TRUE, this specifies the number of 
+discrete categories to divide aspect numbers (0-360) into.  NULL if the
+original scale (0-360) should be kept. By design, the aspect categories
+will be centered on north in the first category.}
+
+\item{slope}{TRUE or vector of logicals (one for each X object)
+to return the slope of the surface at each location 
+instead of the value of the surface itself}
+
+\item{colnames.X}{names of columns of X}
+
+\item{formula}{formula object to specify how to create the design matrix}
 }
 \description{
 Basic extraction of SpatialGridDataFrame data for teleconnection analysis

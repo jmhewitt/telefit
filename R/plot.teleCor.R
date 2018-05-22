@@ -4,6 +4,7 @@
 #' 
 #'
 #' @export
+#' @method plot teleCor
 #' 
 #' @import ggplot2
 #' @import dplyr
@@ -22,7 +23,9 @@
 #' @param region name of subregions to include. Defaults to . which includes 
 #'  all subregions. See documentation for map for more details.
 #' @param zlim c(min, max) vector that specifies the colorscale limits
-
+#' @param dots additional named arguments with defaults to pass to additional 
+#'   functions
+#' @param ... additional arguments to be passed to lower-level plotting functions
 #' 
 #' @return a ggplot object with the specified map
 

@@ -33,7 +33,7 @@ Y.new Predicted values for Y.new
 Make predictions using canonical correlation analysis (CCA)
 }
 \references{
-Cook, E.R., Briffa, K.R., and Jones, P.D., 1994, Spatial regression methods in dendroclimatology: A review and comparison of two techniques: International Journal of Climatology, v. 14, p. 379–402.
+Cook, E.R., Briffa, K.R., and Jones, P.D., 1994, Spatial regression methods in dendroclimatology: A review and comparison of two techniques: International Journal of Climatology, v. 14, p. 379-402.
 
-Glahn, H.R., 1968, Canonical Correlation and Its Relationship to Discriminant Analysis and Multiple Regression: Journal of the Atmospheric Sciences, v. 25, p. 23–31.
+Glahn, H.R., 1968, Canonical Correlation and Its Relationship to Discriminant Analysis and Multiple Regression: Journal of the Atmospheric Sciences, v. 25, p. 23-31.
 }

@@ -34,7 +34,6 @@ void mcstat2::MCMCCheckpoint::run() {
 		double total = (lap - start) / (double) CLOCKS_PER_SEC;
 		double remaining = (100.0 - pctComplete) * (total / pctComplete) / 60.0;
 		
-		
 		// output information
 		Rcout << round(pctComplete) << "% complete" << " (" <<
 		floor(duration * 10.0) / 10.0 << " seconds; " <<

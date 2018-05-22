@@ -6,6 +6,17 @@
 \usage{
 summariseAlpha(alpha, prob = 0.95, coords.s, coords.r)
 }
+\arguments{
+\item{alpha}{structure containing posterior inference for remote coefficients}
+
+\item{prob}{confidence level for confidence intervals and significance}
+
+\item{coords.s}{matrix with coordinates where responses were 
+observed (lon, lat)}
+
+\item{coords.r}{matrix with coordinates where remote covariates
+were observed (lon, lat)}
+}
 \description{
 This function computes approximate normal intervals, etc. for fitted alphas.
 }

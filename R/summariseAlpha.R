@@ -4,6 +4,13 @@
 #'
 #' @export
 #' 
+#' @param alpha structure containing posterior inference for remote coefficients
+#' @param prob confidence level for confidence intervals and significance
+#' @param coords.s matrix with coordinates where responses were 
+#'  observed (lon, lat)
+#' @param coords.r matrix with coordinates where remote covariates
+#'  were observed (lon, lat)
+#' 
 #' 
 
 summariseAlpha = function( alpha, prob=.95, coords.s, coords.r ) {

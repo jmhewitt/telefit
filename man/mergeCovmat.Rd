@@ -34,5 +34,5 @@ This function assumes the data is normalized by n (the MLE estimator)
 instead of n-1 (the unbiased estimator).
 }
 \references{
-Pébay, P., 2008, Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments: Sandia Report.
+Pebay, P., 2008, Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments: Sandia Report.
 }

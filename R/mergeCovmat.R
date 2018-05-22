@@ -16,7 +16,7 @@
 #' @param A.n sample size from the first sample, 'A'
 #' @param B.n sample size from the second sample, 'B'
 #'
-#' @references Pébay, P., 2008, Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments: Sandia Report.
+#' @references Pebay, P., 2008, Formulas for Robust, One-Pass Parallel Computation of Covariances and Arbitrary-Order Statistical Moments: Sandia Report.
 #' 
 
 mergeCovmat = function(A.cov.xy, B.cov.xy, A.mean.x, A.mean.y, 

@@ -7,7 +7,7 @@
 stLL(stData, stFit, beta, sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r,
   X = stData$X, Y = stData$Y, Z = stData$Z, coords.s = stData$coords.s,
   coords.r = stData$coords.r, coords.knots = stFit$coords.knots,
-  miles = T, sigmasq_r_eps)
+  miles = TRUE, sigmasq_r_eps)
 }
 \arguments{
 \item{stData}{Object with class 'stData' containing data needed to fit this 
@@ -17,6 +17,21 @@ model. The data need only be manually entered if not using a stData object.}
 needed to composition sample the teleconnection effects and generate 
 posterior predictions. The data needed from stFit need only be manually 
 entered if not using a stData object.}
+
+\item{beta}{values of \eqn{\beta} at which to evaluate the likelihood}
+
+\item{sigmasq_y}{values of \eqn{\sigma^2_w} at which to evaluate the
+likelihood}
+
+\item{sigmasq_r}{values of \eqn{\sigma^2_\alpha} at which to evaluate the
+likelihood}
+
+\item{sigmasq_eps}{values of \eqn{\sigma^2_\varepsilon} at which to evaluate 
+the likelihood}
+
+\item{rho_y}{values of \eqn{\rho_w} at which to evaluate  the likelihood}
+
+\item{rho_r}{values of \eqn{\rho_\alpha} at which to evaluate the likelihood}
 
 \item{X}{[ns, p, nt] array of design matrices with local covariates}
 
@@ -30,41 +45,13 @@ observed (lon, lat)}
 \item{coords.r}{matrix with coordinates where remote covariates
 were observed (lon, lat)}
 
-\item{stDataNew}{object of class stData that includes information needed for 
-making forecasts.  If response data is included, this function will 
-automatically run stEval using the empirical climatology as the reference
-forecast}
+\item{coords.knots}{matrix with coordinates of knots for remote covariates
+(lon, lat)}
 
-\item{burn}{number of posterior samples to burn before drawing composition
-samples}
+\item{miles}{TRUE if distances should be computed in miles (kilometers otherwise)}
 
-\item{prob}{confidence level for approximate confidence intervals of 
-teleconnection effects (only needed if returnAlphas==TRUE)}
-
-\item{ncores}{Since the teleconnection effects and posterior predictions can 
-be sampled in parallel, this parameter lets users specify the number of 
-cores to use to draw teleconnection and prediction samples}
-
-\item{returnAlphas}{TRUE to return the teleconnection effects sampled 
-alongside the forecasts.  Note that only basic summary information about the 
-teleconnection effects will be returned.}
-
-\item{returnFullAlphas}{TRUE to return the teleconnection effects sampled 
-alongside the forecasts.  Note that only basic summary information about the 
-teleconnection effects will be returned.}
-
-\item{conf}{Parameter specifying the HPD level to compute for posterior 
-predictive samples}
-
-\item{tLabs}{Forecast timepoint labels}
-
-\item{Xnew}{[ns, p, nt0] array of design matrices with local covariates 
-at forecast timepoints}
-
-\item{Znew}{[nr, nt0] matrix with remote covariates at forecast timepoints}
-
-\item{cat.probs}{vector of probabilities for also returning categorical 
-predictions from the posterior prediction samples; NULL otherwise}
+\item{sigmasq_r_eps}{values of \eqn{\sigma^2_{\alpha_\varepsilon}} at which 
+to evaluate the likelihood}
 }
 \description{
 Compute log likelihood for model

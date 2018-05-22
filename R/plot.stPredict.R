@@ -4,6 +4,7 @@
 #' 
 #'
 #' @export
+#' @method plot stPredict
 #' 
 #' @import ggplot2
 #' @import dplyr
@@ -67,6 +68,9 @@
 #' @param pattern if type=='eof_alpha_knots', this specified which eof the remote 
 #'  coefficients should be mapped onto and then plotted over the local domain
 #' @param burn number of observations to exclude from graph
+#' @param signif.telecon TRUE to highlight significant teleconnection effects
+#' @param dots additional named arguments with defaults to pass to additional 
+#'   functions
 #' @param ... additional arguments to be passed to lower-level plotting functions
 #'  
 #' @return a ggplot object with the specified map
@@ -135,7 +139,7 @@ plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL,
   } else if( type=='standard_error' || type=='se' ) {
     stData$Y = pred$pred$se
     stData$Y.lab = 'SE'
-    ret = plot.stData(stData, dots=dots, ...)
+    ret = plot.stData(stData, dots=dots, zmid=mean(stData$Y), ...)
   } else if( type=='local' ) {
     stData$Y = pred$pred$Y.local
     stData$Y.lab = paste('Local contribution to', stPredict$Y.lab)

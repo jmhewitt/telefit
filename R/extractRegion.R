@@ -6,9 +6,12 @@
 #'  
 #' @examples # Show an example where you plot the climatology grid too!
 #'
+#' @import raster
+#' @import SDMTools
 #'
 #' @export
 #' 
+#' @param sgdf SpatialGridDataFrame containing data to extract
 #' @param type whether to return the raw data, anomalies (data minus temporal 
 #' average at each location), standardized anomalies (anomalies divided by
 #' temporal standard deviation at each location), or spatially standardized
@@ -18,9 +21,11 @@
 #' @param aggfact if provided, will spatially average the data
 #' @param mask if an sgdf is provided, the data will be masked before
 #'  extraction, aggregation, and anomaly computation
-#'  @param aspect TRUE to return the aspect of the surface at each location 
+#' @param aspect TRUE to return the aspect of the surface at each location 
 #'   instead of the value of the surface itself
-#'  @param aspect.categories if aspect==TRUE, this specifies the number of 
+#' @param slope TRUE to return the slope of the surface at each location instead
+#'  of the value of the surface itself
+#' @param aspect.categories if aspect==TRUE, this specifies the number of 
 #'   discrete categories to divide aspect numbers (0-360) into.  NULL if the
 #'   original scale (0-360) should be kept. By design, the aspect categories
 #'   will be centered on north in the first category.
@@ -33,8 +38,8 @@ extractRegion = function(sgdf, extent,
                          aspect=F, aspect.categories=NULL,
                          slope=F) {
   
-  require(raster)
-  require(SDMTools)
+  requireNamespace('raster')
+  requireNamespace('SDMTools')
   
   # convert sgdf to a raster object
   sgdf = brick(sgdf)

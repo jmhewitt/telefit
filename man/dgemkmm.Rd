@@ -6,6 +6,13 @@
 \usage{
 dgemkmm(A, B, C)
 }
+\arguments{
+\item{A}{(m x n) matrix}
+
+\item{B}{(p x q) matrix}
+
+\item{C}{(nq x r) matrix}
+}
 \description{
 Evaluate kron(A,B) * C without storing kron(A,B)
 }

@@ -4,11 +4,12 @@
 \alias{plot.stFit}
 \title{Plot stFit objects}
 \usage{
-plot.stFit(stFit, type = "density", stData = NULL, coord.s = NULL,
-  coord.knot = NULL, text.size = NULL, axis.text.size = NULL,
-  title.text.size = NULL, burn = 1, signif.telecon = F, p = 1,
-  local.covariate = NULL, lwd = NULL, facet.signif = 3,
-  stat.smooth.bw = NULL, stat.smooth.degree = NULL, dots = NULL, ...)
+\method{plot}{stFit}(stFit, type = "density", stData = NULL,
+  coord.s = NULL, coord.knot = NULL, text.size = NULL,
+  axis.text.size = NULL, title.text.size = NULL, burn = 1,
+  signif.telecon = F, p = 1, local.covariate = NULL, lwd = NULL,
+  facet.signif = 3, stat.smooth.bw = NULL, stat.smooth.degree = NULL,
+  dots = NULL, ...)
 }
 \arguments{
 \item{stFit}{Object of class stFit to plot.}
@@ -43,6 +44,8 @@ effects. if NULL, the middle local coordinate will be plotted.}
 
 \item{axis.text.size}{number specifying the size of axis text labels}
 
+\item{title.text.size}{number specifying the size of title}
+
 \item{burn}{number of observations to exclude from graph}
 
 \item{signif.telecon}{if TRUE, will highlight significant teleconnection
@@ -55,8 +58,21 @@ the index of the spatially varying coefficient to plot}
 that will be plotted against teleconnection effects if 
 type=='teleconnection_knot_transect'}
 
+\item{lwd}{specifies linewidth for plots that include reference lines}
+
 \item{facet.signif}{number of significant figures to round facet latitudes 
 and longitudes for if type=='teleconnection_knot_transect'}
+
+\item{stat.smooth.bw}{if type=='teleconnection_knot_transect' this specifies
+the bandwith of the non-parametric smooth of the estimates}
+
+\item{dots}{additional named arguments with defaults to pass to additional 
+functions}
+
+\item{...}{additional arguments to pass to functions}
+
+\item{stat.smooth.bw}{if type=='teleconnection_knot_transect' this specifies
+the degree of the non-parametric smooth of the estimates}
 }
 \value{
 a ggplot object with the specified map

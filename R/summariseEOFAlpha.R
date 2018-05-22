@@ -5,6 +5,11 @@
 #'
 #' @export
 #' 
+#' @param eof_alpha structure containing posterior inference for transformed 
+#'   remote coefficients
+#' @param prob confidence level for confidence intervals and significance
+#' @param coords.s matrix with coordinates where responses were 
+#'  observed (lon, lat)
 #' 
 
 summariseEOFAlpha = function( eof_alpha, prob=.95, coords.s ) {

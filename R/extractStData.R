@@ -42,21 +42,23 @@
 #'  data extracted from Z should be the observed data, anomalies, or
 #'  standardized anomalies (where the climatology is computed from the 
 #'  observations as the pointwise temporal average)
-#'  @param X.lab name for X data (optional)
-#'  @param Y.lab name for Y data (optional)
-#'  @param Z.lab name for Z data (optional)
-#'  @param aspect TRUE or vector of logicals (one for each X object)
+#' @param aggfact.s If provided, will spatially average Y and X data
+#' @param aggfact.r If provided, will spatially average Z data
+#' @param X.lab name for X data (optional)
+#' @param Y.lab name for Y data (optional)
+#' @param Z.lab name for Z data (optional)
+#' @param aspect TRUE or vector of logicals (one for each X object)
 #'   to return the aspect of the surface at each location 
 #'   instead of the value of the surface itself
-#'  @param aspect.categories if aspect==TRUE, this specifies the number of 
+#' @param aspect.categories if aspect==TRUE, this specifies the number of 
 #'   discrete categories to divide aspect numbers (0-360) into.  NULL if the
 #'   original scale (0-360) should be kept. By design, the aspect categories
 #'   will be centered on north in the first category.
-#'  @param slope TRUE or vector of logicals (one for each X object)
+#' @param slope TRUE or vector of logicals (one for each X object)
 #'   to return the slope of the surface at each location 
 #'   instead of the value of the surface itself
-#'  @param colnames.X names of columns of X
-#'  @param formula formula object to specify how to create the design matrix
+#' @param colnames.X names of columns of X
+#' @param formula formula object to specify how to create the design matrix
 #'  
 
 extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NULL,

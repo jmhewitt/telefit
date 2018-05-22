@@ -19,7 +19,8 @@
 #'      \item{cov.s}{ list(smoothness=double, range=double, variance=double, nugget=double) }
 #'      \item{cov.r}{ list(smoothness=double, range=double, variance=double, nugget=double) }
 #'    }
-#' 
+#' @param coords.knots matrix with coordinates of knots for remote covariates
+#'  (lon, lat)
 #' 
 
 stSimulate = function( dat.train, dat.test, coords.knots, params, miles = T ) {

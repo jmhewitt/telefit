@@ -8,10 +8,14 @@ eof(X, center = F, scale = F)
 }
 \arguments{
 \item{X}{[variable x observation] matrix of data for which to compute EOFs}
+
+\item{center}{TRUE/FALSE to center columns of X in call to prcomp}
+
+\item{scale}{TRUE/FALSE to scale columns of X in call to prcomp}
 }
 \value{
 A list containing EOF patterns as columns, and their scores
 }
 \description{
-Performs an EOF decomposition of the data
+Uses the stats::prcomp function to implement EOF decompositions of data
 }

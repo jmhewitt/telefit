@@ -51,7 +51,8 @@ set.seed(2018)
 # helper sampling functions
 kronSamp = function(A, B) {
   y = matrix(0, nrow = nrow(A) * nrow(B), ncol=1)
-  .Call('_mvrnorm_postKron', PACKAGE = 'telefit', y, solve(A), solve(B), 1, T)
+  .Call('_mvrnorm_postKron', PACKAGE = 'telefit', y, solve(A), solve(B), 1, 
+        TRUE)
 }
 invWSamp = function(Psi, n) {
   .Call('_mc2_rinvwishart', PACKAGE = 'telefit', Psi, n)

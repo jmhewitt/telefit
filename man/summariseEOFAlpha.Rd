@@ -6,6 +6,15 @@
 \usage{
 summariseEOFAlpha(eof_alpha, prob = 0.95, coords.s)
 }
+\arguments{
+\item{eof_alpha}{structure containing posterior inference for transformed 
+remote coefficients}
+
+\item{prob}{confidence level for confidence intervals and significance}
+
+\item{coords.s}{matrix with coordinates where responses were 
+observed (lon, lat)}
+}
 \description{
 This function computes approximate normal intervals, etc. for fitted 
 eof-mapped alphas.

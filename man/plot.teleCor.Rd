@@ -4,7 +4,7 @@
 \alias{plot.teleCor}
 \title{Plots teleconnection correlation maps}
 \usage{
-plot.teleCor(teleCor, signif = F, coord.s = NULL, map = "world",
+\method{plot}{teleCor}(teleCor, signif = F, coord.s = NULL, map = "world",
   region = ".", zlim = NULL, dots = NULL, ...)
 }
 \arguments{
@@ -27,6 +27,11 @@ will include us state outlines.}
 all subregions. See documentation for map for more details.}
 
 \item{zlim}{c(min, max) vector that specifies the colorscale limits}
+
+\item{dots}{additional named arguments with defaults to pass to additional 
+functions}
+
+\item{...}{additional arguments to be passed to lower-level plotting functions}
 }
 \value{
 a ggplot object with the specified map

@@ -4,8 +4,8 @@
 \alias{plot.stPredict}
 \title{Plot stPredict objects}
 \usage{
-plot.stPredict(stPredict, type = "prediction", t = NULL, stFit = NULL,
-  stData = NULL, err.comparison = NULL, err.var = NULL,
+\method{plot}{stPredict}(stPredict, type = "prediction", t = NULL,
+  stFit = NULL, stData = NULL, err.comparison = NULL, err.var = NULL,
   err.lab = err.var, pattern = 1, dots = NULL, burn = 1,
   signif.telecon = F, ...)
 }
@@ -75,7 +75,12 @@ that will be used to plot annual errors against}
 \item{pattern}{if type=='eof_alpha_knots', this specified which eof the remote 
 coefficients should be mapped onto and then plotted over the local domain}
 
+\item{dots}{additional named arguments with defaults to pass to additional 
+functions}
+
 \item{burn}{number of observations to exclude from graph}
+
+\item{signif.telecon}{TRUE to highlight significant teleconnection effects}
 
 \item{...}{additional arguments to be passed to lower-level plotting functions}
 }

@@ -4,7 +4,7 @@
 \alias{plot.stData}
 \title{Plot stData objects}
 \usage{
-plot.stData(stData, type = "response", t = NULL, p = NULL,
+\method{plot}{stData}(stData, type = "response", t = NULL, p = NULL,
   map = "world", region = ".", coord.s = NULL, coord.r = NULL,
   zlim = NULL, fill.lab = NULL, lab.teleconnection = expression(alpha),
   fill.lab.width = 20, category.breaks = NULL, coords.knots = NULL,
@@ -75,6 +75,9 @@ latitude of knot locations to overlay on the 'remote' plot}
 \item{signif.telecon}{if TRUE, will highlight significant grid cells if the
 plotting data contain a signif column}
 
+\item{dots}{additional named arguments with defaults to pass to additional 
+functions}
+
 \item{pattern}{if type=='eof' this specifies which (remote) EOF pattern to plot
 or if type=='eof_scores' this (vector) specifies which (remote) EOF pattern
 scores to plot}
@@ -93,6 +96,8 @@ grid boxes when plotting significant effects}
 
 \item{contour}{c(TRUE, TRUE) to plot local and remote responses as contours
 vs. observations}
+
+\item{...}{additional arguments to pass to functions}
 }
 \value{
 a ggplot object with the specified map

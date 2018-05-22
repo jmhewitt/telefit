@@ -11,6 +11,9 @@ stSimulate(dat.train, dat.test, coords.knots, params, miles = T)
 
 \item{dat.test}{stData object with test data to simulate new Y values for}
 
+\item{coords.knots}{matrix with coordinates of knots for remote covariates
+(lon, lat)}
+
 \item{params}{A list containing model parameters for use in simulation:
 \describe{
   \item{beta}{ vector with fixed effect coefficients }

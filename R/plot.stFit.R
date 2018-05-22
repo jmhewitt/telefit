@@ -2,8 +2,8 @@
 #'
 #' This function provides basic plotting for telefit package data.
 #' 
-#'
 #' @export
+#' @method plot stFit
 #' 
 #' @import grid
 #' @import gtable
@@ -33,6 +33,7 @@
 #' @param coord.s if plot type is 'teleconnection', specifies the longitude and 
 #'  latitude of local coordinate for which to plot estimated teleconnection 
 #'  effects. if NULL, the middle local coordinate will be plotted.
+#' @param title.text.size number specifying the size of title
 #' @param text.size number specifying the size of text labels
 #' @param axis.text.size number specifying the size of axis text labels
 #' @param burn number of observations to exclude from graph
@@ -47,6 +48,14 @@
 #'  type=='teleconnection_knot_transect'
 #' @param facet.signif number of significant figures to round facet latitudes 
 #'  and longitudes for if type=='teleconnection_knot_transect'
+#' @param lwd specifies linewidth for plots that include reference lines
+#' @param stat.smooth.bw if type=='teleconnection_knot_transect' this specifies
+#'  the bandwith of the non-parametric smooth of the estimates
+#' @param stat.smooth.bw if type=='teleconnection_knot_transect' this specifies
+#'  the degree of the non-parametric smooth of the estimates
+#' @param dots additional named arguments with defaults to pass to additional 
+#'   functions
+#' @param ... additional arguments to pass to functions
 #' 
 #' @return a ggplot object with the specified map
 #'

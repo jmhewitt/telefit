@@ -3,7 +3,7 @@
 #' Fits the teleconnection model with L = Sigma
 #'
 #' @export
-#'
+#' 
 #' @importFrom fields rdist.earth
 #' @useDynLib telefit
 #'
@@ -57,7 +57,7 @@ stFit = function( stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
                   Z = stData$Z, coords.s = stData$coords.s, 
                   coords.r = stData$coords.r, rw.initsd = NULL, 
                   returnll = T, miles = T, C=1, alpha=.44, localOnly = F,
-                  varying = F, nknots = 75, remoteOnly = F, coords.knots ) {
+                  varying = F, remoteOnly = F, coords.knots ) {
   
   n = dim(X)[1]
   p = dim(X)[2]
