@@ -1,3 +1,5 @@
+\dontrun{ 
+  
 # demonstration of svcFit and svcPredict methods for spatially varying 
 # coefficient models with remote effects.
 #
@@ -151,3 +153,5 @@ for(i in 1:4) {
 par(mfrow=c(1,2))
 quilt.plot(yn[1:dims$N], coords, main = 'ynew')
 quilt.plot(yh[1:dims$N], coords, main = 'yhat')
+
+}
