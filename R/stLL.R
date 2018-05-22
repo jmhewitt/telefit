@@ -5,7 +5,7 @@
 #' 
 #' @importFrom fields rdist.earth
 #' 
-#' @useDynLib telefit
+#' @useDynLib telefit, .registration = TRUE
 #' 
 #' 
 #' @param stFit Object with class 'stFit' containing posterior parameter samples

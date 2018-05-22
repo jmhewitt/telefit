@@ -1,6 +1,7 @@
 #include "stpmod.h"
 #include "covs.h"
 #include <iomanip>
+#include "distributions.h"
 
 STPModel::STPModel(Data &_dat, Priors &_prior, Constants &_consts) {
 	dat = _dat;
@@ -72,10 +73,12 @@ struct STPModel::Params {
 struct STPModel::CompositionParams {
 	
 	vec alpha_knots;
+	mat cat_breaks;
 	
-	CompositionParams(const Constants &consts) {
+	CompositionParams(const Constants &consts, const mat & _cat_breaks ) {
 		if(!consts.localOnly)
 			alpha_knots = vec(consts.ns * consts.nr_knots, fill::zeros);
+		cat_breaks = cat_breaks;
 	}
 	
 };
@@ -872,7 +875,8 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 
 CompositionSamples STPModel::compositionSample(const Samples &samples,
 											   const Data &newDat,
-											   bool return_full_alpha) {
+											   bool return_full_alpha,
+											   const mat &cat_breaks) {
 	
 	// use some Rsugar to wake up R's random number generator on crossbow
 	rgamma(1, 2.0, 1.0);
@@ -882,11 +886,12 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 	CompositionSamples compositionSamples = CompositionSamples(nSamples,
 															   consts,
 															   return_full_alpha,
-															   newDat.Z.n_cols);
+															   newDat.Z.n_cols,
+															   cat_breaks.n_cols);
 	
 	// initialize parameters
 	Params current = Params(consts);
-	CompositionParams currentComp = CompositionParams(consts);
+	CompositionParams currentComp = CompositionParams(consts, cat_breaks);
 	
 	// initialize temporary structures
 	CompositionScratch compositionScratch = CompositionScratch(consts, dat);
@@ -957,6 +962,15 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 			// sample spatially correlated noise, independent across time
 			mat noise = compositionScratch.Sigma_cholU.t() *
 				randn<mat>(consts.ns, newDat.Z.n_cols);
+			
+			// compute logits for each discretized category
+			int ncats = cat_breaks.n_elem + 1;
+			for(int i=0; i<consts.ns; i++) {
+				compositionSamples.cat_probs.slice(it).row(i) =
+					mcstat2::qintnorm(cat_breaks.row(i).t(),
+									  local.at(i),
+									  sqrt(compositionScratch.Sigma.at(i,i))).t();
+			}
 			
 			// save forecast objects
 			if(consts.localOnly) {
@@ -1045,7 +1059,8 @@ RcppExport SEXP _stpcomposition(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 								SEXP rho_y_samples, SEXP rho_r_samples,
 								SEXP ll_samples, SEXP Xnew, SEXP Znew,
 								SEXP localOnly, SEXP full_alpha,
-								SEXP sigmasq_r_eps_samples, SEXP W) {
+								SEXP sigmasq_r_eps_samples, SEXP W,
+								SEXP cat_breaks) {
 	
 	using namespace Rcpp;
 	
@@ -1071,7 +1086,8 @@ RcppExport SEXP _stpcomposition(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 	// instantiate and run sampler
 	STPModel stpmod = STPModel(dat, prior, consts);
 	CompositionSamples compositionSamples = stpmod.compositionSample(
-										samples, newDat, as<bool>(full_alpha));
+										samples, newDat, as<bool>(full_alpha),
+										as<mat>(cat_breaks));
 	
 	// return samples
 	return compositionSamples.toSummarizedList();

@@ -3,7 +3,7 @@
 #' This function evaluates the Matern covariance function for the elements of 
 #' a vector.
 #'
-#' @useDynLib telefit
+#' @useDynLib telefit, .registration = TRUE
 #'
 #' @param d A numeric vector of distances at which the Matern 
 #'        correlation function should be evaluated.

@@ -21,6 +21,24 @@ double mcstat2::loglognormal_unscaled(double x, double mu, double sigma) {
 	return - logx - log(sigma) - .5 * pow(logx - mu, 2.0) / pow(sigma, 2.0);
 }
 
+vec mcstat2::qintnorm(const vec & breaks, double mu, double sigma) {
+	// compute normal probabilities for intervals specified by breaks
+	
+	int n = breaks.n_elem + 1;
+	
+	vec res = vec(n, fill::zeros);
+	
+	double F0 = 0;
+	for(int i=0; i<(n-1); i++) {
+		double F = Rf_pnorm5(breaks.at(i), mu, sigma, 1, 0);
+		res.at(i) = F - F0;
+		F0 = F;
+	}
+	res.at(n-1) = 1 - F0;
+	
+	return res;
+}
+
 vec mcstat2::mvrnorm(const mat & sigma) {
 	return chol(sigma, "lower") * randn<vec>(sigma.n_rows, 1);
 }
@@ -335,4 +353,15 @@ RcppExport SEXP _mvrnorm_post(SEXP _y, SEXP _Sigma, SEXP _nSamples,
 	bool precision = as<bool>(_precision);
 	
 	return wrap(mcstat2::mvrnorm_post(y, Sigma, nSamples, precision));
+}
+
+RcppExport SEXP _qintnorm(SEXP _breaks, SEXP _mu, SEXP _sigma) {
+	
+	using namespace Rcpp;
+	
+	vec breaks = as<vec>(_breaks);
+	double mu = as<double>(_mu);
+	double sigma = as<double>(_sigma);
+	
+	return wrap(mcstat2::qintnorm(breaks, mu, sigma));
 }

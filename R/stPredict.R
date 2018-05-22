@@ -15,7 +15,7 @@
 #' @import foreach
 #' @importFrom fields rdist.earth
 #' 
-#' @useDynLib telefit
+#' @useDynLib telefit, .registration = TRUE
 #' 
 #' 
 #' @param stFit Object with class 'stFit' containing posterior parameter samples
@@ -117,6 +117,12 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   # W = sweep(W, 2, sc, '/')
   # Tmat = sweep(Tmat, 2, sc, '*')
   
+  # compute empirical breakpoints at each location to define forecast categories
+  if(!is.null(cat.probs)) {
+    category.breaks = t(apply(stData$Y, 1,
+                              function(r) { quantile(r, probs = cat.probs)}))
+  }
+  
   # set up basic parallel backend if none is registered
   if(!getDoParRegistered()) {
     registerDoMC(ncores)
@@ -135,7 +141,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
                          .export = c('Xl', 'Z', 'Yl', 'Dy', 'Dz_knots', 
                           'Dz_to_knots', 'p', 'n', 'r', 'r_knots', 't',  'stFit', 
                           'Xlnew', 'Znew', 'localOnly', 'returnFullAlphas', 
-                          'W') ) %dorng% {
+                          'W', 'category.breaks') ) %dorng% {
     inds = unlist(inds)            
                            
     if(stFit$varying) {
@@ -151,7 +157,8 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
             stFit$parameters$samples$rho_r[inds],
             stFit$parameters$samples$ll[inds],
             Xlnew, Znew, localOnly, returnFullAlphas,
-            stFit$parameters$samples$sigmasq_r_eps[inds], W)
+            stFit$parameters$samples$sigmasq_r_eps[inds], W, 
+            matrix(category.breaks, nrow = nrow(coords.s)))
     }
   }
   
@@ -202,11 +209,6 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     }
   }
   
-  # compute empirical breakpoints at each location to define forecast categories
-  if(!is.null(cat.probs)) {
-    category.breaks = t(apply(stData$Y, 1,
-                              function(r) { quantile(r, probs = cat.probs)}))
-  }
                          
   # package results (exactly split task across ncores)
   nt0 = ncol(composition$forecast$forecast)

@@ -4,7 +4,7 @@
 #' @export
 #'
 #' @importFrom fields rdist.earth
-#' @useDynLib telefit
+#' @useDynLib telefit, .registration = TRUE
 #'
 #' @param y vector containing responses for each timepoint.  vector is blocked
 #'   by timepoint.

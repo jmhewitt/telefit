@@ -5,7 +5,7 @@
 #' @export
 #'
 #' @importFrom fields rdist.earth
-#' @useDynLib telefit
+#' @useDynLib telefit, .registration = TRUE
 #'
 #' @param burn number of posterior samples to burn before drawing composition
 #'  samples

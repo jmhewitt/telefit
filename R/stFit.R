@@ -5,7 +5,7 @@
 #' @export
 #' 
 #' @importFrom fields rdist.earth
-#' @useDynLib telefit
+#' @useDynLib telefit, .registration = TRUE
 #'
 #' @param localOnly TRUE to fit the model without the teleconnection effects
 #'  (typically for evaluating impact of teleconnection effects)

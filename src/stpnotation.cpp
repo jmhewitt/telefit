@@ -36,9 +36,11 @@ List CompositionSamples::toSummarizedList() {
 	List forecast_sum;
  
 	if(localOnly) {
-		forecast_sum = List::create( _["forecast"] = forecast );
+		forecast_sum = List::create( _["forecast"] = forecast,
+									 _["cat_probs"] = cat_probs );
 	} else {
 		forecast_sum = List::create( _["forecast"] = forecast,
+									 _["cat_probs"] = cat_probs,
 									 _["local"] = local,
 									 _["remote"] = remote );
 	}

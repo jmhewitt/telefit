@@ -4,15 +4,17 @@
 \alias{summary.stPredict}
 \title{Plot stPredict objects}
 \usage{
-\method{summary}{stPredict}(stPredict, t = NULL, digits = NULL)
+\method{summary}{stPredict}(object, t = NULL, digits = NULL, ...)
 }
 \arguments{
-\item{stPredict}{Object of class stPredict to summarise}
+\item{object}{Object of class stPredict to summarise}
 
 \item{t}{timepoint to plot.  Will automatically plot all timepoints and overall
 summary if NULL.}
 
 \item{digits}{Number of digits to pass to signif, if not NULL.}
+
+\item{...}{S3 generic/method consistency}
 }
 \description{
 This function prints basic summary info for telefit stPredict objects

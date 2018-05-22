@@ -3,7 +3,7 @@
 #' This function evaluates the Matern covariance function for the elements of 
 #' a (potentially non-square) spatial distance matrix
 #'
-#' @useDynLib telefit
+#' @useDynLib telefit, .registration = TRUE
 #' 
 #' @export
 #'

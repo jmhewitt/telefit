@@ -5,7 +5,7 @@
 #'
 #' @import foreach
 #' @importFrom fields rdist.earth
-#' @useDynLib telefit
+#' @useDynLib telefit, .registration = TRUE
 #' 
 #' @param fit svcFit object containing posterior samples
 #' @param Xn [nr*nt, p] matrix of local covariates at new timepoint

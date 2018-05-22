@@ -49,7 +49,8 @@ public:
 	
 	CompositionSamples compositionSample(const Samples &samples,
 										 const Data &newDat,
-										 bool return_full_alpha);
+										 bool return_full_alpha,
+										 const mat &cat_breaks);
 	
 	vec getLL(const Samples &samples);
 };

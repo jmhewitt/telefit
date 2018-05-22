@@ -7,17 +7,17 @@
 #' 
 #' @import foreach
 #' 
-#' @param stPredict Object of class stPredict to summarise
+#' @param object Object of class stPredict to summarise
 #' @param t timepoint to plot.  Will automatically plot all timepoints and overall
 #'  summary if NULL.
 #' @param digits Number of digits to pass to signif, if not NULL.
-#'  
+#' @param ... S3 generic/method consistency
 #'
 #' 
 #' 
 
-summary.stPredict = function( stPredict, t=NULL, digits=NULL ) {
-  
+summary.stPredict = function( object, t=NULL, digits=NULL, ... ) {
+  stPredict = object
   if(is.null(t)) {
     cat('Overall fit errors\n\n')
     

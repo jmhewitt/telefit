@@ -27,6 +27,13 @@ namespace mcstat2 {
 	
 	// log log-normal distribution without normalization constant
 	double loglognormal_unscaled(double x, double mu, double sigma);
+
+	
+	//
+	// probabilities
+	//
+	
+	vec qintnorm(const vec & breaks, double mu, double sigma);
 	
 	
 	//
