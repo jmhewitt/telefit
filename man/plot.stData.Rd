@@ -4,7 +4,7 @@
 \alias{plot.stData}
 \title{Plot stData objects}
 \usage{
-\method{plot}{stData}(stData, type = "response", t = NULL, p = NULL,
+\method{plot}{stData}(x, type = "response", t = NULL, p = NULL,
   map = "world", region = ".", coord.s = NULL, coord.r = NULL,
   zlim = NULL, fill.lab = NULL, lab.teleconnection = expression(alpha),
   fill.lab.width = 20, category.breaks = NULL, coords.knots = NULL,
@@ -13,7 +13,7 @@
   contour = c(F, F), ...)
 }
 \arguments{
-\item{stData}{Object of class stData to plot.}
+\item{x}{Object of class stData to plot.}
 
 \item{type}{One of the following options to specify what type of plot to build
 \describe{

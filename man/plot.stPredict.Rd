@@ -4,13 +4,13 @@
 \alias{plot.stPredict}
 \title{Plot stPredict objects}
 \usage{
-\method{plot}{stPredict}(stPredict, type = "prediction", t = NULL,
-  stFit = NULL, stData = NULL, err.comparison = NULL, err.var = NULL,
+\method{plot}{stPredict}(x, type = "prediction", t = NULL, stFit = NULL,
+  stData = NULL, err.comparison = NULL, err.var = NULL,
   err.lab = err.var, pattern = 1, dots = NULL, burn = 1,
   signif.telecon = F, ...)
 }
 \arguments{
-\item{stPredict}{Object of class stPredict to plot.}
+\item{x}{Object of class stPredict to plot.}
 
 \item{type}{One of the following options to specify what type of plot to build
 \describe{

@@ -4,11 +4,11 @@
 \alias{coef.stPredict}
 \title{Compute point estimates for parameters from posterior samples}
 \usage{
-\method{coef}{stPredict}(stPredict, stFit, stData, burn = 1,
-  type = "eof-alpha_knots")
+\method{coef}{stPredict}(object, stFit, stData, burn = 1,
+  type = "eof-alpha_knots", ...)
 }
 \arguments{
-\item{stPredict}{stPredict object containing posterior estimates of alphas}
+\item{object}{stPredict object containing posterior estimates of alphas}
 
 \item{stFit}{stFit object containing posterior samples for model}
 
@@ -21,6 +21,8 @@
   \item{eof-alpha_knots}{ Remote coefficient estimates (alpha_knots) 
     mapped onto the eof patterns of the remote covariates.   }
 }}
+
+\item{...}{S3 generic/method consistency}
 }
 \description{
 Compute point estimates for parameters from posterior samples

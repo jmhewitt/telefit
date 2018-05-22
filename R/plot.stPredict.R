@@ -54,7 +54,7 @@
 #'        show the remote influence coefficients mapped onto the eof pattern
 #'        specified by the "pattern" argument.   }
 #'    }
-#' @param stPredict Object of class stPredict to plot.
+#' @param x Object of class stPredict to plot.
 #' @param t timepoint to plot.  Will automatically plot the first timepoint if
 #'  t=NULL.
 #' @param stData Object of class stData to provide coordinate and related
@@ -78,11 +78,11 @@
 #' 
 #' 
 
-plot.stPredict = function( stPredict, type='prediction', t=NULL, stFit=NULL, 
+plot.stPredict = function( x, type='prediction', t=NULL, stFit=NULL, 
                            stData=NULL, err.comparison=NULL, err.var=NULL,
                            err.lab=err.var, pattern=1, dots=NULL, burn=1, 
                            signif.telecon = F, ... ) {
-
+  stPredict = x
   # merge unique list of dots
     dots = c(dots, list(...))
     dots = dots[!duplicated(dots)]

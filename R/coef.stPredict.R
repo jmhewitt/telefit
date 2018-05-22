@@ -3,7 +3,7 @@
 #' @export
 #'
 #' 
-#' @param stPredict stPredict object containing posterior estimates of alphas
+#' @param object stPredict object containing posterior estimates of alphas
 #' @param stFit stFit object containing posterior samples for model
 #' @param stData stData object containing spatial information for dataset
 #' @param burn number of posterior samples to reject before computing estimates
@@ -12,12 +12,12 @@
 #'      \item{eof-alpha_knots}{ Remote coefficient estimates (alpha_knots) 
 #'        mapped onto the eof patterns of the remote covariates.   }
 #'    }
-#'
+#' @param ... S3 generic/method consistency
 #'  
 
-coef.stPredict = function(stPredict, stFit, stData, burn = 1, 
-                          type = 'eof-alpha_knots') {
-  
+coef.stPredict = function(object, stFit, stData, burn = 1, 
+                          type = 'eof-alpha_knots', ...) {
+  stPredict = object
   # determine which type of coefficients are requested
   match.opts = c('eof-alpha_knots')
   type = match.opts[pmatch(type, match.opts)]

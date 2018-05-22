@@ -7,10 +7,12 @@ Author: Joshua Hewitt
 Maintainer: Joshua Hewitt <joshua.hewitt@colostate.edu>
 Description: Implementation of the remote effects spatial process (RESP) model for teleconnection.  The model is appropriate for a spatial response that is influenced by both local and remote covariates.  The model assumes there are independent temporal replications of the field for analysis.
 License: GPL-3
+Depends: R (>= 3.0.2)
 Imports:
-    Rcpp (>= 0.12.4), abind, coda, cowplot, doMC, doRNG, dplyr, fields, 
+    abind, coda, cowplot, doMC, doRNG, dplyr, fields, 
     itertools, mvtnorm, raster, scoringRules, stringr, 
     foreach, ggplot2, gtable, reshape2, scales, sp, SDMTools
-LinkingTo: Rcpp, RcppArmadillo, RcppEigen (>= 0.3.3.3.1)
+LinkingTo: Rcpp (>= 0.12.4), RcppArmadillo, RcppEigen (>= 0.3.3.3.1)
 RoxygenNote: 6.0.1
 Suggests: testthat
+LazyData: true

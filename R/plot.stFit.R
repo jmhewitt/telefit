@@ -24,7 +24,7 @@
 #'      \item{teleconnection_knot_influence}{  }
 #'      \item{beta}{ }
 #'    }
-#' @param stFit Object of class stFit to plot.
+#' @param x Object of class stFit to plot.
 #' @param coord.knot if plot type is 'teleconnection_knot_influence' or 
 #' 'teleconnection_knot_local', 
 #'  specifies the longitude and latitude of knot coordinate 
@@ -51,8 +51,8 @@
 #' @param lwd specifies linewidth for plots that include reference lines
 #' @param stat.smooth.bw if type=='teleconnection_knot_transect' this specifies
 #'  the bandwith of the non-parametric smooth of the estimates
-#' @param stat.smooth.bw if type=='teleconnection_knot_transect' this specifies
-#'  the degree of the non-parametric smooth of the estimates
+#' @param stat.smooth.degree if type=='teleconnection_knot_transect' this 
+#'  specifies the degree of the non-parametric smooth of the estimates
 #' @param dots additional named arguments with defaults to pass to additional 
 #'   functions
 #' @param ... additional arguments to pass to functions
@@ -62,14 +62,14 @@
 #' 
 #' 
 
-plot.stFit = function( stFit, type='density', stData=NULL, coord.s=NULL, 
+plot.stFit = function( x, type='density', stData=NULL, coord.s=NULL, 
                        coord.knot=NULL,
                        text.size=NULL, axis.text.size=NULL, title.text.size=NULL,
                        burn = 1, signif.telecon = F, p = 1, local.covariate=NULL, 
                        lwd=NULL, facet.signif = 3, stat.smooth.bw=NULL,
                        stat.smooth.degree=NULL,
                        dots=NULL, ...) {
-  
+  stFit = x
   # merge unique list of dots
     dots = c(dots, list(...))
     dots = dots[!duplicated(dots)]

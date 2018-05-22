@@ -4,11 +4,11 @@
 \alias{plot.teleCor}
 \title{Plots teleconnection correlation maps}
 \usage{
-\method{plot}{teleCor}(teleCor, signif = F, coord.s = NULL, map = "world",
+\method{plot}{teleCor}(x, signif = F, coord.s = NULL, map = "world",
   region = ".", zlim = NULL, dots = NULL, ...)
 }
 \arguments{
-\item{teleCor}{object of class teleCor, containing pointwise correlations}
+\item{x}{object of class teleCor, containing pointwise correlations}
 
 \item{signif}{if TRUE, then teleCor must have a column labeled 'signif' that
 indicates which correlations are significant.  These correlations will be

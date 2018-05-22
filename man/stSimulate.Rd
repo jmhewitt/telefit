@@ -20,6 +20,10 @@ stSimulate(dat.train, dat.test, coords.knots, params, miles = T)
   \item{cov.s}{ list(smoothness=double, range=double, variance=double, nugget=double) }
   \item{cov.r}{ list(smoothness=double, range=double, variance=double, nugget=double) }
 }}
+
+\item{miles}{TRUE to compute distances for evaluating covariance functions 
+in miles.  This is important since the interpretations of the cov.r and 
+cov.s parameters depend on the units with which distance is measured.}
 }
 \description{
 This function simulates spatio-temporal data. The intention is that data Y and latent 

@@ -4,14 +4,16 @@
 \alias{coef.stFit}
 \title{Compute point estimates for parameters from posterior samples}
 \usage{
-\method{coef}{stFit}(stFit, burn = 1, fun = mean)
+\method{coef}{stFit}(object, burn = 1, fun = mean, ...)
 }
 \arguments{
-\item{stFit}{stFit object containing posterior samples for model}
+\item{object}{stFit object containing posterior samples for model}
 
 \item{burn}{number of posterior samples to reject before computing estimates}
 
 \item{fun}{function for computing point estimates}
+
+\item{...}{S3 generic/method consistency}
 }
 \description{
 Compute point estimates for parameters from posterior samples

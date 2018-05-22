@@ -4,15 +4,14 @@
 \alias{plot.stFit}
 \title{Plot stFit objects}
 \usage{
-\method{plot}{stFit}(stFit, type = "density", stData = NULL,
-  coord.s = NULL, coord.knot = NULL, text.size = NULL,
-  axis.text.size = NULL, title.text.size = NULL, burn = 1,
-  signif.telecon = F, p = 1, local.covariate = NULL, lwd = NULL,
-  facet.signif = 3, stat.smooth.bw = NULL, stat.smooth.degree = NULL,
-  dots = NULL, ...)
+\method{plot}{stFit}(x, type = "density", stData = NULL, coord.s = NULL,
+  coord.knot = NULL, text.size = NULL, axis.text.size = NULL,
+  title.text.size = NULL, burn = 1, signif.telecon = F, p = 1,
+  local.covariate = NULL, lwd = NULL, facet.signif = 3,
+  stat.smooth.bw = NULL, stat.smooth.degree = NULL, dots = NULL, ...)
 }
 \arguments{
-\item{stFit}{Object of class stFit to plot.}
+\item{x}{Object of class stFit to plot.}
 
 \item{type}{One of the following options to specify what type of plot to build
 \describe{
@@ -66,13 +65,13 @@ and longitudes for if type=='teleconnection_knot_transect'}
 \item{stat.smooth.bw}{if type=='teleconnection_knot_transect' this specifies
 the bandwith of the non-parametric smooth of the estimates}
 
+\item{stat.smooth.degree}{if type=='teleconnection_knot_transect' this 
+specifies the degree of the non-parametric smooth of the estimates}
+
 \item{dots}{additional named arguments with defaults to pass to additional 
 functions}
 
 \item{...}{additional arguments to pass to functions}
-
-\item{stat.smooth.bw}{if type=='teleconnection_knot_transect' this specifies
-the degree of the non-parametric smooth of the estimates}
 }
 \value{
 a ggplot object with the specified map

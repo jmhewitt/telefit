@@ -21,6 +21,9 @@
 #'    }
 #' @param coords.knots matrix with coordinates of knots for remote covariates
 #'  (lon, lat)
+#' @param miles TRUE to compute distances for evaluating covariance functions 
+#'   in miles.  This is important since the interpretations of the cov.r and 
+#'   cov.s parameters depend on the units with which distance is measured.
 #' 
 
 stSimulate = function( dat.train, dat.test, coords.knots, params, miles = T ) {

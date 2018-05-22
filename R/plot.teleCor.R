@@ -9,7 +9,7 @@
 #' @import ggplot2
 #' @import dplyr
 #' 
-#' @param teleCor object of class teleCor, containing pointwise correlations
+#' @param x object of class teleCor, containing pointwise correlations
 #' @param signif if TRUE, then teleCor must have a column labeled 'signif' that
 #'  indicates which correlations are significant.  These correlations will be
 #'  printed in bold, and the rest will be printed more lightly
@@ -29,9 +29,9 @@
 #' 
 #' @return a ggplot object with the specified map
 
-plot.teleCor = function( teleCor, signif=F, coord.s=NULL, 
+plot.teleCor = function( x, signif=F, coord.s=NULL, 
                          map='world', region='.', zlim=NULL, dots=NULL, ... ) {
-  
+  teleCor = x
   # merge unique list of dots
     dots = c(dots, list(...))
     dots = dots[!duplicated(dots)]

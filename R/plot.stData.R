@@ -41,7 +41,7 @@
 #'      \item{local_cor}{ This plot shows pointwise correlations with local covariates. }
 #'      \item{teleconnection_knot_local}{ }
 #'    }
-#' @param stData Object of class stData to plot.
+#' @param x Object of class stData to plot.
 #' @param coord.s if plot type is 'teleconnection', specifies the longitude and 
 #'  latitude of local coordinate for which to plot teleconnection effects. if 
 #'  NULL, the middle local coordinate will be plotted.
@@ -79,7 +79,7 @@
 #' 
 #' 
 
-plot.stData = function( stData, type='response', t=NULL, p=NULL,  
+plot.stData = function( x, type='response', t=NULL, p=NULL,  
                         map='world', region='.', coord.s=NULL, coord.r=NULL,
                         zlim=NULL, fill.lab=NULL,
                         lab.teleconnection = expression(alpha),
@@ -87,7 +87,7 @@ plot.stData = function( stData, type='response', t=NULL, p=NULL,
                         coords.knots = NULL, signif.telecon = F, dots=NULL, 
                         pattern = 1, lwd=1.75, cutoff=.9, signif.level=.05, 
                         alpha = .2, zmid = 0, contour = c(F,F), ...) {
-  
+  stData = x
   # merge unique list of dots
     dots = c(dots, list(...))
     dots = dots[!duplicated(dots)]
