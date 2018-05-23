@@ -18,6 +18,7 @@ mergeComposition = function(xfull, yfull) {
       
       # merge composition samples
       x$forecast = abind3(x$forecast, y$forecast)
+      x$cat_probs = abind3(x$cat_probs, y$cat_probs)
       x$local = abind3(x$local, y$local)
       x$remote = abind3(x$remote, y$remote)
       
