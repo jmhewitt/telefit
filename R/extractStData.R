@@ -123,6 +123,8 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
                            aspect.categories, slope[i])
   
   # build local design matrices for each timepoint
+  o = options('na.action')
+  options(na.action = 'na.pass')
   X.mat = foreach(tt = t, .combine = 'abind3') %do% {
     
     # extract data from each predictor
@@ -132,12 +134,14 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
     if(!is.null(formula)) {
       x = data.frame(x)
       colnames(x) = colnames.X
-      model.matrix(formula, x)
+      x = model.matrix(formula, x)
     } else if(intercept) {
-      cbind(1, x)
-    } else
-      x
+      x = cbind(1, x)
+    }
+    
+    x
   }
+  options(na.action = o)
   
   
   # extract remote data
@@ -168,14 +172,19 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   Z.mat = matrix(Z.mat[complete.data,], ncol=length(t))
   coords.r = coords.r[complete.data,]
   
-  # remove local coordinates that have NA data
-  complete.data = complete.cases(X[[1]]@data@values[, 1])
-  if(is.null(formula)) {
-    # only required if a formula isn't used since model.matrix automatically
-    # removes cases with (all) NA data
-    X.mat = X.mat[complete.data,,]
+  # remove local coordinates that have NA responses
+  complete.data = complete.cases(Y.mat)
+  Y.mat = matrix(Y.mat[complete.data,], ncol=length(t))
+  X.mat = X.mat[complete.data,,]
+  coords.s = coords.s[complete.data,]
+  
+  # remove local coordinates that have NA covariates
+  complete.data = complete.cases(X.mat[,,1])
+  for(i in 2:dim(X.mat)[3]) { 
+    complete.data = complete.data & complete.cases(X.mat[,,i])
   }
   Y.mat = matrix(Y.mat[complete.data,], ncol=length(t))
+  X.mat = X.mat[complete.data,,]
   coords.s = coords.s[complete.data,]
   
   
