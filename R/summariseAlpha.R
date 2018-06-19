@@ -4,7 +4,7 @@
 #'
 #' @export
 #' 
-#' @importFrom stats qqnorm
+#' @importFrom stats qnorm
 #' 
 #' @param alpha structure containing posterior inference for remote coefficients
 #' @param prob confidence level for confidence intervals and significance

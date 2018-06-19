@@ -6,6 +6,7 @@
 #' 
 #' @importFrom sp coordinates
 #' @importFrom raster extent
+#' @importFrom stats complete.cases model.matrix
 #' 
 #' @param X SpatialGridDataFrame with local covariates.  If X is a list, each
 #'  SpatialGridDataFrame will be included as one covariate.

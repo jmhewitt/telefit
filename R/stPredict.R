@@ -14,6 +14,7 @@
 #' @importFrom itertools ichunk
 #' @import foreach
 #' @importFrom fields rdist.earth
+#' @importFrom stats quantile
 #' 
 #' @useDynLib telefit, .registration = TRUE
 #' 

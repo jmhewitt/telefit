@@ -5,7 +5,7 @@
 #'
 #' @export
 #' 
-#' @importFrom stats qqnorm
+#' @importFrom stats qnorm
 #' 
 #' @param eof_alpha structure containing posterior inference for transformed 
 #'   remote coefficients

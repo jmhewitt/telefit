@@ -5,7 +5,7 @@
 #'
 #' @import foreach
 #' @importFrom fields rdist.earth
-#' @importFrom stats sd
+#' @importFrom stats sd quantile
 #' @useDynLib telefit, .registration = TRUE
 #' 
 #' @param fit svcFit object containing posterior samples

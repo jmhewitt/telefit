@@ -6,6 +6,7 @@
 #'
 #' @importFrom coda mcmc HPDinterval
 #' @importFrom scoringRules crps_sample
+#' @importFrom stats var
 #' 
 #' @param clim the climatology for the location in Y
 #' @param Y observed values of the response

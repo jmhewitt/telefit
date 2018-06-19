@@ -6,6 +6,8 @@
 #'
 #' @export
 #'
+#' @importFrom stats rnorm
+#' 
 #' @param n Number of random matrices to simulate
 #' @param U Covariance matrix defining dependence between rows
 #' @param V Covariance matrix defining dependence between columns

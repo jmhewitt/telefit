@@ -10,6 +10,7 @@
 #' @import foreach
 #' @importFrom fields rdist.earth
 #' @importFrom mvtnorm rmvnorm
+#' @importFrom stats rnorm
 #' 
 #' @param dat.train stData object with training data to simulate new Y values for
 #' @param dat.test stData object with test data to simulate new Y values for

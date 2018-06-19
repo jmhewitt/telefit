@@ -10,6 +10,7 @@
 #' @importFrom stringr str_wrap
 #' @importFrom reshape2 melt
 #' @importFrom cowplot plot_grid
+#' @importFrom stats cor.test
 #' 
 #' @param t timepoint to plot.  Will automatically plot the first timepoint if
 #'  t=NULL.
