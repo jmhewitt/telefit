@@ -16,3 +16,5 @@ LinkingTo: Rcpp (>= 0.12.4), RcppArmadillo, RcppEigen (>= 0.3.3.3.1)
 RoxygenNote: 6.0.1
 Suggests: testthat
 LazyData: true
+SystemRequirements: A system with a recent-enough C++11 compiler
+        (such as g++-4.8 or later).

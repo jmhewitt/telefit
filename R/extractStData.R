@@ -68,21 +68,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
                           X.lab = NULL, Y.lab = NULL, Z.lab = NULL,
                           aspect = F, aspect.categories=4, slope=F,
                           colnames.X=NULL, formula=NULL) {
-                  
-  # convert local bounds to extent object
-  D.s = extent(D.s)
-  
-  # save time labels before they are converted to column indices
-  if(is.null(t)) {
-    t = names(Y)
-  }
-  tLabs = t
-  t = match(t, names(Y))
-  
-  # extract local data
-  
-  Y = extractRegion(Y, D.s, type.s.y, aggfact.s, mask.s)
-  
+              
   if(class(X)!='list')
     X = list(X)
   
@@ -90,8 +76,8 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
     type.s = rep(type.s, length(X))
   }
   
-  if(length(type.r)!=length(X)) {
-    type.r = rep(type.r, length(X))
+  if(length(type.r)!=length(Z)) {
+    type.r = rep(type.r, length(Z))
   }
   
   if(length(aspect)!=length(X)) {
@@ -101,6 +87,35 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   if(length(slope)!=length(X)) {
     slope = rep(slope, length(X))
   }
+  
+  # convert local bounds to extent object
+  D.s = extent(D.s)
+  
+  # save time labels before they are converted to column indices
+  if(is.null(t)) {
+    t = names(Y)
+  }
+  tLabs = t
+  
+  # filter out undesired timepoints
+  Y = Y[,,match(t, names(Y@data))]
+  for(i in 1:length(X)) {
+    X[[i]] = X[[i]][,,match(t, names(X[[i]]@data))]
+  }
+  for(i in 1:length(Z)) {
+    Z[[i]] = Z[[i]][,,match(t, names(Z[[i]]@data))]
+  }
+  for(i in 1:length(mask.r)) {
+    mask.r[[i]] = mask.r[[i]][,,match(t, names(mask.r[[i]]@data))]
+  }
+  
+  # convert time labels to column indices
+  t = match(t, names(Y))
+  
+  
+  # extract local data
+  
+  Y = extractRegion(Y, D.s, type.s.y, aggfact.s, mask.s)
   
   # extract regions and aggregate local covariates
   for(i in 1:length(X))
