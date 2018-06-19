@@ -1,6 +1,9 @@
 #ifndef _DISTRIBUTIONS_H
 #define _DISTRIBUTIONS_H
 
+// disable assertions
+#define EIGEN_NO_DEBUG
+
 #include <RcppArmadillo.h>
 #include <RcppEigen.h>
 
