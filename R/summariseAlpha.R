@@ -4,6 +4,8 @@
 #'
 #' @export
 #' 
+#' @importFrom stats qqnorm
+#' 
 #' @param alpha structure containing posterior inference for remote coefficients
 #' @param prob confidence level for confidence intervals and significance
 #' @param coords.s matrix with coordinates where responses were 

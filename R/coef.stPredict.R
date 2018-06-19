@@ -2,6 +2,7 @@
 #'
 #' @export
 #'
+#' @importFrom stats prcomp
 #' 
 #' @param object stPredict object containing posterior estimates of alphas
 #' @param stFit stFit object containing posterior samples for model

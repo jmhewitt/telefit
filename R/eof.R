@@ -4,6 +4,8 @@
 #' 
 #' @export
 #' 
+#' @importFrom stats prcomp
+#' 
 #' @param X [variable x observation] matrix of data for which to compute EOFs
 #' @param center TRUE/FALSE to center columns of X in call to prcomp
 #' @param scale TRUE/FALSE to scale columns of X in call to prcomp

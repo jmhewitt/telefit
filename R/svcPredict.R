@@ -5,6 +5,7 @@
 #'
 #' @import foreach
 #' @importFrom fields rdist.earth
+#' @importFrom stats sd
 #' @useDynLib telefit, .registration = TRUE
 #' 
 #' @param fit svcFit object containing posterior samples
@@ -121,7 +122,7 @@ svcPredict = function(fit, Xn=NULL, Zn=NULL, stData=NULL, stDataNew=NULL,
     cat.probs = cat.probs,
     category.breaks = category.breaks,
     tLabs = tLabs,
-    Y.lab = dat.test$Y.lab
+    Y.lab = stData$Y.lab
   )
   
   class(ret) = 'svcPredict'

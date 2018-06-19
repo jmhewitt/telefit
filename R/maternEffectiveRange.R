@@ -3,6 +3,8 @@
 #'
 #' @export
 #'
+#' @importFrom stats optim
+#' 
 #' @param cor Effective correlation to check for
 #' @param range Matern range parameter.  Controls the decay of pointwise 
 #'        correlations as a function of distance.

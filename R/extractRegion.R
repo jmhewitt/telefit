@@ -6,10 +6,10 @@
 #'  
 #' @examples # Show an example where you plot the climatology grid too!
 #'
-#' @import raster
-#' @import SDMTools
-#'
 #' @export
+#' 
+#' @importFrom raster brick mask aggregate crop scale
+#' @importFrom SDMTools aspect slope
 #' 
 #' @param sgdf SpatialGridDataFrame containing data to extract
 #' @param type whether to return the raw data, anomalies (data minus temporal 
@@ -37,9 +37,6 @@ extractRegion = function(sgdf, extent,
                          aggfact=NULL, mask=NULL, 
                          aspect=F, aspect.categories=NULL,
                          slope=F) {
-  
-  requireNamespace('raster')
-  requireNamespace('SDMTools')
   
   # convert sgdf to a raster object
   sgdf = brick(sgdf)
@@ -72,7 +69,7 @@ extractRegion = function(sgdf, extent,
   }
   
   # crop data
-  sgdf = crop(sgdf, extent)
+  sgdf = raster::crop(sgdf, extent)
   
   # compute anomalies
   match.opts = c('response', 'std.anomaly', 'anomaly', 'spatial.anomaly', 
