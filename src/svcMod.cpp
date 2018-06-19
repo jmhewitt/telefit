@@ -134,8 +134,8 @@ private:
 	
 	Config *cfg;
 	
-	mat B, C, zzt;
-	vec partialPostMu, theta;
+	mat B, zzt;
+	vec partialPostMu, theta, resid;
 	
 public:
 	
@@ -144,9 +144,6 @@ public:
 		zzt = mat(cfg->consts.k, cfg->consts.k, fill::zeros);
 		for(int i=0; i<cfg->consts.nt; i++)
 			zzt += cfg->dat.Z.col(i) * cfg->dat.Z.col(i).t();
-		
-		C = mat(cfg->consts.N * cfg->consts.k, cfg->consts.N * cfg->consts.nt,
-				fill::zeros);
 	}
 	
 	vec sample() {
@@ -155,11 +152,18 @@ public:
 		
 		B = inv_sympd(cfg->params.T) + zzt;
 		
-		for(int i=0; i<cfg->consts.nt; i++)
-			C.cols(i * cfg->consts.N, (i+1) * cfg->consts.N - 1) =
-				kron(cfg->scratch.Hinv, cfg->dat.Z.col(i));
+		resid = cfg->dat.y - cfg->scratch.xBeta;
 		
-		partialPostMu = C * (cfg->dat.y - cfg->scratch.xBeta);
+		partialPostMu = mcstat2::dgemkmm(cfg->scratch.Hinv,
+										 cfg->dat.Z.col(0),
+										 resid.rows(0, cfg->consts.N - 1));
+		
+		for(int i=1; i<cfg->consts.nt; i++) {
+			partialPostMu += mcstat2::dgemkmm(cfg->scratch.Hinv,
+								cfg->dat.Z.col(i),
+								resid.rows(i * cfg->consts.N,
+										   (i+1) * cfg->consts.N - 1));
+		}
 		
 		// sample from posterior
 		theta = mcstat2::mvrnorm_postKron(partialPostMu, cfg->scratch.Hinv, B,
