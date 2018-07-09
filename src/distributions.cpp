@@ -316,52 +316,27 @@ mat mcstat2::mvrnorm_postKron(vec & _y, mat & _A, mat & _B, int nSamples,
 //
 
 
-RcppExport SEXP _mc2_rinvwishart(SEXP _V, SEXP _n) {
-	
-	using namespace Rcpp;
-	
-	mat V = as<mat>(_V);
-	double n = as<double>(_n);
-	
-	return wrap(mcstat2::rinvwishart(V, n));
+// [[Rcpp::export]]
+arma::mat r_mc2_rinvwishart(arma::mat V, double n) {
+	return mcstat2::rinvwishart(V, n);
 }
 
 
-RcppExport SEXP _mvrnorm_postKron(SEXP _y, SEXP _A, SEXP _B, SEXP _nSamples,
-								  SEXP _precision) {
-	
-	using namespace Rcpp;
-	
-	vec y = as<vec>(_y);
-	mat A = as<mat>(_A);
-	mat B = as<mat>(_B);
-	int nSamples = as<int>(_nSamples);
-	bool precision = as<bool>(_precision);
-	
-	return wrap(mcstat2::mvrnorm_postKron(y, A, B, nSamples, precision));
+// [[Rcpp::export]]
+arma::mat r_mvrnorm_postKron(arma::vec y, arma::mat A, arma::mat B,
+							int nSamples, bool precision) {
+	return mcstat2::mvrnorm_postKron(y, A, B, nSamples, precision);
 }
 
 
-RcppExport SEXP _mvrnorm_post(SEXP _y, SEXP _Sigma, SEXP _nSamples,
-							  SEXP _precision) {
-	
-	using namespace Rcpp;
-	
-	vec y = as<vec>(_y);
-	mat Sigma = as<mat>(_Sigma);
-	int nSamples = as<int>(_nSamples);
-	bool precision = as<bool>(_precision);
-	
-	return wrap(mcstat2::mvrnorm_post(y, Sigma, nSamples, precision));
+// [[Rcpp::export]]
+arma::mat r_mvrnorm_post(arma::vec y, arma::mat Sigma, int nSamples,
+						 bool precision) {
+	return mcstat2::mvrnorm_post(y, Sigma, nSamples, precision);
 }
 
-RcppExport SEXP _qintnorm(SEXP _breaks, SEXP _mu, SEXP _sigma) {
-	
-	using namespace Rcpp;
-	
-	vec breaks = as<vec>(_breaks);
-	double mu = as<double>(_mu);
-	double sigma = as<double>(_sigma);
-	
-	return wrap(mcstat2::qintnorm(breaks, mu, sigma));
+
+// [[Rcpp::export]]
+arma::vec r_qintnorm(arma::vec breaks, double mu, double sigma) {
+	return mcstat2::qintnorm(breaks, mu, sigma);
 }

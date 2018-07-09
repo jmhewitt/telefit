@@ -9,7 +9,6 @@
 #' @export
 #' 
 #' @importFrom coda mcmc HPDinterval
-#' @importFrom doMC registerDoMC
 #' @import doRNG
 #' @importFrom itertools ichunk
 #' @import foreach
@@ -124,9 +123,9 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
                               function(r) { quantile(r, probs = cat.probs)}))
   }
   
-  # set up basic parallel backend if none is registered
+  # check for parallel backend
   if(!getDoParRegistered()) {
-    registerDoMC(ncores)
+    warning('No parallel backend registered.')
   }
   
   # make looping more efficient

@@ -228,25 +228,19 @@ void mcstat::MCMCCheckpoint::finish() {
 //
 
 
-RcppExport SEXP _dgemkmm(SEXP A, SEXP B, SEXP C) {
-	
-	using namespace Rcpp;
-	
-	return wrap( mcstat::dgemkmm(as<mat>(A), as<mat>(B), as<mat>(C)) );
+// [[Rcpp::export]]
+arma::mat r_dgemkmm(arma::mat A, arma::mat B, arma::mat C) {
+	return mcstat::dgemkmm(A, B, C);
 }
 
 
-RcppExport SEXP _rwishart(SEXP V, SEXP n) {
-	
-	using namespace Rcpp;
-	
-	return wrap( mcstat::rwishart(as<mat>(V), as<int>(n)) );
+// [[Rcpp::export]]
+arma::mat r_rwishart(arma::mat V, int n) {
+	return mcstat::rwishart(V, n);
 }
 
 
-RcppExport SEXP _rinvwishart(SEXP V, SEXP n) {
-	
-	using namespace Rcpp;
-	
-	return wrap( mcstat::rinvwishart(as<mat>(V), as<int>(n)) );
+// [[Rcpp::export]]
+arma::mat r_rinvwishart(arma::mat V, int n) {
+	return mcstat::rinvwishart(V, n);
 }

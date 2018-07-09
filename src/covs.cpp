@@ -88,31 +88,18 @@ void maternArray( vec & d, double scale, double range,
 //
 
 
-RcppExport SEXP _maternCov(SEXP d, SEXP scale, SEXP range, SEXP smoothness,
-						 SEXP nugget) {
-
-	using namespace Rcpp;
-
-	mat dist = as<mat>(d);
+// [[Rcpp::export]]
+arma::mat r_maternCov(arma::mat dist, double scale, double range,
+					 double smoothness, double nugget) {
 	mat res = mat(dist.n_rows, dist.n_cols, fill::zeros);
-
-	maternCov( res, dist, as<double>(scale), as<double>(range),
-			   as<double>(smoothness), as<double>(nugget) );
-
-	return wrap(res);
+	maternCov( res, dist, scale, range, smoothness, nugget );
+	return res;
 }
 
 
-
-RcppExport SEXP _maternArray(SEXP d, SEXP scale, SEXP range, SEXP smoothness,
-						   SEXP nugget) {
-
-	using namespace Rcpp;
-
-	vec dist = as<vec>(d);
-
-	maternArray( dist, as<double>(scale), as<double>(range),
-			  as<double>(smoothness), as<double>(nugget) );
-
-	return wrap(dist);
+// [[Rcpp::export]]
+arma::vec r_maternArray(arma::vec dist, double scale, double range,
+					   double smoothness, double nugget) {
+	maternArray( dist, scale, range, smoothness, nugget );
+	return dist;
 }

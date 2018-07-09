@@ -9,7 +9,7 @@ test_that("Sampling x ~ N(Sigma %*% y, Sigma) with Q = inv(Sigma)", {
   y = rnorm(n)
   mu = Sigma %*% y
   
-  x = t(.Call('_mvrnorm_post', PACKAGE = 'telefit', y, solve(Sigma), 1e6, T))
+  x = t(.Call(`_telefit_r_mvrnorm_post`, y, solve(Sigma), 1e6, T))
   
   # test passes if relative error in sample mean AND covariance is < 1.5%
   expect_lt(max( abs((colMeans(x) - mu) / mu) * 100, 
@@ -30,8 +30,7 @@ test_that("Sampling x ~ N((A x B) %*% y, (A x B)) with Qa=inv(A), Qb=inv(B)", {
   y = rnorm(nA * nB)
   mu = Sigma %*% y
   
-  x = t(.Call('_mvrnorm_postKron', PACKAGE = 'telefit', y, solve(A), solve(B), 
-              1e6, T))
+  x = t(.Call(`_telefit_r_mvrnorm_postKron`, y, solve(A), solve(B), 1e6, T))
   
   # test passes if mean relative error in sample mean AND covariance is < 1%
   expect_lt(mean( c(abs((colMeans(x) - mu) / mu) * 100, 

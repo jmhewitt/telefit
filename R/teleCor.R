@@ -3,9 +3,6 @@
 #'
 #' @export
 #'
-#' @import foreach
-#' @importFrom doMC registerDoMC
-#' @importFrom itertools ichunk
 #' @importFrom stats cor
 #' 
 #' @param Y [ny x nt]

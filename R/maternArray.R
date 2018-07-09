@@ -19,7 +19,6 @@
 #' 
 
 maternArray = function(d, scale = 1, range = 1, smoothness = .5, nugget = 0) {
-  
-  .Call("_maternArray", PACKAGE = 'telefit', as.numeric(d), 
-        scale, range, smoothness, nugget)
+  .Call(`_telefit_r_maternArray`, as.numeric(d), scale, range, smoothness, 
+        nugget)
 }

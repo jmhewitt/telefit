@@ -9,5 +9,5 @@
 #' 
 
 rwishart = function(V, n) {
-  .Call("_rwishart", PACKAGE = 'telefit', V, n)
+  .Call(`_telefit_r_rwishart`, V, n)
 }

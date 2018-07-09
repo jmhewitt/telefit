@@ -54,13 +54,7 @@ mat mcstat2::dgeikmm(int N, mat A, mat B) {
 //
 
 
-RcppExport SEXP _dgeikmm(SEXP _N, SEXP _A, SEXP _B) {
-	
-	using namespace Rcpp;
-	
-	int N = as<int>(_N);
-	mat A = as<mat>(_A);
-	mat B = as<mat>(_B);
-	
-	return wrap(mcstat2::dgeikmm(N, A, B));
+// [[Rcpp::export]]
+arma::mat r_dgeikmm(int N, arma::mat A, arma::mat B) {
+	return mcstat2::dgeikmm(N, A, B);
 }

@@ -11,7 +11,5 @@
 #' 
 
 dgemkmm = function(A, B, C) {
-  
-  .Call("_dgemkmm", PACKAGE = 'telefit', 
-        as.matrix(A), as.matrix(B), as.matrix(C))
+  .Call(`_telefit_r_dgemkmm`, as.matrix(A), as.matrix(B), as.matrix(C))
 }
