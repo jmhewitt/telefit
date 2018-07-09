@@ -1,11 +1,11 @@
 Package: telefit
 Type: Package
-Title: Tools for Using the RESP Model
-Version: 1.0
-Date: 2018-05-21
+Title: Estimation and Prediction for Remote Effects Spatial Process Models
+Version: 1.0.0
+Date: 2018-07-09
 Author: Joshua Hewitt
 Maintainer: Joshua Hewitt <joshua.hewitt@colostate.edu>
-Description: Implementation of the remote effects spatial process (RESP) model for teleconnection.  The model is appropriate for a spatial response that is influenced by both local and remote covariates.  The model assumes there are independent temporal replications of the field for analysis.
+Description: Implementation of the remote effects spatial process (RESP) model for teleconnection.  The RESP model is a geostatistical model that allows a spatially-referenced variable (like average precipitation) to be influenced by covariates defined on a remote domain (like sea surface temperatures).  The RESP model is introduced in Hewitt et al. (2018) <arXiv:1612.06303>.  Sample code for working with the RESP model is available at <https://jmhewitt.github.io/research/resp_example>.
 License: GPL-3
 Depends: R (>= 3.0.2)
 Imports:
@@ -18,3 +18,4 @@ Suggests: testthat
 LazyData: true
 SystemRequirements: A system with a recent-enough C++11 compiler
         (such as g++-4.8 or later).
+NeedsCompilation: yes

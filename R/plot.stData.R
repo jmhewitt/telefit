@@ -172,7 +172,7 @@ plot.stData = function( x, type='response', t=NULL, p=NULL,
       coord.s = stData$coords.s[round(n/2),]
     
     coord.s.ind = which.min(rdist.earth(matrix(coord.s, ncol=2), stData$coords.s))
-    coord.s = dat.train$coords.s[coord.s.ind,]
+    coord.s = stData$coords.s[coord.s.ind,]
     
     Y = data.frame( Y = as.numeric(stData$alpha),
                     signif = stData$alpha_signif,
@@ -194,7 +194,7 @@ plot.stData = function( x, type='response', t=NULL, p=NULL,
       coord.s = stData$coords.s[round(n/2),]
     
     coord.s.ind = which.min(rdist.earth(matrix(coord.s, ncol=2), stData$coords.s))
-    coord.s = dat.train$coords.s[coord.s.ind,]
+    coord.s = stData$coords.s[coord.s.ind,]
     
     Y = data.frame( Y = stData$alpha_knots,
                     signif = ifelse(stData$alpha_knots_signif, 3, 0),
@@ -337,7 +337,7 @@ plot.stData = function( x, type='response', t=NULL, p=NULL,
       coord.s = stData$coords.s[round(n/2),]
     
     coord.s.ind = which.min(rdist.earth(matrix(coord.s, ncol=2), stData$coords.s))
-    coord.s = dat.train$coords.s[coord.s.ind,]
+    coord.s = stData$coords.s[coord.s.ind,]
     
     # build plotting frame
     Y = foreach(i = 1:nrow(stData$coords.r), .combine='rbind') %do% {

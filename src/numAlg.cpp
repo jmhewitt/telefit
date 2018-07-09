@@ -3,7 +3,7 @@
 using namespace arma;
 
 
-mat mcstat2::dgemkmm(mat A, mat B, mat C) {
+mat mcstat2::dgemkmm(const mat& A, const mat& B, const mat& C) {
 	int m = A.n_rows;
 	int n = A.n_cols;
 	int p = B.n_rows;
@@ -15,10 +15,17 @@ mat mcstat2::dgemkmm(mat A, mat B, mat C) {
 	
 	mat resBlock;
 	resBlock.set_size(q, r);
-	for(int i=0; i<m; i++) {
-		resBlock.zeros();
+	
+	resBlock = A.at(0,0) * C.rows( 0, q-1 );
+	for(int j=1; j<n; j++)
+		resBlock += A.at(0,j) * C.rows( j*q, (j+1)*q-1 );
+	
+	res.rows( 0, p-1 ) = B * resBlock;
+	
+	for(int i=1; i<m; i++) {
 		
-		for(int j=0; j<n; j++)
+		resBlock = A.at(i,0) * C.rows( 0, q-1 );
+		for(int j=1; j<n; j++)
 			resBlock += A.at(i,j) * C.rows( j*q, (j+1)*q-1 );
 		
 		res.rows( i*p, (i+1)*p-1 ) += B * resBlock;

@@ -78,13 +78,13 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
   
   n = nrow(coords.s)
   r = nrow(coords.r)
-  r_knots = nrow(coords.knots)
+  r_knots = nrow(stFit$coords.knots)
   p = dim(X)[2]
   t = dim(X)[3]
   
   Dy = rdist.earth(coords.s, miles=miles)
-  Dz_knots = rdist.earth(coords.knots, miles=miles)
-  Dz_to_knots = rdist.earth(coords.r, coords.knots, miles=miles)
+  Dz_knots = rdist.earth(stFit$coords.knots, miles=miles)
+  Dz_to_knots = rdist.earth(coords.r, stFit$coords.knots, miles=miles)
   
   Z = as.matrix(Z)
   Znew = as.matrix(Znew)

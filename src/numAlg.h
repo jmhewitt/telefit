@@ -9,7 +9,7 @@ namespace mcstat2 {
 	using namespace arma;
 	
 	// evaluate kron(A,B) * C without storing kron(A,B)
-	mat dgemkmm(mat A, mat B, mat C);
+	mat dgemkmm(const mat& A, const mat& B, const mat& C);
 	
 	// evaluate kron(I_N, A) * B without storing kron(I_N, A) and I_N is
 	// the NxN identity matrix

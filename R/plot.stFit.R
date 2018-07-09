@@ -13,6 +13,7 @@
 #' @importFrom fields rdist.earth
 #' @importFrom stats runif
 #' @importFrom graphics plot
+#' @importFrom grDevices gray
 #' 
 #' @param type One of the following options to specify what type of plot to build
 #'    \describe{
