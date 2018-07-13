@@ -8,6 +8,7 @@
 #' @param fun function for computing point estimates
 #' @param ... S3 generic/method consistency
 #'  
+#' @example examples/stMod.R
 
 coef.stFit = function(object, burn = 1, fun = mean, ...) {
   stFit = object

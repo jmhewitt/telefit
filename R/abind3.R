@@ -2,7 +2,6 @@
 #'
 #' This function extends the abind function from the abind package.
 #'
-#' @export
 #'
 #' @importFrom abind abind
 #' @param ... Any number of matrices of equal dimension to stack together into

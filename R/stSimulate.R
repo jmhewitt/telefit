@@ -26,6 +26,8 @@
 #'   in miles.  This is important since the interpretations of the cov.r and 
 #'   cov.s parameters depend on the units with which distance is measured.
 #' 
+#' @example examples/stMod.R
+#' 
 
 stSimulate = function( dat.train, dat.test, coords.knots, params, miles = T ) {
   

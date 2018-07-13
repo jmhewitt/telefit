@@ -8,6 +8,8 @@
 #' @param burn number of posterior samples to reject before computing estimates
 #' @param prob The target probability content of the intervals
 #'  
+#' @example examples/stMod.R
+#' 
 
 HPDinterval.stFit = function(stFit, burn = 1, prob = .95) {
   res = lapply(stFit$parameters$samples, function(s) {

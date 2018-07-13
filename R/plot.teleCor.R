@@ -28,6 +28,8 @@
 #' @param ... additional arguments to be passed to lower-level plotting functions
 #' 
 #' @return a ggplot object with the specified map
+#' 
+#' @example examples/teleCorEx.R
 
 plot.teleCor = function( x, signif=F, coord.s=NULL, 
                          map='world', region='.', zlim=NULL, dots=NULL, ... ) {

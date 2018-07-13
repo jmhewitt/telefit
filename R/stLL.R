@@ -36,6 +36,7 @@
 #' @param rho_y values of \eqn{\rho_w} at which to evaluate  the likelihood
 #' @param rho_r values of \eqn{\rho_\alpha} at which to evaluate the likelihood
 #' 
+#' @example examples/stMod.R
   
 stLL = function( stData, stFit, beta, sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, 
                  rho_r, X = stData$X, Y = stData$Y, Z = stData$Z, 

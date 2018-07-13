@@ -2,7 +2,7 @@
 % Please edit documentation in R/teleCor.R
 \name{teleCor}
 \alias{teleCor}
-\title{Compute pointwise correlations for an exploratory teleconnection analysis}
+\title{Pointwise correlations for an exploratory teleconnection analysis}
 \usage{
 teleCor(stData = NULL, Y = stData$Y, Z = stData$Z,
   coords.s = stData$coords.s, coords.r = stData$coords.r)
@@ -10,9 +10,13 @@ teleCor(stData = NULL, Y = stData$Y, Z = stData$Z,
 \arguments{
 \item{stData}{stData object containing data to analyze}
 
-\item{Y}{[ny x nt]}
+\item{Y}{[ny x nt] a matrix composed of \eqn{ny} row vectors, each of which 
+contains \eqn{nt} observations fom a different spatial location.  Spatial 
+locations for \code{Y} are indexed by \code{coords.s}.}
 
-\item{Z}{[nz x nt]}
+\item{Z}{[nz x nt] a matrix composed of \eqn{nz} row vectors each of which
+contains \eqn{nt} observations from a different spatial location.  Spatial
+locations for \code{Z} are indexed by \code{coords.r}.}
 
 \item{coords.s}{coordinates of locations in Y}
 
@@ -20,8 +24,31 @@ teleCor(stData = NULL, Y = stData$Y, Z = stData$Z,
 }
 \value{
 list with a matrix 'cor' containing correlations.  The columns index
- the remote coordinates, while the rows index the local coordinates
+  remote coordinates, while the rows index the local coordinates.  The 
+  returned list also includes the coordinates.
 }
 \description{
-Compute pointwise correlations for an exploratory teleconnection analysis
+Computes empirical correlations between rows of \code{Y} and \code{Z}, 
+for use as exploratory analysis of teleconnection patterns between locations 
+indexed by \code{coords.s} and \code{coords.r}.  Optionally, an \code{stData}
+object containing \code{Y} and \code{Z} can be passed instead.
+}
+\examples{
+\dontrun{
+  
+# load sample stData object
+data("coprecip")
+attach(coprecip)
+
+# compute correlations directly from stData object
+cors = teleCor(coprecip)
+str(cors)
+
+# manually specify data matrices (result is identical to above)
+cors = teleCor(Y = Y, Z = Z, coords.s = coords.s, coords.r = coords.r)
+
+# view pointwise correlations between Denver and ocean locations
+plot(cors, coords.s = c(-105, 39.73))
+
+}
 }

@@ -40,9 +40,6 @@ a modified SpatialGridDataFrame, sgdf, with the climatology for each
  were computed
 }
 \description{
-Extract region from a SpatialGridDataFrame
-}
-\examples{
-# Show an example where you plot the climatology grid too!
-
+This method is intended for use as the main helper function for 
+extractStData.
 }

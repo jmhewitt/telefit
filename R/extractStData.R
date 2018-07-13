@@ -61,6 +61,7 @@
 #' @param colnames.X names of columns of X
 #' @param formula formula object to specify how to create the design matrix
 #'  
+#' @example examples/extract.R
 
 extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NULL,
                           aggfact.s = NULL, aggfact.r = NULL, intercept = T,
@@ -72,6 +73,21 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
               
   if(class(X)!='list')
     X = list(X)
+  
+  if(is.null(X.lab))
+    X.lab = 'X'
+  
+  if(is.null(Y.lab))
+    Y.lab = 'Y'
+  
+  if(is.null(Z.lab))
+    Z.lab = 'Z'
+  
+  if(class(Z)!='list') {
+    Z = list(Z)
+    D.r = list(D.r)
+    mask.r = list(mask.r)
+  }
   
   if(length(type.s)!=length(X)) {
     type.s = rep(type.s, length(X))
@@ -107,7 +123,9 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
     Z[[i]] = Z[[i]][,,match(t, names(Z[[i]]@data))]
   }
   for(i in 1:length(mask.r)) {
-    mask.r[[i]] = mask.r[[i]][,,match(t, names(mask.r[[i]]@data))]
+    if(!is.null(mask.r[[i]])) {
+      mask.r[[i]] = mask.r[[i]][,,match(t, names(mask.r[[i]]@data))]
+    }
   }
   
   # convert time labels to column indices
@@ -147,11 +165,6 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   
   # extract remote data
   
-  if(class(Z)!='list') {
-    Z = list(Z)
-    D.r = list(D.r)
-    mask.r = list(mask.r)
-  }
   
   # extract regions and aggregate remote covariates
   for(i in 1:length(Z))

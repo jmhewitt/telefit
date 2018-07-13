@@ -30,7 +30,45 @@ of \code{(Y)} to use in the CCA.}
 Y.new Predicted values for Y.new
 }
 \description{
-Make predictions using canonical correlation analysis (CCA)
+Canonical correlation analysis (CCA) is sometimes referred to as a 
+double-barreled principal component analysis.  Loosely, it fits a linear 
+regression model to the scores of principal component decompositions for
+of the predictors \code{X} and responses \code{Y}.  Oftentimes, only the 
+largest \eqn{k} principal components are used to make predictions.
+}
+\details{
+CCA has been used to predict a teleconnected response (like precipitation) 
+using the remote field generating the teleconnection 
+(like ocean temperatures).  In this application, principal components are 
+often referred to as empirical orthogonal functions (EOFs).
+}
+\examples{
+
+\dontrun{
+
+data("coprecip")
+attach(coprecip)
+
+# compute CCA predictions of Y (CO precipitation) given Z (Pacific ocean SSTs)
+# using 20 principal components (aka. EOFs)
+preds = cca.predict(X = Z, Y = Y, X.new = Z, k.x = 20, k.y = 20)
+
+# compute R^2
+sum((preds - mean(Y))^2) / sum((Y - mean(Y))^2)
+
+
+# compare predictions and observations for 1982
+copred = coprecip
+copred$Y = preds
+cowplot::plot_grid(
+  plot(coprecip, t=1982),
+  plot(copred, t=1982),
+  ncol = 2,
+  labels = c('Observed', 'Predicted')
+)
+
+}
+
 }
 \references{
 Cook, E.R., Briffa, K.R., and Jones, P.D., 1994, Spatial regression methods in dendroclimatology: A review and comparison of two techniques: International Journal of Climatology, v. 14, p. 379-402.

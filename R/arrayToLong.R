@@ -1,14 +1,10 @@
 #' Reshape array of data matrices into long format
 #'
-#' @export
-#'
 #' @import foreach
 #' 
 #' @param X 3 dimensional array of matrices to extract to long format
 #' @param coords Spatial coordinates associated with the data (longitude in first column)
 #' @param yrs Vector with labels for the years
-#'
-#'
 #' 
 #' 
 

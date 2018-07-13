@@ -66,7 +66,6 @@ Fit a spatially varying coefficient model
 # autocorrelation. this example is mainly for code demonstration purposes only
 # since this example does not remedy this issue.
 
-library(telefit)
 library(fields)
 library(mvtnorm)
 

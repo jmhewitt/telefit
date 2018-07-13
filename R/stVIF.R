@@ -15,6 +15,7 @@
 #' @param stData Object with class 'stData' containing data needed to fit this 
 #'  model. 
 #'  
+#' @example examples/stMod.R
 #' 
 
 

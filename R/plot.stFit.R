@@ -62,6 +62,7 @@
 #' 
 #' @return a ggplot object with the specified map
 #'
+#' @example examples/stMod.R
 #' 
 #' 
 

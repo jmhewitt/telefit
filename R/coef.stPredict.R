@@ -14,6 +14,8 @@
 #'        mapped onto the eof patterns of the remote covariates.   }
 #'    }
 #' @param ... S3 generic/method consistency
+#' 
+#' @example examples/stMod.R
 #'  
 
 coef.stPredict = function(object, stFit, stData, burn = 1, 

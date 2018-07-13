@@ -13,6 +13,7 @@
 #' @param digits Number of digits to pass to signif, if not NULL.
 #' @param ... S3 generic/method consistency
 #'
+#' @example examples/stMod.R
 #' 
 #' 
 

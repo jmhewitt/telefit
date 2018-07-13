@@ -22,4 +22,5 @@
 #' @source \url{http://prism.oregonstate.edu}
 #' @source \url{https://rda.ucar.edu/datasets/ds627.0/}
 #' 
+#' @example examples/stMod.R
 "coprecip"

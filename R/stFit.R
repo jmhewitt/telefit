@@ -1,7 +1,5 @@
-#' Fits the spatial teleconnection model
-#'
-#' Fits the teleconnection model with L = Sigma
-#'
+#' Fit the remote effects spatial process (RESP) model
+#' 
 #' @export
 #' 
 #' @importFrom fields rdist.earth
@@ -50,6 +48,8 @@
 #' @param C scaling factor used in adapting random walk proposal variances.
 #' @param alpha target acceptance rate for random walk proposals.
 #' @param varying (depreceated) TRUE to fit the model with spatially varying local coefficients
+#' 
+#' @example examples/stMod.R
 #' 
 
 

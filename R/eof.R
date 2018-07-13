@@ -12,6 +12,21 @@
 #' 
 #' @return A list containing EOF patterns as columns, and their scores 
 #' 
+#' @examples
+#' data("coprecip")
+#' attach(coprecip)
+#' 
+#' # compute ocean surface temperature eofs
+#' eofs = eof(Z)
+#' 
+#' # view first EOF, which corresponds to the El-Nino pattern
+#' coords.r.mod = coords.r
+#' coords.r.mod[,1][coords.r.mod[,1]>0] =
+#'   coords.r.mod[,1][coords.r.mod[,1]>0] - 360
+#' fields::quilt.plot(coords.r.mod, eofs$patterns[,1])
+#' 
+#' # alternatively, the plot.stData function can directly compute and plot EOFs
+#' plot(coprecip, type='eof', pattern=1)
 #' 
 
 eof = function(X, center = F, scale = F) {

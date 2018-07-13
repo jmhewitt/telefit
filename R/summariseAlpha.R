@@ -13,6 +13,7 @@
 #' @param coords.r matrix with coordinates where remote covariates
 #'  were observed (lon, lat)
 #' 
+#' @example examples/stMod.R
 #' 
 
 summariseAlpha = function( alpha, prob=.95, coords.s, coords.r ) {

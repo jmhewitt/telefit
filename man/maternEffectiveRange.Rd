@@ -16,5 +16,16 @@ correlations as a function of distance.}
 process derivatives.}
 }
 \description{
-Compute effective range for Matern correlation to drop to a specified level
+The effective range for an isotropic spatial correlation function is 
+commonly defined to be the distance beyond which the correlation becomes 
+small, typically below .05.  Given range and smoothness parameters for a 
+Matern covariance function, this function numerically searches for this 
+distance.  Note that the scale is not important for this calculation.
+}
+\examples{
+
+# effective range for exponential covariance function with range = 1,
+# which is theoretically known to equal -ln(.05)
+maternEffectiveRange(cor = .05, range = 1, smoothness = .5)
+
 }

@@ -1,5 +1,18 @@
 #' Make predictions using canonical correlation analysis (CCA)
 #'
+#' Canonical correlation analysis (CCA) is sometimes referred to as a 
+#' double-barreled principal component analysis.  Loosely, it fits a linear 
+#' regression model to the scores of principal component decompositions for
+#' of the predictors \code{X} and responses \code{Y}.  Oftentimes, only the 
+#' largest \eqn{k} principal components are used to make predictions.
+#'  
+#' 
+#' CCA has been used to predict a teleconnected response (like precipitation) 
+#' using the remote field generating the teleconnection 
+#' (like ocean temperatures).  In this application, principal components are 
+#' often referred to as empirical orthogonal functions (EOFs).
+#' 
+#' 
 #' @export
 #' 
 #' @param X An \code{(nvars x nobs)} data frame or matrix in which each column
@@ -27,7 +40,32 @@
 #' 
 #' @references Glahn, H.R., 1968, Canonical Correlation and Its Relationship to Discriminant Analysis and Multiple Regression: Journal of the Atmospheric Sciences, v. 25, p. 23-31.
 #' 
+#' @examples 
 #' 
+#' \dontrun{
+#' 
+#' data("coprecip")
+#' attach(coprecip)
+#' 
+#' # compute CCA predictions of Y (CO precipitation) given Z (Pacific ocean SSTs)
+#' # using 20 principal components (aka. EOFs)
+#' preds = cca.predict(X = Z, Y = Y, X.new = Z, k.x = 20, k.y = 20)
+#' 
+#' # compute R^2
+#' sum((preds - mean(Y))^2) / sum((Y - mean(Y))^2)
+#' 
+#' 
+#' # compare predictions and observations for 1982
+#' copred = coprecip
+#' copred$Y = preds
+#' cowplot::plot_grid(
+#'   plot(coprecip, t=1982),
+#'   plot(copred, t=1982),
+#'   ncol = 2,
+#'   labels = c('Observed', 'Predicted')
+#' )
+#' 
+#' }
 #' 
 
 cca.predict = function(X, Y, X.new, k.x, k.y) {

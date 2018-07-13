@@ -12,6 +12,8 @@
 #' @param prob confidence level for confidence intervals and significance
 #' @param coords.s matrix with coordinates where responses were 
 #'  observed (lon, lat)
+#'  
+#' @example examples/stMod.R
 #' 
 
 summariseEOFAlpha = function( eof_alpha, prob=.95, coords.s ) {

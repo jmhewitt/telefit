@@ -14,8 +14,8 @@
 #'
 #' @export
 #'
+#' @example examples/stMod.R
 #' 
-
 
 stEval = function(forecast, Y, clim) {
 

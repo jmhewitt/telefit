@@ -77,6 +77,7 @@
 #'  
 #' @return a ggplot object with the specified map
 #'
+#' @example examples/stDataEx.R
 #' 
 #' 
 

@@ -1,13 +1,12 @@
 #' Extract region from a SpatialGridDataFrame
 #'
+#' This method is intended for use as the main helper function for 
+#' extractStData.
+#'
 #' @return a modified SpatialGridDataFrame, sgdf, with the climatology for each
 #'  location accessible via attr(sgdf@data@values, 'scaled:center') if anomalies
 #'  were computed
 #'  
-#' @examples # Show an example where you plot the climatology grid too!
-#'
-#' @export
-#' 
 #' @importFrom raster brick mask aggregate crop scale
 #' @importFrom SDMTools aspect slope
 #' 
@@ -29,8 +28,7 @@
 #'   discrete categories to divide aspect numbers (0-360) into.  NULL if the
 #'   original scale (0-360) should be kept. By design, the aspect categories
 #'   will be centered on north in the first category.
-#' 
-
+#'   
 
 extractRegion = function(sgdf, extent, 
                          type='response', 
