@@ -75,8 +75,10 @@
 #'  
 #' @return a ggplot object with the specified map
 #'
-#' @example examples/stMod.R
+#' @examples
 #' 
+#' data("coprecip.predict")
+#' p = plot(coprecip.predict, t=1981)
 #' 
 
 plot.stPredict = function( x, type='prediction', t=NULL, stFit=NULL, 

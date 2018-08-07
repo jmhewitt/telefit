@@ -29,7 +29,14 @@
 #' 
 #' @return a ggplot object with the specified map
 #' 
-#' @example examples/teleCorEx.R
+#' @examples
+#' 
+#' data("coprecip")
+#' 
+#' cors = teleCor(coprecip)
+#' p = plot(cors, coords.s = c(-105, 39.73))
+#' 
+
 
 plot.teleCor = function( x, signif=F, coord.s=NULL, 
                          map='world', region='.', zlim=NULL, dots=NULL, ... ) {

@@ -14,7 +14,13 @@
 #'
 #' @export
 #'
-#' @example examples/stMod.R
+#' @examples
+#' 
+#' data("coprecip")
+#' data("coprecip.predict")
+#' 
+#' clim = rowMeans(coprecip$Y)
+#' coprecip.predict = stEval(coprecip.predict, coprecip$Y, clim)
 #' 
 
 stEval = function(forecast, Y, clim) {

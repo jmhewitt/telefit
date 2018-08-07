@@ -4,7 +4,7 @@
 \alias{errDump}
 \title{Wrapper for a function to dump errors from C++}
 \usage{
-errDump(x, fname = "error_samplerState.RData")
+errDump(x, fname = file.path(tempdir(), "error_samplerState.RData"))
 }
 \arguments{
 \item{x}{Data to save}

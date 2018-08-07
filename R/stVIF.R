@@ -15,7 +15,12 @@
 #' @param stData Object with class 'stData' containing data needed to fit this 
 #'  model. 
 #'  
-#' @example examples/stMod.R
+#' @examples
+#' 
+#' data("coprecip")
+#' data("coprecip.fit")
+#' 
+#' stVIF(stData = coprecip, stFit = coprecip.fit, burn = 50)
 #' 
 
 

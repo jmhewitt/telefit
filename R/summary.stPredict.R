@@ -13,8 +13,10 @@
 #' @param digits Number of digits to pass to signif, if not NULL.
 #' @param ... S3 generic/method consistency
 #'
-#' @example examples/stMod.R
+#' @examples
 #' 
+#' data("coprecip.predict")
+#' summary(coprecip.predict)
 #' 
 
 summary.stPredict = function( object, t=NULL, digits=NULL, ... ) {

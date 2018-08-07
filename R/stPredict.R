@@ -57,7 +57,7 @@
 #' @param cat.probs vector of probabilities for also returning categorical 
 #'  predictions from the posterior prediction samples; NULL otherwise
 #'  
-#' @example examples/stMod.R
+#' @example examples/stPredict.R
   
 stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95, 
                       ncores = 1, conf = .95, tLabs = stDataNew$tLabs,

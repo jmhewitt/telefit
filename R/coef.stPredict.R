@@ -15,7 +15,13 @@
 #'    }
 #' @param ... S3 generic/method consistency
 #' 
-#' @example examples/stMod.R
+#' @examples
+#' 
+#' data("coprecip")
+#' data("coprecip.fit")
+#' data("coprecip.predict")
+#' 
+#' coef(coprecip.predict, stFit = coprecip.fit, stData = coprecip, burn = 50)
 #'  
 
 coef.stPredict = function(object, stFit, stData, burn = 1, 

@@ -13,7 +13,13 @@
 #' @param coords.s matrix with coordinates where responses were 
 #'  observed (lon, lat)
 #'  
-#' @example examples/stMod.R
+#' @examples
+#' 
+#' data("coprecip.predict")
+#' attach(coprecip.predict)
+#' 
+#' alpha.eof.90 = summariseEOFAlpha(eof_alpha = eof_alpha_knots, prob = .9, 
+#'   coords.s = coords.s)
 #' 
 
 summariseEOFAlpha = function( eof_alpha, prob=.95, coords.s ) {

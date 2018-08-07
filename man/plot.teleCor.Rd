@@ -40,21 +40,10 @@ a ggplot object with the specified map
 This function provides basic plotting for analyses returned from cor.tel
 }
 \examples{
-\dontrun{
-  
-# load sample stData object
+
 data("coprecip")
-attach(coprecip)
 
-# compute correlations directly from stData object
 cors = teleCor(coprecip)
-str(cors)
+p = plot(cors, coords.s = c(-105, 39.73))
 
-# manually specify data matrices (result is identical to above)
-cors = teleCor(Y = Y, Z = Z, coords.s = coords.s, coords.r = coords.r)
-
-# view pointwise correlations between Denver and ocean locations
-plot(cors, coords.s = c(-105, 39.73))
-
-}
 }

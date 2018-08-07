@@ -64,27 +64,27 @@ maxIt = 100
 burn = 10
 
 # fit RESP model (run sampler)
-fit = stFit(stData = coprecip, priors = priors, maxIt = maxIt,
+coprecip.fit = stFit(stData = coprecip, priors = priors, maxIt = maxIt,
             coords.knots = coords.knots)
 
 # fit is a stFit object
-class(fit)
+class(coprecip.fit)
 
 # extract posterior means and HPD intervals for model parameters
-ests = coef(fit, burn = burn)
-HPDinterval.stFit(fit, burn = burn)
+ests = coef(coprecip.fit, burn = burn)
+HPDinterval.stFit(coprecip.fit, burn = burn)
 
 # graph posterior distributions and traceplots
-plot(fit, burn = burn)
-plot(fit, type='trace')
+plot(coprecip.fit, burn = burn)
+plot(coprecip.fit, type='trace')
 
 # compute a profile likelihood for covariance parameters
 sseq = seq(.1, .7, length.out = 15)
 rseq = seq(100, 300, length.out = 15)
 seqs = expand.grid(sigmasq_y = sseq, rho_y = rseq)
 n = nrow(seqs)
-ll = stLL(stData = coprecip, stFit = fit, 
-          beta = matrix(ests$beta, nrow = n, ncol = 2, byrow = T), 
+ll = stLL(stData = coprecip, stFit = coprecip.fit, 
+          beta = matrix(ests$beta, nrow = n, ncol = 2, byrow = TRUE), 
           sigmasq_y = seqs$sigmasq_y, sigmasq_r = rep(ests$sigmasq_r, n), 
           sigmasq_eps = rep(ests$sigmasq_eps, n),
           rho_y = seqs$rho_y, rho_r = rep(ests$rho_r, n), 
@@ -95,49 +95,51 @@ contour(sseq, rseq, matrix(ll, length(sseq), length(rseq)),
         xlab = expression(sigma[w]^2), ylab = expression(rho[w]))
 
 # compute VIFs
-stVIF(stData = coprecip, stFit = fit, burn = burn)
+stVIF(stData = coprecip, stFit = coprecip.fit, burn = burn)
 
 # sample posterior predictive distributions AND estimate teleconnection effects
-fcst = stPredict(stFit = fit, stData = coprecip, stDataNew = coprecip, 
-                 burn = burn, returnFullAlphas = TRUE)
+coprecip.precict = stPredict(stFit = coprecip.fit, stData = coprecip, 
+                             stDataNew = coprecip, burn = burn, 
+                             returnFullAlphas = TRUE)
 
 # fcst is a stPredict object
-class(fcst)
+class(coprecip.precict)
 
 # evaluate posterior predictions (includes Brier skill against climatology)
 clim = rowMeans(Y)
-fcst = stEval(fcst, Y, clim)
+coprecip.precict = stEval(coprecip.precict, Y, clim)
 
 # quickly look at fit summaries
-summary(fcst)
+summary(coprecip.precict)
 
 # view posterior predictions for 1982
-plot(fcst, burn = burn, t = 1982)
-plot(fcst, burn = burn, t = 1982, type = 'se')
-plot(fcst, burn = burn, t = 1982, type = 'cat.pred')
+plot(coprecip.precict, burn = burn, t = 1982)
+plot(coprecip.precict, burn = burn, t = 1982, type = 'se')
+plot(coprecip.precict, burn = burn, t = 1982, type = 'cat.pred')
   
 # extract posterior means for estimates of EOF teleconnection effects
-alpha.eof = coef(fcst, stData = coprecip, stFit = fit, burn = burn) 
+alpha.eof = coef(coprecip.precict, stData = coprecip, stFit = coprecip.fit, 
+                 burn = burn) 
 
 # recompute approximate 90% credible intervals for teleconnection effects
-alpha.90 = summariseAlpha(alpha = fcst$alpha, prob = .9, 
+alpha.90 = summariseAlpha(alpha = coprecip.precict$alpha, prob = .9, 
                           coords.s = coords.s, coords.r = coords.r)
-alpha.eof.90 = summariseEOFAlpha(eof_alpha = fcst$eof_alpha_knots, prob = .9,
-                                 coords.s = coords.s)
+alpha.eof.90 = summariseEOFAlpha(eof_alpha = coprecip.precict$eof_alpha_knots, 
+                                 prob = .9, coords.s = coords.s)
 
 # view posterior means for the ENSO effect on Colorado precipitation
 fields::quilt.plot(coords.s, alpha.eof[,1])
 
 # alternatively, plot.stPredict can do this as well, but can also use the 
 # uncertainty estimates to highlight locations with significant effects
-plot(fcst, type='eof_alpha_knots', stFit = fit, stData = coprecip,
-     signif.telecon = TRUE, lwd=0.7, alpha=.6)
+plot(coprecip.precict, type='eof_alpha_knots', stFit = coprecip.fit, 
+     stData = coprecip, signif.telecon = TRUE, lwd=0.7, alpha=.6)
 
 # compare with significance using 90% intervals
-alpha.eof.95 = fcst$eof_alpha_knots
-fcst$eof_alpha_knots = alpha.eof.90
-plot(fcst, type='eof_alpha_knots', stFit = fit, stData = coprecip,
-     signif.telecon = TRUE, lwd=0.7, alpha=.6)
+alpha.eof.95 = coprecip.precict$eof_alpha_knots
+coprecip.precict$eof_alpha_knots = alpha.eof.90
+plot(coprecip.precict, type='eof_alpha_knots', stFit = coprecip.fit, 
+     stData = coprecip, signif.telecon = TRUE, lwd=0.7, alpha=.6)
 
 
 # simulate new responses using covariates and the estimated model parameters

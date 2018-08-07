@@ -49,7 +49,7 @@
 #' @param alpha target acceptance rate for random walk proposals.
 #' @param varying (depreceated) TRUE to fit the model with spatially varying local coefficients
 #' 
-#' @example examples/stMod.R
+#' @example examples/stFit.R
 #' 
 
 

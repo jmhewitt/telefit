@@ -1,6 +1,6 @@
 #' Compute Highest posterior density intervals from posterior samples
 #'
-#' @export
+#' @export HPDinterval.stFit
 #'
 #' @importFrom coda HPDinterval mcmc
 #' 
@@ -8,7 +8,10 @@
 #' @param burn number of posterior samples to reject before computing estimates
 #' @param prob The target probability content of the intervals
 #'  
-#' @example examples/stMod.R
+#' @examples
+#' 
+#' data("coprecip.fit")
+#' HPDinterval.stFit(coprecip.fit, burn = 50)
 #' 
 
 HPDinterval.stFit = function(stFit, burn = 1, prob = .95) {

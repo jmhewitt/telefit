@@ -23,7 +23,11 @@
 #'   remote coordinates, while the rows index the local coordinates.  The 
 #'   returned list also includes the coordinates.
 #'  
-#' @example examples/teleCorEx.R
+#' @examples
+#' 
+#' data("coprecip")
+#' 
+#' cors = teleCor(coprecip)
 #' 
 
 teleCor = function( stData = NULL, Y = stData$Y, Z = stData$Z, 

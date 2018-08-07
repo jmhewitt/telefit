@@ -77,8 +77,10 @@
 #'  
 #' @return a ggplot object with the specified map
 #'
-#' @example examples/stDataEx.R
+#' @examples
 #' 
+#' data("coprecip")
+#' p = plot(coprecip)
 #' 
 
 plot.stData = function( x, type='response', t=NULL, p=NULL,  

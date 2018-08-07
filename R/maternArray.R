@@ -13,9 +13,6 @@
 #' @param smoothness Matern smoothness parameter.  Controls the number of 
 #'        process derivatives.
 #' @param nugget Spatial covariance nugget.  
-#'
-#'
-#' 
 #' 
 
 maternArray = function(d, scale = 1, range = 1, smoothness = .5, nugget = 0) {

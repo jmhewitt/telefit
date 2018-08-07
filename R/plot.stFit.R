@@ -62,8 +62,10 @@
 #' 
 #' @return a ggplot object with the specified map
 #'
-#' @example examples/stMod.R
+#' @examples
 #' 
+#' data("coprecip.fit")
+#' plot(coprecip.fit, burn = 50, type = 'trace')
 #' 
 
 plot.stFit = function( x, type='density', stData=NULL, coord.s=NULL, 

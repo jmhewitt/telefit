@@ -42,30 +42,15 @@
 #' 
 #' @examples 
 #' 
-#' \dontrun{
-#' 
 #' data("coprecip")
 #' attach(coprecip)
 #' 
 #' # compute CCA predictions of Y (CO precipitation) given Z (Pacific ocean SSTs)
-#' # using 20 principal components (aka. EOFs)
-#' preds = cca.predict(X = Z, Y = Y, X.new = Z, k.x = 20, k.y = 20)
+#' # using 2 principal components (aka. EOFs)
+#' preds = cca.predict(X = Z, Y = Y, X.new = Z, k.x = 2, k.y = 2)
 #' 
 #' # compute R^2
-#' sum((preds - mean(Y))^2) / sum((Y - mean(Y))^2)
-#' 
-#' 
-#' # compare predictions and observations for 1982
-#' copred = coprecip
-#' copred$Y = preds
-#' cowplot::plot_grid(
-#'   plot(coprecip, t=1982),
-#'   plot(copred, t=1982),
-#'   ncol = 2,
-#'   labels = c('Observed', 'Predicted')
-#' )
-#' 
-#' }
+#' 1 - var(as.numeric(preds-Y)) / var(as.numeric(Y))
 #' 
 
 cca.predict = function(X, Y, X.new, k.x, k.y) {
