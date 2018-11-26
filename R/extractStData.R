@@ -144,29 +144,32 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   # build local design matrices for each timepoint
   o = options('na.action')
   options(na.action = 'na.pass')
+ 
   
-  X.mat = foreach(tt = t, .combine = 'abind3') %do% {
+    # correct for single-year extractions
+  if(length(t)==1) { 
+    X.mat = array(data = X.mat, dim = c(nrow(X.mat), 1, ncol(X.mat)))
+  } else {
+    X.mat = foreach(tt = t, .combine = 'abind3') %do% {
     
-    # extract data from each predictor
-    x = foreach(x = X, .combine='cbind') %do% { x@data@values[, tt, drop =FALSE] }
+      # extract data from each predictor
+      x = foreach(x = X, .combine='cbind') %do% { x@data@values[, tt, drop =FALSE] }
     
-    # if a formula is not specified, add intercept if requested; return data
-    if(!is.null(formula)) {
-      x = data.frame(x)
-      colnames(x) = colnames.X
-      x = model.matrix(formula, x)
-    } else if(intercept) {
-      x = cbind(1, x)
+      # if a formula is not specified, add intercept if requested; return data
+      if(!is.null(formula)) {
+        x = data.frame(x)
+        colnames(x) = colnames.X
+        x = model.matrix(formula, x)
+      } else if(intercept) {
+        x = cbind(1, x)
+      }
+      x
     }
     
-    x
   }
   options(na.action = o)
   
-  # correct for single-year extractions
-  if(length(t)==1) { 
-    X.mat = array(data = X.mat, dim = c(nrow(X.mat), 1, ncol(X.mat)))
-  }
+
   
   
   # extract remote data
