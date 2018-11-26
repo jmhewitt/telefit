@@ -144,6 +144,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   # build local design matrices for each timepoint
   o = options('na.action')
   options(na.action = 'na.pass')
+  
   X.mat = foreach(tt = t, .combine = 'abind3') %do% {
     
     # extract data from each predictor
@@ -161,6 +162,11 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
     x
   }
   options(na.action = o)
+  
+  # correct for single-year extractions
+  if(length(t)==1) { 
+    X.mat = array(data = X.mat, dim = c(nrow(X.mat), 1, ncol(X.mat)))
+  }
   
   
   # extract remote data
@@ -189,7 +195,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   # remove local coordinates that have NA responses
   complete.data = complete.cases(Y.mat)
   Y.mat = matrix(Y.mat[complete.data,], ncol=length(t))
-  X.mat = X.mat[complete.data,,]
+  X.mat = X.mat[complete.data,,, drop = FALSE]
   coords.s = coords.s[complete.data,]
   
   # remove local coordinates that have NA covariates
@@ -198,7 +204,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
     complete.data = complete.data & complete.cases(X.mat[,,i])
   }
   Y.mat = matrix(Y.mat[complete.data,], ncol=length(t))
-  X.mat = X.mat[complete.data,,]
+  X.mat = X.mat[complete.data,,, drop = FALSE]
   coords.s = coords.s[complete.data,]
   
   
