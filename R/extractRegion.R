@@ -86,5 +86,10 @@ extractRegion = function(sgdf, extent,
     sgdf@data@values = scale(sgdf@data@values, center=T, scale=T)
   }
   
+  # restore matrix structure to data
+  if(class(sgdf@data@values)!='matrix') {
+    sgdf@data@values = matrix(sgdf@data@values, ncol=1)
+  }
+  
   sgdf
 }

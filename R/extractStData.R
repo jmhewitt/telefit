@@ -127,6 +127,9 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
       mask.r[[i]] = mask.r[[i]][,,match(t, names(mask.r[[i]]@data)), drop =FALSE]
     }
   }
+  if(!is.null(mask.s)) {
+    mask.s = mask.s[,,match(t, names(mask.s@data)), drop =FALSE]
+  }
   
   # convert time labels to column indices
   t = match(t, names(Y))
@@ -177,8 +180,9 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
     Z[[i]] = extractRegion(Z[[i]], D.r[[i]], type.r[i], aggfact.r, mask.r[[i]])
   
   # combine remote covariate data from each region
-  Z.mat = foreach(z = Z, .combine = 'rbind') %do% { matrix(z@data@values[, t, drop =FALSE], 
-                                                           ncol = length(t)) }
+  Z.mat = foreach(z = Z, .combine = 'rbind') %do% { 
+    matrix(z@data@values[, t, drop =FALSE], ncol = length(t)) 
+  }
 
   # extract response data
   Y.mat = Y@data@values[,t, drop =FALSE]
