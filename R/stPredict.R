@@ -226,14 +226,14 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
     forecast.hpd = HPDinterval(forecast.mcmc, prob = conf)
 
     if(!is.null(cat.probs)) {
-      
       # build categorical predictive distribution (process by location)
       pred.cat = foreach(s = 1:nrow(composition$forecast$forecast),
                            .combine='rbind') %do% {
         # extract posterior samples for specified location and timepoint
         y = composition$forecast$forecast[s,t,]
         # return posterior probabilities of categories
-        table(findInterval(y,category.breaks[s,]))/length(y)
+        tabulate(findInterval(y,category.breaks[s,]) + 1, 
+                 nbins = ncol(category.breaks) + 1)/length(y)
       }
       colnames(pred.cat) = 1 + as.numeric(colnames(pred.cat))
       

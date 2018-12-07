@@ -4,11 +4,12 @@
 \alias{stPredict}
 \title{Compute forecasts based on posterior samples}
 \usage{
-stPredict(stFit, stData, stDataNew, burn = 1, prob = 0.95, ncores = 1,
-  conf = 0.95, tLabs = stDataNew$tLabs, X = stData$X, Y = stData$Y,
-  Z = stData$Z, Xnew = stDataNew$X, Znew = stDataNew$Z,
-  coords.s = stData$coords.s, coords.r = stData$coords.r,
-  returnAlphas = T, cat.probs = c(1/3, 2/3), returnFullAlphas = F)
+stPredict(stFit, stData, stDataNew, burn = 1, prob = 0.95,
+  ncores = 1, conf = 0.95, tLabs = stDataNew$tLabs, X = stData$X,
+  Y = stData$Y, Z = stData$Z, Xnew = stDataNew$X,
+  Znew = stDataNew$Z, coords.s = stData$coords.s,
+  coords.r = stData$coords.r, returnAlphas = T, cat.probs = c(1/3,
+  2/3), returnFullAlphas = F)
 }
 \arguments{
 \item{stFit}{Object with class 'stFit' containing posterior parameter samples
