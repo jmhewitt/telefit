@@ -61,7 +61,7 @@ stLL = function( stData, stFit, beta, sigmasq_y, sigmasq_r, sigmasq_eps, rho_y,
   # format design matrix
   Xl = as.matrix(arrayToLong(X, coords.s, 1)[,-(1:3)])
   
-  .Call("_ll", PACKAGE = 'telefit', matrix(Xl, ncol=p), Z, Yl, 
+  .Call(`r_ll`, matrix(Xl, ncol=p), Z, Yl, 
         Dy, Dz_knots, Dz_to_knots, p, n, r, r_knots, t, 
         stFit$priors$cov.s$smoothness, stFit$priors$cov.r$smoothness,
         matrix(beta, ncol=p), sigmasq_y, sigmasq_r, sigmasq_eps, rho_y, rho_r,

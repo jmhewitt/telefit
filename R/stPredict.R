@@ -147,7 +147,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
                            
     if(stFit$varying) {
     } else {
-      .Call("_stpcomposition", PACKAGE = 'telefit', matrix(Xl, ncol=p), Z, Yl, 
+      .Call(`r_stpcomposition`, matrix(Xl, ncol=p), Z, Yl, 
             Dy, Dz_knots, Dz_to_knots, p, n, r, r_knots, t, 
             stFit$priors$cov.s$smoothness, stFit$priors$cov.r$smoothness,
             matrix(stFit$parameters$samples$beta[inds,], ncol=p), 

@@ -45,7 +45,7 @@ svcPredict = function(fit, Xn=NULL, Zn=NULL, stData=NULL, stDataNew=NULL,
   }
   
   # draw from posterior predictive distribution
-  res = .Call("_svcpredict", PACKAGE = 'telefit', 
+  res = .Call(`r_svcpredict`, 
               matrix(fit$parameters$samples$T, ncol = length(fit$priors$T$Psi)), 
               matrix(fit$parameters$samples$beta, 
                      ncol = nrow(fit$priors$beta$Linv)),

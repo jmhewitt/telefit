@@ -14,7 +14,7 @@ stSimulate(dat.train, dat.test, coords.knots, params, miles = T)
 \item{coords.knots}{matrix with coordinates of knots for remote covariates
 (lon, lat)}
 
-\item{params}{A list containing model parameters for use in simulation:
+\item{params}{A list containing model parameters for use in simulation
 \describe{
   \item{beta}{ vector with fixed effect coefficients }
   \item{cov.s}{ list(smoothness=double, range=double, variance=double, nugget=double) }

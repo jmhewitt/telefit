@@ -2,9 +2,9 @@
 
 using namespace Rcpp;
 
-mcstat2::MCMCCheckpoint::MCMCCheckpoint(int _nSamples, int _thin) {
-	nSamples = _nSamples;
-	thin = _thin;
+mcstat2::MCMCCheckpoint::MCMCCheckpoint(int t_nSamples, int t_thin) {
+	nSamples = t_nSamples;
+	thin = t_thin;
 	checkPointIt = (int) nSamples * 0.1;
 	it = 0;
 	start = std::clock();
@@ -55,8 +55,8 @@ void mcstat2::MCMCCheckpoint::finish() {
 	endl << "Samples per second: " << floor(sampSec * 10.0) / 10.0 << endl;
 }
 
-void mcstat2::GibbsSampler::setThinning(int _thin) {
-	thin = _thin < 1 ? 1 : _thin;
+void mcstat2::GibbsSampler::setThinning(int t_thin) {
+	thin = t_thin < 1 ? 1 : t_thin;
 }
 
 void mcstat2::GibbsSampler::addSampler(Sampler &s) {

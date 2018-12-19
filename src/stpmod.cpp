@@ -3,10 +3,10 @@
 #include <iomanip>
 #include "distributions.h"
 
-STPModel::STPModel(Data &_dat, Priors &_prior, Constants &_consts) {
-	dat = _dat;
-	prior = _prior;
-	consts = _consts;
+STPModel::STPModel(Data &t_dat, Priors &t_prior, Constants &t_consts) {
+	dat = t_dat;
+	prior = t_prior;
+	consts = t_consts;
 }
 
 struct STPModel::Params {
@@ -18,8 +18,8 @@ struct STPModel::Params {
 	// default constructor
 	Params() {};
 	
-	Params(const Constants &_consts) {
-		consts = _consts;
+	Params(const Constants &t_consts) {
+		consts = t_consts;
 		beta = vec(consts.p, fill::zeros);
 	}
 	
@@ -75,10 +75,10 @@ struct STPModel::CompositionParams {
 	vec alpha_knots;
 	mat cat_breaks;
 	
-	CompositionParams(const Constants &consts, const mat & _cat_breaks ) {
+	CompositionParams(const Constants &consts, const mat & t_cat_breaks ) {
 		if(!consts.localOnly)
 			alpha_knots = vec(consts.ns * consts.nr_knots, fill::zeros);
-		cat_breaks = cat_breaks;
+		cat_breaks = t_cat_breaks;
 	}
 	
 };
@@ -93,9 +93,9 @@ struct STPModel::CompositionScratch {
 	
 	CompositionScratch() { }
 	
-	CompositionScratch(const Constants &_consts, const Data &_dat) {
-		consts = _consts;
-		dat = _dat;
+	CompositionScratch(const Constants &t_consts, const Data &t_dat) {
+		consts = t_consts;
+		dat = t_dat;
 		
 		Sigma = mat(consts.ns, consts.ns, fill::zeros);
 		zero_eof_alpha_knots = vec(consts.ns * consts.nt, fill::zeros);
@@ -161,14 +161,14 @@ private:
 public:
 	CompAlphaKnot () { }
 	
-	CompAlphaKnot(const Data &_dat, const Constants &_consts,
-				  CompositionScratch &_compositionScratch, Params &_params,
-				  CompositionParams &_compositionParams) {
-		dat = _dat;
-		consts = _consts;
-		params = &_params;
-		compositionScratch = &_compositionScratch;
-		compositionParams = &_compositionParams;
+	CompAlphaKnot(const Data &t_dat, const Constants &t_consts,
+				  CompositionScratch &t_compositionScratch, Params &t_params,
+				  CompositionParams &t_compositionParams) {
+		dat = t_dat;
+		consts = t_consts;
+		params = &t_params;
+		compositionScratch = &t_compositionScratch;
+		compositionParams = &t_compositionParams;
 		
 		compMean = vec(consts.ns * consts.nr_knots, fill::zeros);
 		remoteInfo = vec(consts.nr_knots, fill::zeros);
@@ -318,14 +318,14 @@ public:
 	
 	RwSigmasq_r_eps() { }
 	
-	RwSigmasq_r_eps(const Data &_dat, const Priors &_prior,
-					const Constants &_consts, Scratch &_scratch, Params &_params,
+	RwSigmasq_r_eps(const Data &t_dat, const Priors &t_prior,
+					const Constants &t_consts, Scratch &t_scratch, Params &t_params,
 					double sd) : RWSampler(sd) {
-		dat = _dat;
-		prior = _prior;
-		consts = _consts;
-		scratch = &_scratch;
-		params = &_params;
+		dat = t_dat;
+		prior = t_prior;
+		consts = t_consts;
+		scratch = &t_scratch;
+		params = &t_params;
 		
 		type = LOG;
 		
@@ -396,14 +396,14 @@ public:
 	
 	RwSigmasq_r() { }
 	
-	RwSigmasq_r(const Data &_dat, const Priors &_prior,
-				const Constants &_consts, Scratch &_scratch, Params &_params,
+	RwSigmasq_r(const Data &t_dat, const Priors &t_prior,
+				const Constants &t_consts, Scratch &t_scratch, Params &t_params,
 				double sd) : RWSampler(sd) {
-		dat = _dat;
-		prior = _prior;
-		consts = _consts;
-		scratch = &_scratch;
-		params = &_params;
+		dat = t_dat;
+		prior = t_prior;
+		consts = t_consts;
+		scratch = &t_scratch;
+		params = &t_params;
 		
 		type = LOG;
 		
@@ -472,13 +472,13 @@ private:
 public:
 	RwRho_r() { }
 	
-	RwRho_r(const Data &_dat, const Priors &_prior, const Constants &_consts,
-			Scratch &_scratch, Params &_params, double sd) : RWSampler(sd) {
-		dat = _dat;
-		prior = _prior;
-		consts = _consts;
-		scratch = &_scratch;
-		params = &_params;
+	RwRho_r(const Data &t_dat, const Priors &t_prior, const Constants &t_consts,
+			Scratch &t_scratch, Params &t_params, double sd) : RWSampler(sd) {
+		dat = t_dat;
+		prior = t_prior;
+		consts = t_consts;
+		scratch = &t_scratch;
+		params = &t_params;
 		
 		type = LOGIT;
 		L = prior.rho_r.a;
@@ -541,14 +541,14 @@ private:
 	double SigmaInvProposed_logdet, one;
 	
 public:
-	RwSigmasq_eps(const Data &_dat, const Priors &_prior,
-				  const Constants &_consts, Scratch &_scratch, Params &_params,
+	RwSigmasq_eps(const Data &t_dat, const Priors &t_prior,
+				  const Constants &t_consts, Scratch &t_scratch, Params &t_params,
 				  double sd) : RWSampler(sd) {
-		dat = _dat;
-		prior = _prior;
-		consts = _consts;
-		scratch = &_scratch;
-		params = &_params;
+		dat = t_dat;
+		prior = t_prior;
+		consts = t_consts;
+		scratch = &t_scratch;
+		params = &t_params;
 		
 		type = LOG;
 		
@@ -603,13 +603,13 @@ private:
 	double SigmaInvProposed_logdet, one;
 	
 public:
-	RwRho_y(const Data &_dat, const Priors &_prior, const Constants &_consts,
-			Scratch &_scratch, Params &_params, double sd) : RWSampler(sd) {
-		dat = _dat;
-		prior = _prior;
-		consts = _consts;
-		scratch = &_scratch;
-		params = &_params;
+	RwRho_y(const Data &t_dat, const Priors &t_prior, const Constants &t_consts,
+			Scratch &t_scratch, Params &t_params, double sd) : RWSampler(sd) {
+		dat = t_dat;
+		prior = t_prior;
+		consts = t_consts;
+		scratch = &t_scratch;
+		params = &t_params;
 		
 		type = LOGIT;
 		L = prior.rho_y.a;
@@ -662,13 +662,13 @@ private:
 	mat priorPrecision;
 	
 public:
-	ConjBeta(const Data &_dat, const Priors &_prior, const Constants &_consts,
-			 Scratch &_scratch, Params &_params) {
-		dat = _dat;
-		prior = _prior;
-		consts = _consts;
-		scratch = &_scratch;
-		params = &_params;
+	ConjBeta(const Data &t_dat, const Priors &t_prior, const Constants &t_consts,
+			 Scratch &t_scratch, Params &t_params) {
+		dat = t_dat;
+		prior = t_prior;
+		consts = t_consts;
+		scratch = &t_scratch;
+		params = &t_params;
 		
 		priorPrecision = inv_sympd(prior.beta.Sigma);
 	}
@@ -700,13 +700,13 @@ private:
 	double posteriorShape, one;
 	
 public:
-	ConjSigmasq_y(const Data &_dat, const Priors &_prior,
-				  const Constants &_consts, Scratch &_scratch, Params &_params) {
-		dat = _dat;
-		prior = _prior;
-		consts = _consts;
-		scratch = &_scratch;
-		params = &_params;
+	ConjSigmasq_y(const Data &t_dat, const Priors &t_prior,
+				  const Constants &t_consts, Scratch &t_scratch, Params &t_params) {
+		dat = t_dat;
+		prior = t_prior;
+		consts = t_consts;
+		scratch = &t_scratch;
+		params = &t_params;
 		
 		posteriorShape = prior.sigmasq_y.shape + 0.5 * consts.ns * consts.nt;
 		one = 1.0;
@@ -817,7 +817,7 @@ Samples STPModel::fit(int nSamples, Function errDump, double C, double RWrate,
 		
 		// adjust tuning
 		step = 't';
-		double adaptScale = C / sqrt( (double) (it + 1) );
+        double adaptScale = C / std::sqrt( (double) (it + 1) );
 		rwRho_y.adapt(adaptScale, RWrate);
 		rwSigmasq_eps.adapt(adaptScale, RWrate);
 		if(!consts.localOnly) {
@@ -969,7 +969,7 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 				compositionSamples.cat_probs.slice(it).row(i) =
 					mcstat2::qintnorm(cat_breaks.row(i).t(),
 									  local.at(i),
-									  sqrt(compositionScratch.Sigma.at(i,i))).t();
+                                      std::sqrt(compositionScratch.Sigma.at(i,i))).t();
 			}
 			
 			// save forecast objects
@@ -1000,7 +1000,7 @@ CompositionSamples STPModel::compositionSample(const Samples &samples,
 // R exports
 //
 
-RcppExport SEXP _stpfit(SEXP p, SEXP X, SEXP Z, SEXP Y, SEXP Lambda,
+RcppExport SEXP r_stpfit(SEXP p, SEXP X, SEXP Z, SEXP Y, SEXP Lambda,
 						SEXP sigmasq_y_shape, SEXP sigmasq_y_rate,
 						SEXP sigmasq_r_shape, SEXP sigmasq_r_rate,
 						SEXP sigmasq_eps_shape, SEXP sigmasq_eps_rate,
@@ -1050,7 +1050,7 @@ RcppExport SEXP _stpfit(SEXP p, SEXP X, SEXP Z, SEXP Y, SEXP Lambda,
 	return samples.toList();
 }
 
-RcppExport SEXP _stpcomposition(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
+RcppExport SEXP r_stpcomposition(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 								SEXP Dz_knots, SEXP Dz_to_knots, SEXP p,
 								SEXP ns, SEXP nr, SEXP nr_knots, SEXP nt,
 								SEXP smoothness_y, SEXP smoothness_r,
@@ -1093,7 +1093,7 @@ RcppExport SEXP _stpcomposition(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 	return compositionSamples.toSummarizedList();
 }
 
-RcppExport SEXP _ll(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
+RcppExport SEXP r_ll(SEXP X, SEXP Z, SEXP Y, SEXP Dy,
 					SEXP Dz_knots, SEXP Dz_to_knots, SEXP p,
 					SEXP ns, SEXP nr, SEXP nr_knots, SEXP nt,
 					SEXP smoothness_y, SEXP smoothness_r,

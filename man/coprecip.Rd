@@ -4,7 +4,7 @@
 \name{coprecip}
 \alias{coprecip}
 \title{Standardized anomalies of CO Precipitation}
-\format{A stData object with 3 years of observations:
+\format{A stData object with 3 years of observations
 \describe{
   \item{tLabs}{year labels for data columns}
   \item{coords.s}{centers of grid cells for Colorado data}

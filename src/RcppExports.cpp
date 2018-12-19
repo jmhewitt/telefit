@@ -142,11 +142,11 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _ll(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP _stpcomposition(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP _stpfit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP _svcfit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP _svcpredict(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP r_ll(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP r_stpcomposition(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP r_stpfit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP r_svcfit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP r_svcpredict(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"_telefit_r_maternCov", (DL_FUNC) &_telefit_r_maternCov, 5},
@@ -159,11 +159,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_telefit_r_rwishart", (DL_FUNC) &_telefit_r_rwishart, 2},
     {"_telefit_r_rinvwishart", (DL_FUNC) &_telefit_r_rinvwishart, 2},
     {"_telefit_r_dgeikmm", (DL_FUNC) &_telefit_r_dgeikmm, 3},
-    {"_ll",                         (DL_FUNC) &_ll,                         20},
-    {"_stpcomposition",             (DL_FUNC) &_stpcomposition,             27},
-    {"_stpfit",                     (DL_FUNC) &_stpfit,                     36},
-    {"_svcfit",                     (DL_FUNC) &_svcfit,                     18},
-    {"_svcpredict",                 (DL_FUNC) &_svcpredict,                 10},
+    {"r_ll",                        (DL_FUNC) &r_ll,                        20},
+    {"r_stpcomposition",            (DL_FUNC) &r_stpcomposition,            27},
+    {"r_stpfit",                    (DL_FUNC) &r_stpfit,                    36},
+    {"r_svcfit",                    (DL_FUNC) &r_svcfit,                    18},
+    {"r_svcpredict",                (DL_FUNC) &r_svcpredict,                10},
     {NULL, NULL, 0}
 };
 

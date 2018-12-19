@@ -14,7 +14,7 @@
 #' 
 #' @param dat.train stData object with training data to simulate new Y values for
 #' @param dat.test stData object with test data to simulate new Y values for
-#' @param params A list containing model parameters for use in simulation:
+#' @param params A list containing model parameters for use in simulation
 #'    \describe{
 #'      \item{beta}{ vector with fixed effect coefficients }
 #'      \item{cov.s}{ list(smoothness=double, range=double, variance=double, nugget=double) }

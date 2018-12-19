@@ -17,7 +17,7 @@
 #' @param miles T/F for whether to compute great circle distances in miles (T)
 #'   or km (F)
 #' @param priors A list containing parameters for the prior distributions. The
-#'  list needs to contain the following values:
+#'  list needs to contain the following values
 #'    \describe{
 #'      \item{T}{ list(Psi=matrix, nu=double) specifying the Inverse wishart 
 #'                prior distribution for the spatially varying coefficient 
@@ -51,7 +51,7 @@ svcFit = function(y, X, z, coords, miles=T, priors, nSamples, thin=1,
     inits = list()
   }
   
-  res = .Call("_svcfit", PACKAGE = 'telefit', y, X, z, D, priors$T$nu, 
+  res = .Call(`r_svcfit`, y, X, z, D, priors$T$nu, 
               priors$T$Psi, priors$beta$Linv, priors$sigmasq$a, 
               priors$sigmasq$b, priors$rho$L, priors$rho$U, priors$cov$nu,
               nSamples, thin, rw.initsd, inits, C=1, alpha=.44)

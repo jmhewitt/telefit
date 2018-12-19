@@ -76,19 +76,19 @@ vec mcstat2::mvrnorm_spchol(const SparseMatrix<double> &QL,
 						   const PermutationMatrix<Dynamic,Dynamic> &QPinv,
 						   int n) {
 	// generate independent normal variates
-	vec _z = randn(n);
+	vec t_z = randn(n);
 	
 	// map variates into eigen
 	using Eigen::Map;
 	using Eigen::VectorXd;
-	Map<VectorXd> z(_z.memptr(), n);
+	Map<VectorXd> z(t_z.memptr(), n);
 	
 	// solve using sparse cholesky to generate sample
 	using Eigen::Lower;
-	VectorXd _x = QPinv * QL.triangularView<Lower>().transpose().solve(z);
+	VectorXd t_x = QPinv * QL.triangularView<Lower>().transpose().solve(z);
 	
 	// convert sample to arma vec
-	vec x = vec(_x.data(), n);
+	vec x = vec(t_x.data(), n);
 	
 	return x;
 }
@@ -99,21 +99,21 @@ vec mcstat2::mvrnorm_spcholkron(const SparseMatrix<double> &QL,
 							   const MatrixXd &UA,
 							   int Un) {
 	// generate independent normal variates
-	mat _z = randn<mat>(Un, Qn);
+	mat t_z = randn<mat>(Un, Qn);
 	
 	// map variates into eigen
 	using Eigen::Map;
 	using Eigen::MatrixXd;
-	Map<MatrixXd> z(_z.memptr(), Un, Qn);
+	Map<MatrixXd> z(t_z.memptr(), Un, Qn);
 	
 	// solve using sparse cholesky to generate sample
 	using Eigen::Lower;
-	MatrixXd _x = (QPinv * QL.triangularView<Lower>().transpose().solve(
+	MatrixXd t_x = (QPinv * QL.triangularView<Lower>().transpose().solve(
 								(UA.triangularView<Lower>() * z).transpose()
 							   )).transpose();
 	
 	// convert sample to arma vec
-	vec x = vec(_x.data(), Qn * Un);
+	vec x = vec(t_x.data(), Qn * Un);
 	
 	return x;
 }
@@ -172,14 +172,14 @@ mat mcstat2::mvrnorm(mat & Sigma, int nSamples, bool precision) {
 	
 	// generate independent normal variates
 	GetRNGstate();
-	mat _z = randn(n, nSamples);
+	mat t_z = randn(n, nSamples);
 	PutRNGstate();
 	
 	// map variates into eigen
-	Map<MatrixXd> z(_z.memptr(), n, nSamples);
+	Map<MatrixXd> z(t_z.memptr(), n, nSamples);
 	
 	// internal storage for r.v.s
-	MatrixXd _x;
+	MatrixXd t_x;
 	
 	if(precision) {
 		
@@ -190,7 +190,7 @@ mat mcstat2::mvrnorm(mat & Sigma, int nSamples, bool precision) {
 		LLT<MatrixXd, Upper> llt(Q);
 		
 		// compute r.v. with precision matrix Q
-		_x = llt.matrixU().solve(z);
+		t_x = llt.matrixU().solve(z);
 		
 	} else {
 		
@@ -201,11 +201,11 @@ mat mcstat2::mvrnorm(mat & Sigma, int nSamples, bool precision) {
 		LLT<MatrixXd, Lower> llt(S);
 		
 		// compute r.v. with covariance matrix S
-		_x = llt.matrixL() * z;
+		t_x = llt.matrixL() * z;
 	}
 	
 	// convert samples to arma vec
-	mat x = mat(_x.data(), Sigma.n_rows, nSamples);
+	mat x = mat(t_x.data(), Sigma.n_rows, nSamples);
 	return x;
 }
 
@@ -225,26 +225,26 @@ mat mcstat2::mvrnorm_post(vec & y, mat & Sigma, int nSamples, bool precision) {
 		Map<MatrixXd> Q(Sigma.memptr(), n, n);
 		
 		// read mean component into eigen
-		Map<MatrixXd> _y(y.memptr(), n, 1);
+		Map<MatrixXd> t_y(y.memptr(), n, 1);
 		
 		// factor precision matrix and compute r.v. mean; store upper cholesky
 		LLT<MatrixXd, Upper> llt(Q);
-		VectorXd mu = llt.solve(_y);
+		VectorXd mu = llt.solve(t_y);
 		
 		// generate independent normal variates
 		GetRNGstate();
-		mat _z = randn(n, nSamples);
+		mat t_z = randn(n, nSamples);
 		PutRNGstate();
 		
 		// map variates into eigen
-		Map<MatrixXd> z(_z.memptr(), n, nSamples);
+		Map<MatrixXd> z(t_z.memptr(), n, nSamples);
 		
 		// compute r.v. with precision matrix Q and mean mu
-		MatrixXd _x = llt.matrixU().solve(z);
-		_x.colwise() += mu;
+		MatrixXd t_x = llt.matrixU().solve(z);
+		t_x.colwise() += mu;
 		
 		// convert to arma vec
-		mat x = mat(_x.data(), Sigma.n_rows, nSamples);
+		mat x = mat(t_x.data(), Sigma.n_rows, nSamples);
 
 		return x;
 	} else {
@@ -253,7 +253,7 @@ mat mcstat2::mvrnorm_post(vec & y, mat & Sigma, int nSamples, bool precision) {
 }
 
 
-mat mcstat2::mvrnorm_postKron(vec & _y, mat & _A, mat & _B, int nSamples,
+mat mcstat2::mvrnorm_postKron(vec & t_y, mat & t_A, mat & t_B, int nSamples,
 							  bool precision) {
 	using Eigen::MatrixXd;
 	using Eigen::VectorXd;
@@ -264,13 +264,13 @@ mat mcstat2::mvrnorm_postKron(vec & _y, mat & _A, mat & _B, int nSamples,
 	if(precision) {
 		
 		// read precision matrices into eigen
-		int nA = _A.n_rows;
-		int nB = _B.n_rows;
-		Map<MatrixXd> Qa(_A.memptr(), nA, nA);
-		Map<MatrixXd> Qb(_B.memptr(), nB, nB);
+		int nA = t_A.n_rows;
+		int nB = t_B.n_rows;
+		Map<MatrixXd> Qa(t_A.memptr(), nA, nA);
+		Map<MatrixXd> Qb(t_B.memptr(), nB, nB);
 		
 		// read mean component into eigen as matrix
-		Map<MatrixXd> Y(_y.memptr(), nB, nA);
+		Map<MatrixXd> Y(t_y.memptr(), nB, nA);
 		
 		// factor precision matrix and compute r.v. mean; store upper choleskys
 		LLT<MatrixXd, Upper> lltA(Qa);
@@ -281,26 +281,26 @@ mat mcstat2::mvrnorm_postKron(vec & _y, mat & _A, mat & _B, int nSamples,
 		
 		// generate independent normal variates
 		GetRNGstate();
-		mat _z = randn(nB, nA * nSamples);
+		mat t_z = randn(nB, nA * nSamples);
 		PutRNGstate();
 		
 		// map variates into eigen
-		Map<MatrixXd> z(_z.memptr(), nB, nA * nSamples);
+		Map<MatrixXd> z(t_z.memptr(), nB, nA * nSamples);
 		
 		// compute r.v. with precision matrix A x B (but in matrix form)
-		MatrixXd _x(nB, nA * nSamples);
+		MatrixXd t_x(nB, nA * nSamples);
 		for(int i=0; i<nSamples; i++) {
 			MatrixXd b = lltB.matrixU().solve(z.block(0, i*nA, nB, nA));
-			_x.block(0, i*nA, nB, nA) =
+			t_x.block(0, i*nA, nB, nA) =
 				lltA.matrixU().solve(b.transpose()).transpose();
 		}
 		
 		// reshape to column vectors, add mean mu
-		Map<MatrixXd> _xV(_x.data(), nA * nB, nSamples);
-		_xV.colwise() += mu;
+		Map<MatrixXd> t_xV(t_x.data(), nA * nB, nSamples);
+		t_xV.colwise() += mu;
 		
 		// convert to arma vec
-		mat x = mat(_xV.data(), nA * nB, nSamples);
+		mat x = mat(t_xV.data(), nA * nB, nSamples);
 		
 		return x;
 	} else {

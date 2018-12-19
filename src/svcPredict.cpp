@@ -65,11 +65,11 @@ private:
 	
 public:
 	
-	YSampler(Data &_data, Params &_params, Consts &_consts) {
+	YSampler(Data &t_data, Params &t_params, Consts &t_consts) {
 		name = "y"; type = VECTOR;
-		data = &_data;
-		params = &_params;
-		consts = &_consts;
+		data = &t_data;
+		params = &t_params;
+		consts = &t_consts;
 	 it = 0;
 	 H = mat(consts->N, consts->N, fill::zeros);
 	 zTheta = vec(consts->nt * consts->N, fill::zeros);
@@ -102,9 +102,9 @@ public:
 };
 
 
-RcppExport SEXP _svcpredict (SEXP _T, SEXP _beta, SEXP _theta, SEXP _sigmasq,
-							 SEXP _sigmasqeps, SEXP _rho, SEXP _Xn, SEXP _Zn,
-							 SEXP _d, SEXP nu) {
+RcppExport SEXP r_svcpredict (SEXP t_T, SEXP t_beta, SEXP t_theta, SEXP t_sigmasq,
+							 SEXP t_sigmasqeps, SEXP t_rho, SEXP t_Xn, SEXP t_Zn,
+							 SEXP t_d, SEXP nu) {
 	
 	using namespace Rcpp;
 	
@@ -114,19 +114,19 @@ RcppExport SEXP _svcpredict (SEXP _T, SEXP _beta, SEXP _theta, SEXP _sigmasq,
 	Params params = Params();
 	Consts consts = Consts();
 	
-	mat X = as<mat>(_Xn);
-	mat Z = as<mat>(_Zn);
-	mat d = as<mat>(_d);
+	mat X = as<mat>(t_Xn);
+	mat Z = as<mat>(t_Zn);
+	mat d = as<mat>(t_d);
 	data.X = &X;
 	data.Z = &Z;
 	data.d = &d;
 	
-	mat T = as<mat>(_T);
-	mat beta = as<mat>(_beta);
-	mat theta = as<mat>(_theta);
-	vec sigmasq = as<vec>(_sigmasq);
-	vec sigmasqeps = as<vec>(_sigmasqeps);
-	vec rho = as<vec>(_rho);
+	mat T = as<mat>(t_T);
+	mat beta = as<mat>(t_beta);
+	mat theta = as<mat>(t_theta);
+	vec sigmasq = as<vec>(t_sigmasq);
+	vec sigmasqeps = as<vec>(t_sigmasqeps);
+	vec rho = as<vec>(t_rho);
 	
 	data.T = &T;
 	data.beta = &beta;
@@ -138,7 +138,7 @@ RcppExport SEXP _svcpredict (SEXP _T, SEXP _beta, SEXP _theta, SEXP _sigmasq,
 	consts.nSamples = data.rho->size();
 	consts.N = data.d->n_rows;
 	consts.nt = data.Z->n_cols;
-	consts.k = sqrt(data.T->n_cols);
+    consts.k = std::sqrt((int) data.T->n_cols);
 	
 	params.nu = as<double>(nu);
 	

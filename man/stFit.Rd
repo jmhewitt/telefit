@@ -15,7 +15,7 @@ stFit(stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
 model. The data need only be manually entered if not using a stData object.}
 
 \item{priors}{A list containing parameters for the prior distributions. The
-list needs to contain the following values:
+list needs to contain the following values
   \describe{
     \item{beta}{ list(Lambda=matrix) specifying the prior covariance matrix
       for the local effects if varying==F, otherwise 
@@ -45,7 +45,7 @@ observed (lon, lat)}
 were observed (lon, lat)}
 
 \item{rw.initsd}{A list containing initial standard deviation parameters for
-the MCMC parameters requiring random walk updates:
+the MCMC parameters requiring random walk updates
   \describe{
     \item{cov.s}{ list(range=double, nugget=double) }
     \item{cov.r}{ list(range=double, variance=double, nugget=double) }

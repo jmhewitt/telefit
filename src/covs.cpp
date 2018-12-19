@@ -2,12 +2,11 @@
 
 using namespace arma;
 
-
 // build a matern covariance matrix in place
-void maternCov(mat & cov, const mat & d, double scale, double range,
+void maternCov(arma::mat & cov, const arma::mat & d, double scale, double range,
 			   double smoothness, double nugget ) {
 
-	double cst = pow(2.0, 1.0 - smoothness) / R::gammafn(smoothness);
+    double cst = std::pow(2.0, 1.0 - smoothness) / R::gammafn(smoothness);
 	double cstInv = 1.0 / cst;
 
 	if(cov.n_rows == cov.n_cols) {
@@ -24,7 +23,7 @@ void maternCov(mat & cov, const mat & d, double scale, double range,
 			// off-diagonal
 			for(int j=0; j<i; j++) {
 				double v = d.at(i,j) / range;
-				cov.at(i,j) = pow(v, smoothness) * R::bessel_k(v, smoothness, 1.0);
+                cov.at(i,j) = std::pow(v, smoothness) * R::bessel_k(v, smoothness, 1.0);
 				cov.at(j,i) = cov.at(i,j);
 			}
 		}
@@ -41,7 +40,7 @@ void maternCov(mat & cov, const mat & d, double scale, double range,
 					cov.at(i,j) = cstInv;
 				} else {
 					double v = d.at(i,j) / range;
-					cov.at(i,j) = pow(v, smoothness) * R::bessel_k(v, smoothness, 1.0);
+					cov.at(i,j) = std::pow(v, smoothness) * R::bessel_k(v, smoothness, 1.0);
 				}
 			}
 		}
@@ -59,10 +58,10 @@ void maternCov(mat & cov, const mat & d, double scale, double range,
 
 
 // compute matern covariances (for a vector of distances) in place
-void maternArray( vec & d, double scale, double range,
+void maternArray( arma::vec & d, double scale, double range,
 				 double smoothness, double nugget ) {
 
-	double cst = pow(2.0, 1.0 - smoothness) / R::gammafn(smoothness);
+	double cst = std::pow(2.0, 1.0 - smoothness) / R::gammafn(smoothness);
 	double cstInv = 1.0 / cst;
 
 	// compute elementwise correlations
@@ -72,7 +71,7 @@ void maternArray( vec & d, double scale, double range,
 			d.at(i) = cstInv;
 		} else {
 			double v = d.at(i) / range;
-			d.at(i) = pow(v, smoothness) * R::bessel_k(v, smoothness, 1.0);
+			d.at(i) = std::pow(v, smoothness) * R::bessel_k(v, smoothness, 1.0);
 		}
 	}
 

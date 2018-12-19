@@ -16,11 +16,11 @@
 #'      \item{prediction}{ Spatial plot of predicted response variable for 
 #'        a given timepoint t. }
 #'      \item{residual}{ Spatial plot of residual for a given timepoint t.  
-#'        Note: this plot is only available if the model has been
+#'        Note, this plot is only available if the model has been
 #'        evaluated and the predictions have been compared to another response
 #'        dataset. }
 #'      \item{observed}{ Spatial plot of observed response variable for a given
-#'        timepoint t. Note: this plot is only available if the model has been
+#'        timepoint t. Note, this plot is only available if the model has been
 #'        evaluated and the predictions have been compared to another response
 #'        dataset.  }
 #'      \item{standard_error (or 'se')}{ Spatial plot of prediction standard 
@@ -32,7 +32,7 @@
 #'      \item{w}{ Spatial plot of the spatial noise component of the reponse 
 #'        variable for a given timepoint t.}
 #'      \item{correlation}{ Scatterplot of observed vs. predicted response 
-#'        variables for a given timepoint t.  Note: this plot is only available 
+#'        variables for a given timepoint t.  Note, this plot is only available 
 #'        if the model has been evaluated and the predictions have been compared 
 #'        to another response dataset.   }
 #'      \item{teleconnection}{ Spatial plot of remote coefficients associated
@@ -44,10 +44,10 @@
 #'        across prediction timepoints. }
 #'      \item{cat.prediction}{ Spatial plot of the predicted response variable
 #'        category (i.e., above/below average) for a given timepoint t. }
-#'      \item{truth}{ Note: this plot is only available if the model has been
+#'      \item{truth}{ Note, this plot is only available if the model has been
 #'        evaluated and the predictions have been compared to another response
 #'        dataset. }
-#'      \item{residual}{ Note: this plot is only available if the model has been
+#'      \item{residual}{ Note, this plot is only available if the model has been
 #'        evaluated and the predictions have been compared to another response
 #'        dataset. }
 #'      \item{eof_alpha_knots}{ A map of the local domain where the plotted colors

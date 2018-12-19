@@ -37,24 +37,24 @@ struct Data {
 	Data() { }
 	
 	// intended to be used for forecasting
-	Data(const mat &_X, const mat &_Z) {
-		X = _X;
-		Z = _Z;
+	Data(const mat &t_X, const mat &t_Z) {
+		X = t_X;
+		Z = t_Z;
 	}
 	
 	// intended to be used for fitting
-	Data(const mat &_X, const mat &_Z, const vec &_Y) {
-		X = _X;
-		Z = _Z;
-		Y = _Y;
+	Data(const mat &t_X, const mat &t_Z, const vec &t_Y) {
+		X = t_X;
+		Z = t_Z;
+		Y = t_Y;
 	}
 	
 	// intended to be used for composition sampling
-	Data(const mat &_X, const mat &_Z, const vec &_Y, const mat &_W) {
-		X = _X;
-		Z = _Z;
-		Y = _Y;
-		W = _W;
+	Data(const mat &t_X, const mat &t_Z, const vec &t_Y, const mat &t_W) {
+		X = t_X;
+		Z = t_Z;
+		Y = t_Y;
+		W = t_W;
 	}
 };
 
@@ -66,20 +66,20 @@ struct Constants {
 	
 	Constants() { }
 	
-	Constants(const mat &_Dy, const mat &_Dz_knots, const mat &_Dz_to_knots,
-			  int _p, int _ns, int _nr, int _nr_knots, int _nt,
-			  double _smoothness_y, double _smoothness_r, bool _localOnly) {
-		Dy = _Dy;
-		Dz_knots = _Dz_knots;
-		Dz_to_knots = _Dz_to_knots;
-		p = _p;
-		ns = _ns;
-		nr = _nr;
-		nr_knots = _nr_knots;
-		nt = _nt;
-		smoothness_y = _smoothness_y;
-		smoothness_r = _smoothness_r;
-		localOnly = _localOnly;
+	Constants(const mat &t_Dy, const mat &t_Dz_knots, const mat &t_Dz_to_knots,
+			  int t_p, int t_ns, int t_nr, int t_nr_knots, int t_nt,
+			  double t_smoothness_y, double t_smoothness_r, bool t_localOnly) {
+		Dy = t_Dy;
+		Dz_knots = t_Dz_knots;
+		Dz_to_knots = t_Dz_to_knots;
+		p = t_p;
+		ns = t_ns;
+		nr = t_nr;
+		nr_knots = t_nr_knots;
+		nt = t_nt;
+		smoothness_y = t_smoothness_y;
+		smoothness_r = t_smoothness_r;
+		localOnly = t_localOnly;
 	}
 };
 
@@ -95,12 +95,12 @@ struct CompositionSamples {
 	cube forecast, local, remote, cat_probs;
 	
 	CompositionSamples(int nSamples, const Constants &consts,
-					   bool _return_full_alpha, int nt0=-1, int nbreaks=1) {
+					   bool t_return_full_alpha, int nt0=-1, int nbreaks=1) {
 		
 		localOnly = consts.localOnly;
 		
 		return_forecast = nt0 > 0 ? true : false;
-		return_full_alpha = _return_full_alpha;
+		return_full_alpha = t_return_full_alpha;
 		
 		if(!localOnly) {
 			alpha_knots = mat(nSamples, consts.ns * consts.nr_knots, fill::zeros);
@@ -139,17 +139,17 @@ struct Samples {
 		}
 	}
 	
-	Samples(const mat &_beta, const vec &_sigmasq_y, const vec &_sigmasq_r,
-			const vec &_sigmasq_eps, const vec &_rho_y, const vec &_rho_r,
-			const vec &_ll, const vec &_sigmasq_r_eps) {
-		beta = _beta;
-		sigmasq_y = _sigmasq_y;
-		sigmasq_r = _sigmasq_r;
-		sigmasq_eps = _sigmasq_eps;
-		rho_y = _rho_y;
-		rho_r = _rho_r;
-		ll = _ll;
-		sigmasq_r_eps = _sigmasq_r_eps;
+	Samples(const mat &t_beta, const vec &t_sigmasq_y, const vec &t_sigmasq_r,
+			const vec &t_sigmasq_eps, const vec &t_rho_y, const vec &t_rho_r,
+			const vec &t_ll, const vec &t_sigmasq_r_eps) {
+		beta = t_beta;
+		sigmasq_y = t_sigmasq_y;
+		sigmasq_r = t_sigmasq_r;
+		sigmasq_eps = t_sigmasq_eps;
+		rho_y = t_rho_y;
+		rho_r = t_rho_r;
+		ll = t_ll;
+		sigmasq_r_eps = t_sigmasq_r_eps;
 	}
 	
 	List toList() {

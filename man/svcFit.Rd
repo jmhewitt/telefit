@@ -24,7 +24,7 @@ covariates for one timepoint.}
 or km (F)}
 
 \item{priors}{A list containing parameters for the prior distributions. The
-list needs to contain the following values:
+list needs to contain the following values
   \describe{
     \item{T}{ list(Psi=matrix, nu=double) specifying the Inverse wishart 
               prior distribution for the spatially varying coefficient 

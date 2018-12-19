@@ -6,7 +6,7 @@
 #' Colorado and Pacific Ocean (sea) surface temperatures.  All data has been
 #' converted to standardized anomalies.
 #'
-#' @format A stData object with 3 years of observations:
+#' @format A stData object with 3 years of observations
 #' \describe{
 #'   \item{tLabs}{year labels for data columns}
 #'   \item{coords.s}{centers of grid cells for Colorado data}

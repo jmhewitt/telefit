@@ -67,7 +67,7 @@ private:
 	
 public:
 	
-	TSampler(Config &_cfg) { name = "T"; type = VECTOR; cfg = &_cfg;
+	TSampler(Config &t_cfg) { name = "T"; type = VECTOR; cfg = &t_cfg;
 		df = cfg->priors.nu + cfg->consts.N;
 		dim = cfg->consts.k * cfg->consts.k;
 	}
@@ -101,7 +101,7 @@ private:
 
 public:
 	
-	BetaSampler(Config &_cfg) { name = "beta"; type = VECTOR; cfg = &_cfg; }
+	BetaSampler(Config &t_cfg) { name = "beta"; type = VECTOR; cfg = &t_cfg; }
 	
 	vec sample() {
 		
@@ -139,7 +139,7 @@ private:
 	
 public:
 	
-	ThetaSampler(Config &_cfg) { name = "theta"; type = VECTOR; cfg = &_cfg;
+	ThetaSampler(Config &t_cfg) { name = "theta"; type = VECTOR; cfg = &t_cfg;
 		
 		zzt = mat(cfg->consts.k, cfg->consts.k, fill::zeros);
 		for(int i=0; i<cfg->consts.nt; i++)
@@ -196,7 +196,7 @@ private:
 	
 public:
 	
-	SigmasqSampler(Config &_cfg) { name = "sigmasq"; type = REAL; cfg = &_cfg;
+	SigmasqSampler(Config &t_cfg) { name = "sigmasq"; type = REAL; cfg = &t_cfg;
 		shp = cfg->priors.a + ( cfg->consts.N * cfg->consts.nt )/ 2.0;
 	}
 	
@@ -244,8 +244,8 @@ private:
 	
 public:
 	
-	RhoSampler(Config &_cfg, double _sd, double _cur, double C, double alpha) :
-	RWSampler(_sd, _cur, C, alpha) { name = "rho"; type = REAL; cfg = &_cfg;
+	RhoSampler(Config &t_cfg, double t_sd, double t_cur, double C, double alpha) :
+	RWSampler(t_sd, t_cur, C, alpha) { name = "rho"; type = REAL; cfg = &t_cfg;
 		propType = LOGIT;
 		L = cfg->priors.L;
 		U = cfg->priors.U;
@@ -294,10 +294,10 @@ private:
 	
 public:
 	
-	SigmasqepsSampler(Config &_cfg, double _sd, double _current, double C,
+	SigmasqepsSampler(Config &t_cfg, double t_sd, double t_current, double C,
 					  double alpha) :
-	RWSampler(_sd, _current, C, alpha) { name = "sigmasqeps"; type = REAL;
-		cfg = &_cfg;
+	RWSampler(t_sd, t_current, C, alpha) { name = "sigmasqeps"; type = REAL;
+		cfg = &t_cfg;
 		propType = LOG;
 
 		one = 1.0;
@@ -335,10 +335,10 @@ public:
 };
 
 
-RcppExport SEXP _svcfit (SEXP Y, SEXP X, SEXP Z, SEXP D, SEXP nuT, SEXP Psi,
+RcppExport SEXP r_svcfit (SEXP Y, SEXP X, SEXP Z, SEXP D, SEXP nuT, SEXP Psi,
 						 SEXP Linv, SEXP a, SEXP b, SEXP L, SEXP U, SEXP nu,
-						 SEXP nSamples, SEXP thin, SEXP _sd, SEXP _inits,
-						 SEXP _C, SEXP _alpha) {
+						 SEXP nSamples, SEXP thin, SEXP t_sd, SEXP t_inits,
+						 SEXP t_C, SEXP t_alpha) {
 	
 	using namespace Rcpp;
 	
@@ -367,7 +367,7 @@ RcppExport SEXP _svcfit (SEXP Y, SEXP X, SEXP Z, SEXP D, SEXP nuT, SEXP Psi,
 	
 	// initialize parameters and scratch
 	
-	List inits = as<List>(_inits);
+	List inits = as<List>(t_inits);
 	
 	if(inits.containsElementNamed("sigmasq")) {
 		cfg.params.sigmasq = as<double>(inits["sigmasq"]);
@@ -426,9 +426,9 @@ RcppExport SEXP _svcfit (SEXP Y, SEXP X, SEXP Z, SEXP D, SEXP nuT, SEXP Psi,
 	
 	// instantiate and run samplers
 	
-	double sd = as<double>(_sd);
-	double C = as<double>(_C);
-	double alpha = as<double>(_alpha);
+	double sd = as<double>(t_sd);
+	double C = as<double>(t_C);
+	double alpha = as<double>(t_alpha);
 	
 	TSampler ts = TSampler(cfg);
 	BetaSampler bs = BetaSampler(cfg);
