@@ -11,7 +11,7 @@ forwardsolve.kron(A, B, y)
 
 \item{B}{an \eqn{p x q} matrix}
 
-\item{y}{an \eqn{mp x 1} column vector}
+\item{y}{an \eqn{mp x s} matrix}
 }
 \value{
 x
@@ -35,7 +35,9 @@ S2 = exp(-d.r)
 A = t(chol(S1))
 B = t(chol(S2))
 
-x = runif(nrow(S1)*nrow(S2))
+s = 15
+  
+x = matrix(runif(nrow(S1)*nrow(S2)*s), ncol=s)
 
 y = kronecker(A,B) \%*\% x
 

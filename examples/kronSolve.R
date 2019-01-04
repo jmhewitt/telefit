@@ -12,7 +12,9 @@ S2 = exp(-d.r)
 A = t(chol(S1))
 B = t(chol(S2))
 
-x = runif(nrow(S1)*nrow(S2))
+s = 15
+  
+x = matrix(runif(nrow(S1)*nrow(S2)*s), ncol=s)
 
 y = kronecker(A,B) %*% x
 

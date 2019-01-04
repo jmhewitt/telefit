@@ -7,14 +7,25 @@
 #' 
 #' @param A an \eqn{m x n} matrix
 #' @param B an \eqn{p x q} matrix
-#' @param y an \eqn{mp x 1} column vector
+#' @param y an \eqn{mp x s} matrix
 #' 
 #' @return x
 #' 
 #' @example examples/kronSolve.R
 
 forwardsolve.kron = function(A, B, y) {
-  Y = matrix(y, nrow = nrow(B))
-  Xp = forwardsolve(B, Y)
-  as.numeric(t(forwardsolve(A, t(Xp))))
+  n = ncol(A)
+  p = nrow(B)
+  q = ncol(B)
+  s = ncol(y)
+  
+  res = matrix(NA, nrow = n*q, ncol = s)
+  
+  for(i in 1:s) {
+    Y = matrix(y[,i], nrow = p)
+    Xp = forwardsolve(B, Y)
+    res[,i] = as.numeric(t(forwardsolve(A, t(Xp))))
+  }
+  
+  res
 }
