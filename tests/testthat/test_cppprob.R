@@ -11,6 +11,7 @@ test_that("Evaluating probabilities for intervals of normal r.v.s", {
   expect_equal(
     as.numeric(.Call(`_telefit_r_qintnorm`,
           qnorm(breaks[-c(1, length(breaks))], mu, sigma), mu, sigma)),
-    diff(breaks)
+    diff(breaks),
+    tolerance = 1e-3
   )
 })
