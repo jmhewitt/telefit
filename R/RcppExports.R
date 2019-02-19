@@ -25,6 +25,18 @@ r_qintnorm <- function(breaks, mu, sigma) {
     .Call(`_telefit_r_qintnorm`, breaks, mu, sigma)
 }
 
+dtest <- function(x, m, n, k, R, q, ldetR, Sigma) {
+    .Call(`_telefit_dtest`, x, m, n, k, R, q, ldetR, Sigma)
+}
+
+test_gmrf_approx <- function(y, x0) {
+    .Call(`_telefit_test_gmrf_approx`, y, x0)
+}
+
+test_ll <- function(y, lambda) {
+    .Call(`_telefit_test_ll`, y, lambda)
+}
+
 r_dgemkmm <- function(A, B, C) {
     .Call(`_telefit_r_dgemkmm`, A, B, C)
 }

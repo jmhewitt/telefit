@@ -10,6 +10,7 @@ test_that("Kronecker products (I x A)B with I=diag(N)", {
       
   expect_equal(
     kronecker(diag(dims['N']), A) %*% B,
-    .Call(`_telefit_r_dgeikmm`, dims['N'], A, B)
+    .Call(`_telefit_r_dgeikmm`, dims['N'], A, B),
+    tolerance = 1e-3
   )
 })
