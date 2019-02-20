@@ -21,9 +21,10 @@ test_that("GLM likelihood Taylor expansions: betas", {
   # Goal: Verify GLM likelihood gradient and Hessians are properly coded in C++
   # 
   # Test concept: gradient is 0 at MLE, and Hessian is related to MLE variance.
-  #   Assume R's GLM code is properly implemented.  If we can recover the MLE 
-  #   variance and output associated with 0 gradient (i.e., MLE estimates for 
-  #   betas), then we can be reasonably confident C++ is coded correctly.
+  #   Assume R's GLM code is properly implemented for betas.  If we can recover 
+  #   the MLE variance and output associated with 0 gradient (i.e., MLE 
+  #   estimates for betas), then we can be reasonably confident C++ is coded 
+  #   correctly.
   
   # run poisson GLM example from stats::glm
   counts <- c(18,17,15,20,10,20,25,13,12)
@@ -47,10 +48,35 @@ test_that("GLM likelihood Taylor expansions: betas", {
                         x = model.matrix(glm.D93), n = 3, t = 3, p = 5)
   
   expect_lt(
-    max(abs(bhat %*% solve(bcov) - r$b), # taylor-shift of gradient
+    max(abs(solve(bcov) %*% bhat - r$b), # taylor-shift of gradient
         abs(r2$b),                       # gradient
         abs(bhess - r$C),                # hessian
         abs(bhess - r2$C)),              # hessian v2
     1e-4
+  )
+})
+
+
+test_that("GLM likelihood Taylor expansions: etas", {
+  
+  # Goal: Verify GLM likelihood gradient and Hessians are properly coded in C++
+  # 
+  # Test concept: gradient is 0 at MLE, and Hessian is related to MLE variance.
+  #   For the etas, these quantities are easy to see analytically.  WLOG, we 
+  #   may assume the betas are equal to 0.  The MLE etas are equal to the log 
+  #   counts, and the negative hessian is equal to the counts.
+  
+  # data for poisson GLM example from stats::glm
+  counts <- c(18,17,15,20,10,20,25,13,12)
+  
+  # compute gradient/hessian using linear predictors
+  r = test_taylor_eta0(beta = c(0, 0), eta0 = log(counts), y = counts,
+                       x = matrix(0, nrow=length(counts), ncol = 2), n = 3, 
+                       t = 3, p = 2)
+  
+  expect_lt(
+    max(abs(counts + r$C),                 # hessian
+        abs( counts * log(counts) - r$b)), # taylor-shift of gradient
+    1e-10
   )
 })

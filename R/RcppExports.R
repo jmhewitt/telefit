@@ -33,6 +33,10 @@ test_taylor_beta <- function(beta0, eta0, y, x, n, t, p) {
     .Call(`_telefit_test_taylor_beta`, beta0, eta0, y, x, n, t, p)
 }
 
+test_taylor_eta0 <- function(beta, eta0, y, x, n, t, p) {
+    .Call(`_telefit_test_taylor_eta0`, beta, eta0, y, x, n, t, p)
+}
+
 test_gmrf_approx <- function(y, x0) {
     .Call(`_telefit_test_gmrf_approx`, y, x0)
 }

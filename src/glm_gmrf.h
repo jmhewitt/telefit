@@ -74,4 +74,33 @@ namespace glm {
     const double* eta0, const double* x, const double*y, int n, int t, int p,
     const glmfamily family);
 
+
+  /*
+   Implement extension of Rue and Held (2005) Section 4.4.1.  Compute the
+   refactored version of the Taylor expansion of the log-likelihood for
+   a GLM likelihood
+      f(Y | beta, eta_0) =
+        \prod_{i=1}^n \prod_{i=1}^t f(y_{ij} | g^{-1}(eta_{ij}))
+   where eta_{ij} = x_{ij}^T beta + eta_{0ij}.
+
+   This function returns b and C such that
+    log f(Y | beta, eta_0) \approx a_0 + b^T eta_0 - .6 beta^T C eta_0,
+   i.e., the refactored Taylor expansion of the log-likelihood around eta_0.
+
+   Note: The Hessian for this expansion is a diagonal matrix.
+
+   Parameters:
+    b - (pre-initialized output) array in which to store b vector (nt x 1)
+    c - (pre-initialized output) array in which to store diagonal hessian (nt)
+    beta - values of beta (p x 1)
+    eta0 - values of eta_{0ij} around which Taylor approx. is centered (nt x 1)
+    y - observations (nt x 1)
+    x - covariate matrix (nt x p)
+    n, t - number of locations and timepoints
+    p - the dimension of p (i.e., number of coefficients in beta)
+  */
+  void glm_taylor_eta0(double* b, double* c, const double* beta,
+    const double* eta0, const double* x, const double*y, int n, int t, int p,
+    const glmfamily family);
+
 }}

@@ -45,7 +45,6 @@ void mcstat2::glm::glm_taylor_beta(double* b, double* c, const double* beta0,
 
   // map inputs/outputs
   int nt = n*t;
-  Map<const MatrixXd> cmat(c,p,p);
   Map<const MatrixXd> xmat(x,nt,p);
   Map<const MatrixXd> eta0mat(eta0,n,t);
   Map<const VectorXd> bmat(beta0,p);
@@ -105,6 +104,60 @@ void mcstat2::glm::glm_taylor_beta(double* b, double* c, const double* beta0,
 
 }
 
+void mcstat2::glm::glm_taylor_eta0(double* b, double* c, const double* beta,
+  const double* eta0, const double* x, const double* y, int n, int t, int p,
+  const glmfamily family) {
+
+  // map inputs/outputs
+  int nt = n*t;
+  Map<const MatrixXd> xmat(x,nt,p);
+  Map<const MatrixXd> eta0mat(eta0,n,t);
+  Map<const VectorXd> bmat(beta,p);
+  Map<const VectorXd> ymat(y,nt);
+  Map<MatrixXd> H(c,n,t);
+  Map<MatrixXd> g(b,n,t);
+
+
+  switch (family) {
+    case poisson:
+
+      // pre-compute exponential term
+      VectorXd m = xmat * bmat;
+      Map<MatrixXd> eta(m.data(),n,t);
+      for(int i=0; i<n; i++) {
+        for(int j=0; j<t; j++) {
+          eta(i,j) = std::exp(eta(i,j) + eta0mat(i,j));
+        }
+      }
+
+      // loop over timepoints
+      for(int j=0; j<t; j++) {
+
+        // extract data at time j
+        VectorXd Yj = ymat.segment(j*n, n);
+
+        // loop over locations
+        for(int i=0; i<n; i++) {
+
+            // build gradient
+            g(i,j) = Yj(i) - eta(i,j);
+
+            // build hessian
+            H(i,j) = - eta(i,j);
+        }
+      }
+
+      // finish objects
+      Map<VectorXd> Hm(c,nt);
+      Map<VectorXd> gm(b,nt);
+      Map<const VectorXd> eta0vec(eta0,nt);
+      gm -= Hm.asDiagonal() * eta0vec;
+
+      break;
+  }
+
+}
+
 
 //
 // Rcpp exports
@@ -123,6 +176,23 @@ List test_taylor_beta(Eigen::Map<Eigen::MatrixXd> beta0,
   MatrixXd c(p,p);
 
   mcstat2::glm::glm_taylor_beta(b.data(), c.data(), beta0.data(), eta0.data(),
+    x.data(), y.data(), n, t, p, mcstat2::glm::glmfamily::poisson);
+
+  return List::create(Named("b") = b, Named("C") = c);
+}
+
+// [[Rcpp::export]]
+List test_taylor_eta0(Eigen::Map<Eigen::MatrixXd> beta,
+                      Eigen::Map<Eigen::MatrixXd> eta0,
+                      Eigen::Map<Eigen::MatrixXd> y,
+                      Eigen::Map<Eigen::MatrixXd> x,
+                      int n, int t, int p) {
+
+  int nt = n*t;
+  VectorXd b(nt);
+  VectorXd c(nt);
+
+  mcstat2::glm::glm_taylor_eta0(b.data(), c.data(), beta.data(), eta0.data(),
     x.data(), y.data(), n, t, p, mcstat2::glm::glmfamily::poisson);
 
   return List::create(Named("b") = b, Named("C") = c);
