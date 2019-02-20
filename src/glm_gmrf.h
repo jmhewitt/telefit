@@ -2,8 +2,8 @@
 	basic tools to implement models and methods from Rue and Held
  */
 
- // disable assertions
- #define EIGEN_NO_DEBUG
+// disable assertions
+#define EIGEN_NO_DEBUG
 
 #include <RcppEigen.h>
 
@@ -46,5 +46,32 @@ namespace glm {
   */
   void gmrf_approx(double* b, double* c, const double* x0, const double* y,
     int n, const glmfamily family);
+
+  /*
+   Implement extension of Rue and Held (2005) Section 4.4.1.  Compute the
+   refactored version of the Taylor expansion of the log-likelihood for
+   a GLM likelihood
+      f(Y | beta, eta_0) =
+        \prod_{i=1}^n \prod_{i=1}^t f(y_{ij} | g^{-1}(eta_{ij}))
+   where eta_{ij} = x_{ij}^T beta + eta_{0ij}.
+
+   This function returns b and C such that
+    log f(Y | beta, eta_0) \approx a_0 + b^T beta - .6 beta^T C beta,
+   i.e., the refactored Taylor expansion of the log-likelihood around beta_0.
+
+   Parameters:
+    b - (pre-initialized output) array in which to store b vector (p x 1)
+    c - (pre-initialized output) array in which to store C matrix in
+     column-major format (p x p)
+    beta0 - values around which Taylor approximation should be centered (nt x 1)
+    eta0 - values of eta_{0ij} (nt x 1)
+    y - observations (nt x 1)
+    x - covariate matrix (nt x p)
+    n, t - number of locations and timepoints
+    p - the dimension of p (i.e., number of coefficients in beta)
+  */
+  void glm_taylor_beta(double* b, double* c, const double* beta0,
+    const double* eta0, const double* x, const double*y, int n, int t, int p,
+    const glmfamily family);
 
 }}

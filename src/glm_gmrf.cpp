@@ -2,6 +2,10 @@
 
 using namespace Rcpp;
 
+using Eigen::Map;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
+
 
 void mcstat2::glm::gmrf_approx(double* b, double* c, const double* x0,
   const double* y, int n, const mcstat2::glm::glmfamily family) {
@@ -35,9 +39,94 @@ double mcstat2::glm::ll(const double* y, const double* eta, const int n,
 }
 
 
+void mcstat2::glm::glm_taylor_beta(double* b, double* c, const double* beta0,
+  const double* eta0, const double* x, const double* y, int n, int t, int p,
+  const glmfamily family) {
+
+  // map inputs/outputs
+  int nt = n*t;
+  Map<const MatrixXd> cmat(c,p,p);
+  Map<const MatrixXd> xmat(x,nt,p);
+  Map<const MatrixXd> eta0mat(eta0,n,t);
+  Map<const VectorXd> bmat(beta0,p);
+  Map<const VectorXd> ymat(y,nt);
+  Map<MatrixXd> H(c,p,p);
+  Map<VectorXd> g(b,p);
+
+  // initialize derivatives; they will be built sequentially
+  g.setZero();
+  H.setZero();
+
+  switch (family) {
+    case poisson:
+
+      // pre-compute exponential term
+      VectorXd m = xmat * bmat;
+      Map<MatrixXd> eta(m.data(),n,t);
+      for(int i=0; i<n; i++) {
+        for(int j=0; j<t; j++) {
+          eta(i,j) = std::exp(eta(i,j) + eta0mat(i,j));
+        }
+      }
+
+      // loop over timepoints
+      for(int j=0; j<t; j++) {
+
+        // extract covariate matrix and data at time j
+        MatrixXd Xj = xmat.block(j*n, 0, n, p);
+        VectorXd Yj = ymat.segment(j*n, n);
+
+        // loop over locations
+        for(int i=0; i<n; i++) {
+
+          // primary loop over regression coefficients
+          for(int l=0; l<p; l++) {
+
+            // build gradient
+            g(l) += Xj(i,l) * (Yj(i) - eta(i,j));
+
+            // secondary loop over regression coefficients
+            for(int m=0; m<p; m++) {
+
+              // build negative hessian
+              H(l,m) += Xj(i,l) * Xj(i,m) * eta(i,j);
+
+            }
+          }
+        }
+      }
+
+      // finish objects
+      H *= -1;
+      g -= H*bmat;
+
+      break;
+  }
+
+}
+
+
 //
 // Rcpp exports
 //
+
+// [[Rcpp::depends(RcppEigen)]]
+
+// [[Rcpp::export]]
+List test_taylor_beta(Eigen::Map<Eigen::MatrixXd> beta0,
+                      Eigen::Map<Eigen::MatrixXd> eta0,
+                      Eigen::Map<Eigen::MatrixXd> y,
+                      Eigen::Map<Eigen::MatrixXd> x,
+                      int n, int t, int p) {
+
+  VectorXd b(p);
+  MatrixXd c(p,p);
+
+  mcstat2::glm::glm_taylor_beta(b.data(), c.data(), beta0.data(), eta0.data(),
+    x.data(), y.data(), n, t, p, mcstat2::glm::glmfamily::poisson);
+
+  return List::create(Named("b") = b, Named("C") = c);
+}
 
 // [[Rcpp::export]]
 List test_gmrf_approx(NumericVector y, NumericVector x0) {

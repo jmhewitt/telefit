@@ -91,6 +91,65 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// dtest
+NumericVector dtest(NumericVector x, int m, int n, int k, Eigen::SparseMatrix< double > R, double q, double ldetR, Eigen::MatrixXd Sigma);
+RcppExport SEXP _telefit_dtest(SEXP xSEXP, SEXP mSEXP, SEXP nSEXP, SEXP kSEXP, SEXP RSEXP, SEXP qSEXP, SEXP ldetRSEXP, SEXP SigmaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< Eigen::SparseMatrix< double > >::type R(RSEXP);
+    Rcpp::traits::input_parameter< double >::type q(qSEXP);
+    Rcpp::traits::input_parameter< double >::type ldetR(ldetRSEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type Sigma(SigmaSEXP);
+    rcpp_result_gen = Rcpp::wrap(dtest(x, m, n, k, R, q, ldetR, Sigma));
+    return rcpp_result_gen;
+END_RCPP
+}
+// test_taylor_beta
+List test_taylor_beta(Eigen::Map<Eigen::MatrixXd> beta0, Eigen::Map<Eigen::MatrixXd> eta0, Eigen::Map<Eigen::MatrixXd> y, Eigen::Map<Eigen::MatrixXd> x, int n, int t, int p);
+RcppExport SEXP _telefit_test_taylor_beta(SEXP beta0SEXP, SEXP eta0SEXP, SEXP ySEXP, SEXP xSEXP, SEXP nSEXP, SEXP tSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type beta0(beta0SEXP);
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type eta0(eta0SEXP);
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type y(ySEXP);
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::MatrixXd> >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type t(tSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_taylor_beta(beta0, eta0, y, x, n, t, p));
+    return rcpp_result_gen;
+END_RCPP
+}
+// test_gmrf_approx
+List test_gmrf_approx(NumericVector y, NumericVector x0);
+RcppExport SEXP _telefit_test_gmrf_approx(SEXP ySEXP, SEXP x0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type x0(x0SEXP);
+    rcpp_result_gen = Rcpp::wrap(test_gmrf_approx(y, x0));
+    return rcpp_result_gen;
+END_RCPP
+}
+// test_ll
+NumericVector test_ll(NumericVector y, NumericVector lambda);
+RcppExport SEXP _telefit_test_ll(SEXP ySEXP, SEXP lambdaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type lambda(lambdaSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_ll(y, lambda));
+    return rcpp_result_gen;
+END_RCPP
+}
 // r_dgemkmm
 arma::mat r_dgemkmm(arma::mat A, arma::mat B, arma::mat C);
 RcppExport SEXP _telefit_r_dgemkmm(SEXP ASEXP, SEXP BSEXP, SEXP CSEXP) {
@@ -155,6 +214,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_telefit_r_mvrnorm_postKron", (DL_FUNC) &_telefit_r_mvrnorm_postKron, 5},
     {"_telefit_r_mvrnorm_post", (DL_FUNC) &_telefit_r_mvrnorm_post, 4},
     {"_telefit_r_qintnorm", (DL_FUNC) &_telefit_r_qintnorm, 3},
+    {"_telefit_dtest", (DL_FUNC) &_telefit_dtest, 8},
+    {"_telefit_test_taylor_beta", (DL_FUNC) &_telefit_test_taylor_beta, 7},
+    {"_telefit_test_gmrf_approx", (DL_FUNC) &_telefit_test_gmrf_approx, 2},
+    {"_telefit_test_ll", (DL_FUNC) &_telefit_test_ll, 2},
     {"_telefit_r_dgemkmm", (DL_FUNC) &_telefit_r_dgemkmm, 3},
     {"_telefit_r_rwishart", (DL_FUNC) &_telefit_r_rwishart, 2},
     {"_telefit_r_rinvwishart", (DL_FUNC) &_telefit_r_rinvwishart, 2},
