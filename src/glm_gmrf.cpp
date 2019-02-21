@@ -5,7 +5,9 @@ using namespace Rcpp;
 using Eigen::Map;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
-
+using Eigen::Dynamic;
+using Eigen::DiagonalMatrix;
+using Eigen::LLT;
 
 void mcstat2::glm::gmrf_approx(double* b, double* c, const double* x0,
   const double* y, int n, const mcstat2::glm::glmfamily family) {
@@ -96,8 +98,7 @@ void mcstat2::glm::glm_taylor_beta(double* b, double* c, const double* beta0,
       }
 
       // finish objects
-      H *= -1;
-      g -= H*bmat;
+      g += H*bmat;
 
       break;
   }
@@ -142,8 +143,8 @@ void mcstat2::glm::glm_taylor_eta0(double* b, double* c, const double* beta,
             // build gradient
             g(i,j) = Yj(i) - eta(i,j);
 
-            // build hessian
-            H(i,j) = - eta(i,j);
+            // build negative of hessian
+            H(i,j) = eta(i,j);
         }
       }
 
@@ -151,11 +152,37 @@ void mcstat2::glm::glm_taylor_eta0(double* b, double* c, const double* beta,
       Map<VectorXd> Hm(c,nt);
       Map<VectorXd> gm(b,nt);
       Map<const VectorXd> eta0vec(eta0,nt);
-      gm -= Hm.asDiagonal() * eta0vec;
+      gm += Hm.asDiagonal() * eta0vec;
 
       break;
   }
 
+}
+
+void mcstat2::glm::gaussian_approx_beta(const double* beta0, const double* Q,
+  int p, int it, double* mu, Eigen::LLT<MatrixXd>& prec_chol,
+  const double* eta0, const double* y, const double* x, int n, int t,
+  const glmfamily family) {
+
+  // map inputs/outputs
+  Map<const VectorXd> Qvec(Q, p);
+  Map<VectorXd> mvec(mu, p);
+
+  // temporary objects
+  memcpy(mu, beta0, sizeof(double)*p);
+  VectorXd b(p);
+  MatrixXd C(p,p);
+
+  // iterate to find mean and precision close to mode of target density
+  for(int i=0; i<it; i++) {
+    // Taylor-expand likelihood
+    glm_taylor_beta(b.data(), C.data(), mu, eta0, x, y, n, t, p, family);
+    // factor approximation's precision matrix
+    C.diagonal() += Qvec;
+    prec_chol.compute(C);
+    // compute approximation's mean
+    mvec = prec_chol.solve(b);
+  }
 }
 
 
@@ -164,6 +191,24 @@ void mcstat2::glm::glm_taylor_eta0(double* b, double* c, const double* beta,
 //
 
 // [[Rcpp::depends(RcppEigen)]]
+
+// [[Rcpp::export]]
+List test_gaussian_approx_beta(const Eigen::Map<Eigen::VectorXd> beta0,
+  const Eigen::Map<Eigen::VectorXd> Q, int p, int it,
+  const Eigen::Map<Eigen::VectorXd> eta0, const Eigen::Map<Eigen::VectorXd> y,
+  const Eigen::Map<Eigen::MatrixXd> x, int n, int t) {
+
+  // initialize output
+  VectorXd mu(p);
+  LLT<MatrixXd> prec_chol;
+
+  mcstat2::glm::gaussian_approx_beta(beta0.data(), Q.data(), p, it, mu.data(),
+    prec_chol, eta0.data(), y.data(), x.data(), n, t,
+    mcstat2::glm::glmfamily::poisson);
+
+  MatrixXd L = prec_chol.matrixL();
+  return List::create(Named("mu")=mu, Named("L")=L);
+}
 
 // [[Rcpp::export]]
 List test_taylor_beta(Eigen::Map<Eigen::MatrixXd> beta0,

@@ -7,6 +7,9 @@
 
 #include <RcppEigen.h>
 
+// declares a column-major sparse matrix type of double
+typedef Eigen::SparseMatrix<double> SpMat;
+
 
 namespace mcstat2 {
 namespace glm {
@@ -47,6 +50,41 @@ namespace glm {
   void gmrf_approx(double* b, double* c, const double* x0, const double* y,
     int n, const glmfamily family);
 
+
+  /*
+   Implement extension of Rue and Held (2005) Section 4.4.1.  Compute a
+   Gaussian approximation to the posterior
+    f(x|w) \propto \exp(-.5 (x-mu)^T Q (x-mu) + l(x;w))
+   where mu=0, Q is diagonal, and l(x;w) has a l(x;w) has a quadratic Taylor
+   expansion that includes a dense Hessian matrix, C.  A sequence of Taylor
+   expansions are used to try to derive a Gaussian approximation to f(x|w) that
+   is centered near the mode of f(x|w).
+
+   Specifically, this function is tailored to log-likelihoods l(x;w) with the
+   structure used in the RESP GLM model.
+
+   Parameters:
+
+     (to build approximation)
+
+     beta0 - initial value of beta around which to base expansion (px1)
+     Q - diagonal elements of prior covariance matrix for beta (px1)
+     p - the dimension of beta (i.e., number of coefficients in beta)
+     it - number of Taylor expansions to use in developing approximation
+     mu - (output) mean of Gaussian approximation
+     prec_chol - (output) cholesky for precision matrix of approximation
+
+     (to Taylor-expand the likelihood)
+
+     eta0 - values of eta_{0ij} (nt x 1)
+     y - observations (nt x 1)
+     x - covariate matrix (nt x p)
+     n, t - number of locations and timepoints
+  */
+  void gaussian_approx_beta(const double* beta0, const double* Q, int p, int it,
+    double* mu, Eigen::LLT<MatrixXd>& prec_chol, const double* eta0,
+    const double* y, const double* x, int n, int t, const glmfamily family);
+
   /*
    Implement extension of Rue and Held (2005) Section 4.4.1.  Compute the
    refactored version of the Taylor expansion of the log-likelihood for
@@ -65,13 +103,13 @@ namespace glm {
      column-major format (p x p)
     beta0 - values around which Taylor approximation should be centered (nt x 1)
     eta0 - values of eta_{0ij} (nt x 1)
-    y - observations (nt x 1)
     x - covariate matrix (nt x p)
+    y - observations (nt x 1)
     n, t - number of locations and timepoints
-    p - the dimension of p (i.e., number of coefficients in beta)
+    p - the dimension of beta (i.e., number of coefficients in beta)
   */
   void glm_taylor_beta(double* b, double* c, const double* beta0,
-    const double* eta0, const double* x, const double*y, int n, int t, int p,
+    const double* eta0, const double* x, const double* y, int n, int t, int p,
     const glmfamily family);
 
 
@@ -84,7 +122,7 @@ namespace glm {
    where eta_{ij} = x_{ij}^T beta + eta_{0ij}.
 
    This function returns b and C such that
-    log f(Y | beta, eta_0) \approx a_0 + b^T eta_0 - .6 beta^T C eta_0,
+    log f(Y | beta, eta_0) \approx a_0 + b^T eta_0 - .6 eta_0^T C eta_0,
    i.e., the refactored Taylor expansion of the log-likelihood around eta_0.
 
    Note: The Hessian for this expansion is a diagonal matrix.

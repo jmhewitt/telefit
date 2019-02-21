@@ -50,8 +50,8 @@ test_that("GLM likelihood Taylor expansions: betas", {
   expect_lt(
     max(abs(solve(bcov) %*% bhat - r$b), # taylor-shift of gradient
         abs(r2$b),                       # gradient
-        abs(bhess - r$C),                # hessian
-        abs(bhess - r2$C)),              # hessian v2
+        abs(bhess + r$C),                # -hessian
+        abs(bhess + r2$C)),              # -hessian v2
     1e-4
   )
 })
@@ -75,8 +75,52 @@ test_that("GLM likelihood Taylor expansions: etas", {
                        t = 3, p = 2)
   
   expect_lt(
-    max(abs(counts + r$C),                 # hessian
+    max(abs(counts - r$C),                 # -hessian
         abs( counts * log(counts) - r$b)), # taylor-shift of gradient
     1e-10
+  )
+})
+
+
+test_that("GLM posterior approximation: betas", {
+  
+  # Goal: Verify Gaussian approximation to posterior is properly coded in C++
+  # 
+  # Test concept: We look for agreement of the Gaussian approximation parameters
+  #   as computed with our C++ implementation of a Newton-Raphson approach, and 
+  #   the BFGS approach implemented in stats::optim.  
+  
+  # construct design elements for poisson GLM example from stats::glm
+  counts <- c(18,17,15,20,10,20,25,13,12)
+  outcome <- gl(3,1,9)
+  treatment <- gl(3,3)
+  x = model.matrix(counts ~ outcome + treatment)
+  
+  # set dimensions
+  n = 3
+  t = 3
+  p = ncol(x)
+  
+  # set prior precision for betas; fix eta0
+  Q = diag(1/3,p)
+  sds = sqrt(1/diag(Q))
+  eta0 = rep(0,n*t)
+  
+  # compute gaussian approx. at the posterior mode
+  o = stats::optim(rep(0,p), function(beta) {
+    lambda = exp(x %*% beta + eta0)
+    sum(dpois(counts, lambda, log = TRUE)) + 
+      sum(dnorm(beta, sd = sds, log = TRUE))
+  }, control = list(fnscale=-1), hessian = TRUE, method = 'BFGS')
+
+  # test C++ implementation of Newton-Raphson approach for approximation
+  r = test_gaussian_approx_beta(beta0 = rep(0,p), Q = diag(Q), p = p, it = 100, 
+                                eta0 = eta0, y = counts, x = x, n = n, 
+                                t = t)
+  
+  expect_lt(
+    max(abs(o$par - r$mu),
+        abs(t(chol(-o$hessian)) - r$L)),
+    1e-5
   )
 })
