@@ -51,6 +51,41 @@ namespace glm {
     int n, const glmfamily family);
 
 
+    /*
+     Implement extension of Rue and Held (2005) Section 4.4.1.  Compute a
+     Gaussian approximation to the posterior
+      f(x|w) \propto \exp(-.5 (x-mu)^T Q (x-mu) + l(x;w))
+     where mu=0, Q is sparse, and l(x;w) has a l(x;w) has a quadratic Taylor
+     expansion that includes a diagonal Hessian matrix, C.  A sequence of Taylor
+     expansions are used to try to derive a Gaussian approximation to f(x|w)
+     that is centered near the mode of f(x|w).
+
+     Specifically, this function is tailored to log-likelihoods l(x;w) with the
+     structure used in the RESP GLM model.
+
+     Parameters:
+
+       (to build approximation)
+
+       eta0 - initial value of eta0 around which to base expansion (ntx1)
+       Q - sparse prior precision matrix (nt x nt)
+       it - number of Taylor expansions to use in developing approximation
+       mu - (output) mean of Gaussian approximation
+       prec_chol - (output) cholesky for precision matrix of approximation
+
+       (to Taylor-expand the likelihood)
+
+       beta - values of beta (p x 1)
+       y - observations (nt x 1)
+       x - covariate matrix (nt x p)
+       n, t - number of locations and timepoints
+			 p - the dimension of p (i.e., number of coefficients in beta)
+    */
+    void gaussian_approx_eta0(const double* eta0, const SpMat& Q, int it,
+			double* mu, Eigen::SimplicialLLT<SpMat>& prec_chol, const double* beta,
+			const double* y, const double* x, int n, int t, int p,
+			const glmfamily family);
+
   /*
    Implement extension of Rue and Held (2005) Section 4.4.1.  Compute a
    Gaussian approximation to the posterior

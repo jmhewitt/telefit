@@ -81,7 +81,6 @@ test_that("GLM likelihood Taylor expansions: etas", {
   )
 })
 
-
 test_that("GLM posterior approximation: betas", {
   
   # Goal: Verify Gaussian approximation to posterior is properly coded in C++
@@ -124,3 +123,46 @@ test_that("GLM posterior approximation: betas", {
     1e-5
   )
 })
+
+test_that("GLM posterior approximation: etas", {
+  
+  # Goal: Verify Gaussian approximation to posterior is properly coded in C++
+  # 
+  # Test concept: We look for agreement of the Gaussian approximation parameters
+  #   as computed with our C++ implementation of a Newton-Raphson approach, and 
+  #   the BFGS approach implemented in stats::optim.  
+  
+  # construct design elements for poisson GLM example from stats::glm
+  counts <- c(18,17,15,20,10,20,25,13,12)
+  outcome <- gl(3,1,9)
+  treatment <- gl(3,3)
+  x = model.matrix(counts ~ outcome + treatment)
+  
+  # set dimensions
+  n = 3
+  t = 3
+  p = ncol(x)
+  
+  # set prior precision for etas
+  Q = spam::as.dgCMatrix.spam(spam::diag.spam(rep(1e-5, n*t))) 
+  sds = sqrt(1/spam::diag(Q))
+  
+  # compute gaussian approx. at the posterior mode
+  o = stats::optim(rep(0,n*t), function(eta0) {
+    lambda = exp(eta0)
+    sum(dpois(counts, lambda, log = TRUE)) + 
+      sum(dnorm(eta0, sd = sds, log = TRUE))
+  }, control = list(fnscale=-1), hessian = TRUE, method = 'BFGS')
+  
+  # test C++ implementation of Newton-Raphson approach for approximation
+  r = test_gaussian_approx_eta0(eta0 = rep(0,n*t), Q = Q, 
+                                it = 100, beta = rep(0,p), y = counts, x = x,
+                                n = n, t = t, p = p)
+  
+  expect_lt(
+    max(abs(o$par - r$mu),
+        max(abs(t(chol(-o$hessian)) - r$L))),
+    1e-3
+  )
+})
+

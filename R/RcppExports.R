@@ -29,6 +29,10 @@ dtest <- function(x, m, n, k, R, q, ldetR, Sigma) {
     .Call(`_telefit_dtest`, x, m, n, k, R, q, ldetR, Sigma)
 }
 
+test_gaussian_approx_eta0 <- function(eta0, Q, it, beta, y, x, n, t, p) {
+    .Call(`_telefit_test_gaussian_approx_eta0`, eta0, Q, it, beta, y, x, n, t, p)
+}
+
 test_gaussian_approx_beta <- function(beta0, Q, p, it, eta0, y, x, n, t) {
     .Call(`_telefit_test_gaussian_approx_beta`, beta0, Q, p, it, eta0, y, x, n, t)
 }

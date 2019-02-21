@@ -112,6 +112,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_gaussian_approx_eta0
+List test_gaussian_approx_eta0(const Eigen::Map<Eigen::VectorXd> eta0, const Eigen::Map<Eigen::SparseMatrix<double>> Q, int it, const Eigen::Map<Eigen::VectorXd> beta, const Eigen::Map<Eigen::VectorXd> y, const Eigen::Map<Eigen::MatrixXd> x, int n, int t, int p);
+RcppExport SEXP _telefit_test_gaussian_approx_eta0(SEXP eta0SEXP, SEXP QSEXP, SEXP itSEXP, SEXP betaSEXP, SEXP ySEXP, SEXP xSEXP, SEXP nSEXP, SEXP tSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type eta0(eta0SEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::SparseMatrix<double>> >::type Q(QSEXP);
+    Rcpp::traits::input_parameter< int >::type it(itSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type t(tSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_gaussian_approx_eta0(eta0, Q, it, beta, y, x, n, t, p));
+    return rcpp_result_gen;
+END_RCPP
+}
 // test_gaussian_approx_beta
 List test_gaussian_approx_beta(const Eigen::Map<Eigen::VectorXd> beta0, const Eigen::Map<Eigen::VectorXd> Q, int p, int it, const Eigen::Map<Eigen::VectorXd> eta0, const Eigen::Map<Eigen::VectorXd> y, const Eigen::Map<Eigen::MatrixXd> x, int n, int t);
 RcppExport SEXP _telefit_test_gaussian_approx_beta(SEXP beta0SEXP, SEXP QSEXP, SEXP pSEXP, SEXP itSEXP, SEXP eta0SEXP, SEXP ySEXP, SEXP xSEXP, SEXP nSEXP, SEXP tSEXP) {
@@ -254,6 +273,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_telefit_r_mvrnorm_post", (DL_FUNC) &_telefit_r_mvrnorm_post, 4},
     {"_telefit_r_qintnorm", (DL_FUNC) &_telefit_r_qintnorm, 3},
     {"_telefit_dtest", (DL_FUNC) &_telefit_dtest, 8},
+    {"_telefit_test_gaussian_approx_eta0", (DL_FUNC) &_telefit_test_gaussian_approx_eta0, 9},
     {"_telefit_test_gaussian_approx_beta", (DL_FUNC) &_telefit_test_gaussian_approx_beta, 9},
     {"_telefit_test_taylor_beta", (DL_FUNC) &_telefit_test_taylor_beta, 7},
     {"_telefit_test_taylor_eta0", (DL_FUNC) &_telefit_test_taylor_eta0, 7},
