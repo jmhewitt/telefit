@@ -181,6 +181,32 @@ int mcstat2::Sampler::getSize() {
 	return type == REAL ? 1 : sample().size();
 }
 
+mcstat2::BlockSampler::SamplerType mcstat2::BlockSampler::getType(int i) {
+	return types.at(i);
+}
+
+std::string mcstat2::BlockSampler::getName(int i) {
+	return names.at(i);
+}
+
+
+void mcstat2::Sampler::drawSample() {
+	tsample = sample();
+}
+
+arma::vec mcstat2::Sampler::returnSamples(int i) {
+	return tsample;
+}
+
+void mcstat2::Sampler::printStats(int i) {
+	printStats();
+}
+
+int mcstat2::Sampler::getSize(int i) {
+	return getSize();
+}
+
+
 
 //
 // Rcpp exports
@@ -192,7 +218,9 @@ class CountSampler : public mcstat2::Sampler {
 	private:
 		int i;
 	public:
-		CountSampler(std::string nom, int val) { name = nom; type = REAL; i = val; }
+		CountSampler(std::string nom, int val) {
+			name = nom; type = REAL; i = val;
+		}
 		arma::vec sample() { arma::vec s = {(double) i++}; return s;  }
 };
 
