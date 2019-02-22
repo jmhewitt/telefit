@@ -166,3 +166,20 @@ test_that("GLM posterior approximation: etas", {
   )
 })
 
+test_that("Basic Gibbs sampler functionality", {
+  
+  # Goal: Verify Gibbs sampler can do basic looping over C++ sampler objects
+  
+  # random initialization
+  x = sample(1:100, 3)
+  
+  # test gibbs sampler
+  r = test_gibbs_sampler(inits = x, nSamples = 10)
+  
+  # verify output
+  expect_equal(r, list('a' = matrix(x[1] + 0:9, ncol = 1), 
+                           'b' = matrix(x[2] + 0:9, ncol = 1), 
+                           'c' = matrix(x[3] + 0:9, ncol = 1))
+    
+  )
+})

@@ -10,6 +10,18 @@
 
 using namespace Rcpp;
 
+// test_gibbs_sampler
+List test_gibbs_sampler(arma::vec inits, int nSamples);
+RcppExport SEXP _telefit_test_gibbs_sampler(SEXP initsSEXP, SEXP nSamplesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type inits(initsSEXP);
+    Rcpp::traits::input_parameter< int >::type nSamples(nSamplesSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_gibbs_sampler(inits, nSamples));
+    return rcpp_result_gen;
+END_RCPP
+}
 // r_maternCov
 arma::mat r_maternCov(arma::mat dist, double scale, double range, double smoothness, double nugget);
 RcppExport SEXP _telefit_r_maternCov(SEXP distSEXP, SEXP scaleSEXP, SEXP rangeSEXP, SEXP smoothnessSEXP, SEXP nuggetSEXP) {
@@ -184,18 +196,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// test_gmrf_approx
-List test_gmrf_approx(NumericVector y, NumericVector x0);
-RcppExport SEXP _telefit_test_gmrf_approx(SEXP ySEXP, SEXP x0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type x0(x0SEXP);
-    rcpp_result_gen = Rcpp::wrap(test_gmrf_approx(y, x0));
-    return rcpp_result_gen;
-END_RCPP
-}
 // test_ll
 NumericVector test_ll(NumericVector y, NumericVector lambda);
 RcppExport SEXP _telefit_test_ll(SEXP ySEXP, SEXP lambdaSEXP) {
@@ -266,6 +266,7 @@ RcppExport SEXP r_svcfit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, S
 RcppExport SEXP r_svcpredict(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_telefit_test_gibbs_sampler", (DL_FUNC) &_telefit_test_gibbs_sampler, 2},
     {"_telefit_r_maternCov", (DL_FUNC) &_telefit_r_maternCov, 5},
     {"_telefit_r_maternArray", (DL_FUNC) &_telefit_r_maternArray, 5},
     {"_telefit_r_mc2_rinvwishart", (DL_FUNC) &_telefit_r_mc2_rinvwishart, 2},
@@ -277,7 +278,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_telefit_test_gaussian_approx_beta", (DL_FUNC) &_telefit_test_gaussian_approx_beta, 9},
     {"_telefit_test_taylor_beta", (DL_FUNC) &_telefit_test_taylor_beta, 7},
     {"_telefit_test_taylor_eta0", (DL_FUNC) &_telefit_test_taylor_eta0, 7},
-    {"_telefit_test_gmrf_approx", (DL_FUNC) &_telefit_test_gmrf_approx, 2},
     {"_telefit_test_ll", (DL_FUNC) &_telefit_test_ll, 2},
     {"_telefit_r_dgemkmm", (DL_FUNC) &_telefit_r_dgemkmm, 3},
     {"_telefit_r_rwishart", (DL_FUNC) &_telefit_r_rwishart, 2},

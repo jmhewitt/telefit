@@ -23,17 +23,17 @@ void mcstat2::MCMCCheckpoint::run() {
 		std::clock_t tmp_clock = lap;
 		lap = std::clock();
 		double duration = ( lap - tmp_clock ) / (double) CLOCKS_PER_SEC;
-		
+
 		// compute percent complete
 		double pctComplete = (double) it / (double) nSamples * 100.0;
 		if(it==1) {
 			pctComplete /= (double) thin;
 		}
-		
+
 		// compute remaining time
 		double total = (lap - start) / (double) CLOCKS_PER_SEC;
 		double remaining = (100.0 - pctComplete) * (total / pctComplete) / 60.0;
-		
+
 		// output information
 		Rcout << round(pctComplete) << "% complete" << " (" <<
 		floor(duration * 10.0) / 10.0 << " seconds; " <<
@@ -46,10 +46,10 @@ void mcstat2::MCMCCheckpoint::finish() {
 	// compute final time
 	lap = std::clock();
 	double duration = (lap - start) / (double) CLOCKS_PER_SEC;
-	
+
 	// compute samples per second
 	double sampSec = it / duration;
-	
+
 	// output information
 	Rcout << endl << "Total time (min): " << floor(duration / 60.0 * 10.0) / 10.0 <<
 	endl << "Samples per second: " << floor(sampSec * 10.0) / 10.0 << endl;
@@ -64,15 +64,15 @@ void mcstat2::GibbsSampler::addSampler(Sampler &s) {
 }
 
 void mcstat2::GibbsSampler::run(int nSamples) {
-	
+
 	GetRNGstate();
-	
+
 	// use some Rsugar to wake up R's random number generator on crossbow
 	rgamma(1, 2.0, 1.0);
-	
+
 	// initialize trackers
 	mcstat2::MCMCCheckpoint checkpoint = mcstat2::MCMCCheckpoint(nSamples, thin);
-	
+
 	// initialize samples
 	for(auto sampler = samplers.begin(); sampler != samplers.end(); ++sampler) {
 		switch((*sampler)->getType()) {
@@ -84,7 +84,7 @@ void mcstat2::GibbsSampler::run(int nSamples) {
 				break;
 		}
 	}
-	
+
 	int it;
 	int totSamples = nSamples * thin;
 	int saved = 0;
@@ -92,32 +92,32 @@ void mcstat2::GibbsSampler::run(int nSamples) {
 	try{
 		// reset timers
 		checkpoint.reset();
-		
+
 		// gibbs iterations
 		for(it=0; it < totSamples; it++) {
-			
+
 			checkUserInterrupt();
-			
+
 			// gibbs steps: iterate over samplers
 			auto sample = samples.begin();
 			for(auto sampler = samplers.begin(); sampler != samplers.end(); ++sampler) {
-				
+
 				// prep for error handling: identify step
 				step = (*sampler)->getName();
-				
+
 				// sample and save parameter
 				vec s = (*sampler)->sample();
 				if(it % thin == 0)
 					sample->row(saved) = s.t();
-				
+
 				// iterate storage pointer
 				++sample;
 			}
-			
+
 			// update output index
 			if(it % thin == 0)
 				saved++;
-			
+
 			// checkpoint behaviors
 			if(it % thin == 0)
 				checkpoint.run();
@@ -125,31 +125,31 @@ void mcstat2::GibbsSampler::run(int nSamples) {
 	} catch(...) {
 		Rcout << "An error occured while sampling " << step <<
 		" in iteration " << it << " for sample " << saved << endl;
-		
+
 		// TODO: dump state by cycling through samplers to get their state
 	}
-	
+
 	// print final sampler stats
 	Rcout << std::setfill('-') << std::setw(80) << "-" << endl;
-	
+
 	// timings
 	checkpoint.finish();
-	
+
 	// print sampler stats
 	for(auto sampler = samplers.begin(); sampler != samplers.end(); ++sampler) {
 		(*sampler)->printStats();
 	}
-	
+
 	PutRNGstate();
 }
 
 List mcstat2::GibbsSampler::getSamples() {
-	
+
 	// initialize output containers for parameter names and samples
 	int n = samplers.size();
 	List res(n);
 	CharacterVector parameterNames(n);
-	
+
 	// populate output containers
 	int i=0;
 	auto sampler = samplers.begin();
@@ -162,10 +162,10 @@ List mcstat2::GibbsSampler::getSamples() {
 		// iterate samplers
 		++sampler;
 	}
-	
+
 	// label samples
 	res.names() = parameterNames;
-	
+
 	return res;
 }
 
@@ -179,4 +179,36 @@ std::string mcstat2::Sampler::getName() {
 
 int mcstat2::Sampler::getSize() {
 	return type == REAL ? 1 : sample().size();
+}
+
+
+//
+// Rcpp exports
+//
+
+// [[Rcpp::depends(RcppArmadillo)]]
+
+class CountSampler : public mcstat2::Sampler {
+	private:
+		int i;
+	public:
+		CountSampler(std::string nom, int val) { name = nom; type = REAL; i = val; }
+		arma::vec sample() { arma::vec s = {(double) i++}; return s;  }
+};
+
+// [[Rcpp::export]]
+List test_gibbs_sampler(arma::vec inits, int nSamples) {
+
+	CountSampler cs1 = CountSampler("a", inits[0]);
+	CountSampler cs2 = CountSampler("b", inits[1]);
+	CountSampler cs3 = CountSampler("c", inits[2]);
+
+	mcstat2::GibbsSampler sampler = mcstat2::GibbsSampler();
+	sampler.addSampler(cs1);
+	sampler.addSampler(cs2);
+	sampler.addSampler(cs3);
+
+	sampler.run(nSamples);
+
+	return sampler.getSamples();
 }
