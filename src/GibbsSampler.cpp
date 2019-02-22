@@ -59,7 +59,7 @@ void mcstat2::GibbsSampler::setThinning(int t_thin) {
 	thin = t_thin < 1 ? 1 : t_thin;
 }
 
-void mcstat2::GibbsSampler::addSampler(Sampler &s) {
+void mcstat2::GibbsSampler::addSampler(BlockSampler &s) {
 	samplers.push_back(&s);
 }
 
@@ -74,14 +74,17 @@ void mcstat2::GibbsSampler::run(int nSamples) {
 	mcstat2::MCMCCheckpoint checkpoint = mcstat2::MCMCCheckpoint(nSamples, thin);
 
 	// initialize samples
-	for(auto sampler = samplers.begin(); sampler != samplers.end(); ++sampler) {
-		switch((*sampler)->getType()) {
-			case Sampler::SamplerType::REAL:
-				samples.push_back(mat(nSamples, 1, fill::zeros));
-				break;
-			case Sampler::SamplerType::VECTOR:
-				samples.push_back(mat(nSamples, (*sampler)->getSize(), fill::zeros));
-				break;
+	for(auto block = samplers.begin(); block != samplers.end(); ++block) {
+		int blockSize = (*block)->getNumSamplers();
+		for(int i=0; i<blockSize; i++) {
+			switch((*block)->getType(i)) {
+				case BlockSampler::REAL:
+					samples.push_back(mat(nSamples, 1, fill::zeros));
+					break;
+				case BlockSampler::VECTOR:
+					samples.push_back(mat(nSamples, (*block)->getSize(i), fill::zeros));
+					break;
+			}
 		}
 	}
 
@@ -98,20 +101,30 @@ void mcstat2::GibbsSampler::run(int nSamples) {
 
 			checkUserInterrupt();
 
-			// gibbs steps: iterate over samplers
+			// gibbs steps: iterate over sampling blocks
 			auto sample = samples.begin();
-			for(auto sampler = samplers.begin(); sampler != samplers.end(); ++sampler) {
+			for(auto block = samplers.begin(); block != samplers.end(); ++block) {
 
-				// prep for error handling: identify step
-				step = (*sampler)->getName();
+				// prep for error handling: identify first step in block
+				step = (*block)->getName(0);
 
-				// sample and save parameter
-				vec s = (*sampler)->sample();
-				if(it % thin == 0)
-					sample->row(saved) = s.t();
+				// sample block
+				(*block)->drawSample();
 
-				// iterate storage pointer
-				++sample;
+				// extract all samples from block
+				int blockSize = (*block)->getNumSamplers();
+				for(int i=0; i<blockSize; i++) {
+
+					// store ith block element
+					vec s = (*block)->returnSamples(i);
+
+					if(it % thin == 0)
+						sample->row(saved) = s.t();
+
+					// iterate storage pointer
+					++sample;
+				}
+
 			}
 
 			// update output index
@@ -121,13 +134,16 @@ void mcstat2::GibbsSampler::run(int nSamples) {
 			// checkpoint behaviors
 			if(it % thin == 0)
 				checkpoint.run();
+
 		}
+
 	} catch(...) {
 		Rcout << "An error occured while sampling " << step <<
 		" in iteration " << it << " for sample " << saved << endl;
 
 		// TODO: dump state by cycling through samplers to get their state
 	}
+
 
 	// print final sampler stats
 	Rcout << std::setfill('-') << std::setw(80) << "-" << endl;
@@ -136,9 +152,12 @@ void mcstat2::GibbsSampler::run(int nSamples) {
 	checkpoint.finish();
 
 	// print sampler stats
-	for(auto sampler = samplers.begin(); sampler != samplers.end(); ++sampler) {
-		(*sampler)->printStats();
+	for(auto block = samplers.begin(); block != samplers.end(); ++block) {
+		int blockSize = (*block)->getNumSamplers();
+		for(int i=0; i<blockSize; i++)
+			(*block)->printStats(i);
 	}
+
 
 	PutRNGstate();
 }
@@ -146,21 +165,26 @@ void mcstat2::GibbsSampler::run(int nSamples) {
 List mcstat2::GibbsSampler::getSamples() {
 
 	// initialize output containers for parameter names and samples
-	int n = samplers.size();
+	int n = 0;
+	for(auto block = samplers.begin(); block != samplers.end(); ++block) {
+		n += (*block)->getNumSamplers();
+	}
 	List res(n);
 	CharacterVector parameterNames(n);
 
 	// populate output containers
 	int i=0;
-	auto sampler = samplers.begin();
-	for(std::vector<mat>::iterator sample = samples.begin();
-		sample != samples.end(); ++sample){
-		// prepare sample label
-		parameterNames[i] = (*sampler)->getName();
-		// export samples
-		res[i++] = (*sample);
-		// iterate samplers
-		++sampler;
+	std::vector<mat>::iterator sample = samples.begin();
+	for(auto block = samplers.begin(); block != samplers.end(); ++block) {
+		int blockSize = (*block)->getNumSamplers();
+		for(int j=0; j<blockSize; j++) {
+			// prepare sample label
+			parameterNames[i] = (*block)->getName(j);
+			// export samples
+			res[i++] = (*sample);
+			// iterate samples
+			++sample;
+		}
 	}
 
 	// label samples
@@ -206,6 +230,15 @@ int mcstat2::Sampler::getSize(int i) {
 	return getSize();
 }
 
+int mcstat2::BlockSampler::getNumSamplers() {
+	if(types.size() == 0) refreshTypesAndNames();
+	return types.size();
+}
+
+void mcstat2::Sampler::refreshTypesAndNames() {
+	types.push_back(type);
+	names.push_back(name);
+}
 
 
 //

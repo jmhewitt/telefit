@@ -49,6 +49,9 @@ namespace mcstat2 {
 			// for printing acceptance rates and tuning parameters, etc. to Rcout
 			virtual void printStats(int i) {};
 
+			// returns the number of samplers in block
+			int getNumSamplers();
+
 		protected:
 
 			// for initializing MCMC output containers
@@ -56,6 +59,9 @@ namespace mcstat2 {
 
 			// for labeling the samples when sent back to R as a List object
 			std::vector<std::string> names;
+
+			// backwards compatibility for simpler creation of Sampler classes
+			virtual void refreshTypesAndNames() {};
 	};
 
 
@@ -64,10 +70,7 @@ namespace mcstat2 {
 
 	public:
 
-		Sampler() {
-			types.push_back(type);
-			names.push_back(name);
-		};
+		Sampler() { }
 
 		SamplerType getType();
 		std::string getName();
@@ -103,6 +106,7 @@ namespace mcstat2 {
 		vec returnSamples(int i);
 		void printStats(int i);
 		int getSize(int i);
+		void refreshTypesAndNames();
 
 	};
 
@@ -110,7 +114,7 @@ namespace mcstat2 {
 	class GibbsSampler {
 
 	private:
-		std::vector<Sampler*> samplers;
+		std::vector<BlockSampler*> samplers;
 		std::vector<mat> samples;
 		int thin;
 
@@ -118,7 +122,7 @@ namespace mcstat2 {
 
 		GibbsSampler() { thin = 1; };
 
-		void addSampler(Sampler &);
+		void addSampler(BlockSampler &);
 		void setThinning(int);
 
 		// loops over the samplers, calling their sample functions

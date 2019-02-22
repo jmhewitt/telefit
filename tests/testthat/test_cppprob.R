@@ -183,6 +183,3 @@ test_that("Basic Gibbs sampler functionality", {
     
   )
 })
-
-Rcpp::compileAttributes('r/temporal_LSigma/packages/telefit/')
-devtools::load_all('r/temporal_LSigma/packages/telefit/')
