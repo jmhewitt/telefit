@@ -257,6 +257,50 @@ class CountSampler : public mcstat2::Sampler {
 		arma::vec sample() { arma::vec s = {(double) i++}; return s;  }
 };
 
+class BlockCountSampler : public mcstat2::BlockSampler {
+	private:
+
+		double* v;
+		int n;
+
+	public:
+
+		BlockCountSampler(std::vector<std::string>& noms, double* vals) {
+			names = noms;
+			n = names.size();
+			for(int i=0; i<n; i++) types.push_back(REAL);
+			v = vals;
+		}
+
+		void drawSample() { for(int i=0; i<n; i++) v[i]++; }
+
+		arma::vec returnSamples(int i) { arma::vec s = {v[i]}; return s; }
+
+		int getSize(int i) { return 1; }
+};
+
+// [[Rcpp::export]]
+List test_block_gibbs_sampler(arma::vec inits, arma::vec block_inits, int n) {
+
+	std::vector<std::string> noms = { "1", "2", "3" };
+
+	BlockCountSampler bs = BlockCountSampler(noms, block_inits.memptr());
+
+	CountSampler cs1 = CountSampler("a", inits[0]);
+	CountSampler cs2 = CountSampler("b", inits[1]);
+	CountSampler cs3 = CountSampler("c", inits[2]);
+
+	mcstat2::GibbsSampler sampler = mcstat2::GibbsSampler();
+	sampler.addSampler(cs1);
+	sampler.addSampler(cs2);
+	sampler.addSampler(cs3);
+	sampler.addSampler(bs);
+
+	sampler.run(n);
+
+	return sampler.getSamples();
+}
+
 // [[Rcpp::export]]
 List test_gibbs_sampler(arma::vec inits, int nSamples) {
 

@@ -183,3 +183,24 @@ test_that("Basic Gibbs sampler functionality", {
     
   )
 })
+
+test_that("Basic block Gibbs sampler functionality", {
+  
+  # Goal: Verify block Gibbs sampler can do basic looping over C++ samplers
+  
+  # random initialization
+  x = sample(1:100, 3)
+  y = sample(101:200, 3)
+  
+  # test gibbs sampler
+  r = test_block_gibbs_sampler(inits = x, block_inits = y, n = 10)
+  
+  # verify output
+  expect_equal(r, list('a' = matrix(x[1] + 0:9, ncol = 1), 
+                       'b' = matrix(x[2] + 0:9, ncol = 1), 
+                       'c' = matrix(x[3] + 0:9, ncol = 1),
+                       '1' = matrix(y[1] + 1:10, ncol = 1), 
+                       '2' = matrix(y[2] + 1:10, ncol = 1), 
+                       '3' = matrix(y[3] + 1:10, ncol = 1))
+  )
+})
