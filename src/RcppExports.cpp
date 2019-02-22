@@ -10,6 +10,19 @@
 
 using namespace Rcpp;
 
+// test_block_gibbs_sampler
+List test_block_gibbs_sampler(arma::vec inits, arma::vec block_inits, int n);
+RcppExport SEXP _telefit_test_block_gibbs_sampler(SEXP initsSEXP, SEXP block_initsSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type inits(initsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type block_inits(block_initsSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_block_gibbs_sampler(inits, block_inits, n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // test_gibbs_sampler
 List test_gibbs_sampler(arma::vec inits, int nSamples);
 RcppExport SEXP _telefit_test_gibbs_sampler(SEXP initsSEXP, SEXP nSamplesSEXP) {
@@ -266,6 +279,7 @@ RcppExport SEXP r_svcfit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, S
 RcppExport SEXP r_svcpredict(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_telefit_test_block_gibbs_sampler", (DL_FUNC) &_telefit_test_block_gibbs_sampler, 3},
     {"_telefit_test_gibbs_sampler", (DL_FUNC) &_telefit_test_gibbs_sampler, 2},
     {"_telefit_r_maternCov", (DL_FUNC) &_telefit_r_maternCov, 5},
     {"_telefit_r_maternArray", (DL_FUNC) &_telefit_r_maternArray, 5},
