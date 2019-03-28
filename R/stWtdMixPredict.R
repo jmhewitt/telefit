@@ -71,8 +71,8 @@ stWtdMixPredict = function( stData, stDataNew, priors, coords.knots, miles,
                             Z = stData$Z, Xnew = stDataNew$X,
                             Znew = stDataNew$Z, coords.s = stData$coords.s,
                             coords.r = stData$coords.r,
-                            cat.probs = c(1/3, 2/3), level = 2,
-                            w.control = list(method = 'Nelder', maxit = 5e4)) {
+                            cat.probs = c(1/3, 2/3), level = 2, ncores = 1,
+                            w.control = list(method = 'Nelder', maxit = 5e4) ) {
 
   n = nrow(coords.s)
   r = nrow(coords.r)
@@ -290,20 +290,22 @@ stWtdMixPredict = function( stData, stDataNew, priors, coords.knots, miles,
   }
 
   # build weighted mixture of posteriors
-  post.y0 = wtdMix(
-    f1 = y0.mix,
-    f2 = post.joint,
-    f1.precompute = y0.precompute,
-    w.init = c(priors$cov.s$nugget[2] / (priors$cov.s$nugget[2]  + 1),
-               priors$cov.s$variance[2] / (priors$cov.s$variance[2]  + 1),
-               priors$cov.r$variance[2] / (priors$cov.r$variance[2]  + 1),
-               mean(priors$cov.s$range),
-               mean(priors$cov.r$range)),
-    w.link  = c(rep('log', 3), rep('logit', 2)),
-    w.linkparams = list(NA, NA, NA, priors$cov.s$range, priors$cov.r$range),
-    w.control = w.control,
-    level = level
+  
+  w.y0 = wBuild(
+    f = post.joint, 
+    init = c(priors$cov.s$nugget[2] / (priors$cov.s$nugget[2]  + 1),
+             priors$cov.s$variance[2] / (priors$cov.s$variance[2]  + 1),
+             priors$cov.r$variance[2] / (priors$cov.r$variance[2]  + 1),
+             mean(priors$cov.s$range),
+             mean(priors$cov.r$range)), 
+    approx = 'gaussian', 
+    link = c(rep('log', 3), rep('logit', 2)), 
+    link.params = list(NA, NA, NA, priors$cov.s$range, priors$cov.r$range), 
+    optim.control = w.control
   )
+  
+  post.y0 = wMix(f1 = y0.mix, f2 = post.joint, w = w.y0, 
+                 f1.precompute = y0.precompute, level = level, ncores = ncores)
 
   y0.F.mix = function(y0, mix, wts, x.ind, t.ind, lower.tail = TRUE) {
     # given a set of mixture objects, compute the marginal posterior CDF

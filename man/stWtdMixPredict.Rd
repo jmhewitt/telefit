@@ -8,8 +8,8 @@ stWtdMixPredict(stData, stDataNew, priors, coords.knots, miles,
   conf = 0.95, tLabs = stDataNew$tLabs, X = stData$X, Y = stData$Y,
   Z = stData$Z, Xnew = stDataNew$X, Znew = stDataNew$Z,
   coords.s = stData$coords.s, coords.r = stData$coords.r,
-  cat.probs = c(1/3, 2/3), level = 2, w.control = list(method =
-  "Nelder", maxit = 50000))
+  cat.probs = c(1/3, 2/3), level = 2, ncores = 1,
+  w.control = list(method = "Nelder", maxit = 50000))
 }
 \arguments{
 \item{stData}{Object with class 'stData' containing data needed to fit this
@@ -68,15 +68,15 @@ predictions from the posterior prediction samples; NULL otherwise}
 
 \item{level}{set the quadrature integration level used by wtdMix}
 
+\item{ncores}{Since the teleconnection effects and posterior predictions can
+be sampled in parallel, this parameter lets users specify the number of
+cores to use to draw teleconnection and prediction samples}
+
 \item{w.control}{list of control parameters for the optimization used to 
 build the quadrature integration}
 
 \item{prob}{confidence level for approximate confidence intervals of
 teleconnection effects (only needed if returnAlphas==TRUE)}
-
-\item{ncores}{Since the teleconnection effects and posterior predictions can
-be sampled in parallel, this parameter lets users specify the number of
-cores to use to draw teleconnection and prediction samples}
 }
 \description{
 Predict response at new timepoints by using weighted mixtures to approximate

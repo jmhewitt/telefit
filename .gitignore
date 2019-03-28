@@ -1,4 +1,4 @@
 *.so
-*.o
+*.o*
 ..Rcheck/
 .Rhistory
