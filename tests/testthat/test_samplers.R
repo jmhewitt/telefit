@@ -1,5 +1,21 @@
 context("Samplers")
 
+test_that("Sampling x ~ Gamma(a,b) via RW MH", {
+  set.seed(2000)
+  
+  params = c(2,.5)
+  mu = params[1]/params[2]
+  v = mu/params[2]
+  
+  x = .Call(`_telefit_test_rw_sampler`, c(params,.85), 1, 1e6)$x
+  
+  # test passes if RW-MC estimates of theoretical mean and variance is < 1%
+  expect_lt(
+    max( abs((mean(x)-mu)/mu) * 100,
+         abs((var(x)-v)/v) * 100 ), 1
+  )
+})
+
 test_that("Sampling x ~ N(Sigma %*% y, Sigma) with Q = inv(Sigma)", {
   set.seed(2000)
   

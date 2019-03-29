@@ -9,6 +9,10 @@ test_gibbs_sampler <- function(inits, nSamples) {
     .Call(`_telefit_test_gibbs_sampler`, inits, nSamples)
 }
 
+test_rw_sampler <- function(params, init, nSamples) {
+    .Call(`_telefit_test_rw_sampler`, params, init, nSamples)
+}
+
 r_maternCov <- function(dist, scale, range, smoothness, nugget) {
     .Call(`_telefit_r_maternCov`, dist, scale, range, smoothness, nugget)
 }

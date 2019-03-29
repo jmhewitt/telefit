@@ -35,6 +35,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_rw_sampler
+Rcpp::List test_rw_sampler(arma::vec params, double init, int nSamples);
+RcppExport SEXP _telefit_test_rw_sampler(SEXP paramsSEXP, SEXP initSEXP, SEXP nSamplesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< double >::type init(initSEXP);
+    Rcpp::traits::input_parameter< int >::type nSamples(nSamplesSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_rw_sampler(params, init, nSamples));
+    return rcpp_result_gen;
+END_RCPP
+}
 // r_maternCov
 arma::mat r_maternCov(arma::mat dist, double scale, double range, double smoothness, double nugget);
 RcppExport SEXP _telefit_r_maternCov(SEXP distSEXP, SEXP scaleSEXP, SEXP rangeSEXP, SEXP smoothnessSEXP, SEXP nuggetSEXP) {
@@ -281,6 +294,7 @@ RcppExport SEXP r_svcpredict(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEX
 static const R_CallMethodDef CallEntries[] = {
     {"_telefit_test_block_gibbs_sampler", (DL_FUNC) &_telefit_test_block_gibbs_sampler, 3},
     {"_telefit_test_gibbs_sampler", (DL_FUNC) &_telefit_test_gibbs_sampler, 2},
+    {"_telefit_test_rw_sampler", (DL_FUNC) &_telefit_test_rw_sampler, 3},
     {"_telefit_r_maternCov", (DL_FUNC) &_telefit_r_maternCov, 5},
     {"_telefit_r_maternArray", (DL_FUNC) &_telefit_r_maternArray, 5},
     {"_telefit_r_mc2_rinvwishart", (DL_FUNC) &_telefit_r_mc2_rinvwishart, 2},
