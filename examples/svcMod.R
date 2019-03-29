@@ -58,4 +58,3 @@ yn =  xbn + ztn + wn
 
 # predict responses
 pred = svcPredict(fit, Xn, zn, burn = 50)
-

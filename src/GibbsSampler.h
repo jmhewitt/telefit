@@ -29,11 +29,15 @@ namespace mcstat2 {
 		public:
 			enum SamplerType { REAL, VECTOR };
 
-			BlockSampler() { };
+			BlockSampler(std::vector<SamplerType> t_types,
+									 std::vector<std::string> t_names);
 
 			// return type and name of ith sampler in block
 			SamplerType getType(int i);
 			std::string getName(int i);
+
+			// returns the number of samplers in block
+			int getNumSamplers();
 
 			// draw samples for entire block
 			virtual void drawSample() = 0;
@@ -47,21 +51,15 @@ namespace mcstat2 {
 			virtual int getSize(int i) = 0;
 
 			// for printing acceptance rates and tuning parameters, etc. to Rcout
-			virtual void printStats(int i) {};
+			virtual void printStats(int i) {}
 
-			// returns the number of samplers in block
-			int getNumSamplers();
-
-		protected:
+		private:
 
 			// for initializing MCMC output containers
 			std::vector<SamplerType> types;
 
 			// for labeling the samples when sent back to R as a List object
 			std::vector<std::string> names;
-
-			// backwards compatibility for simpler creation of Sampler classes
-			virtual void refreshTypesAndNames() {};
 	};
 
 
@@ -70,10 +68,8 @@ namespace mcstat2 {
 
 	public:
 
-		Sampler() { }
-
-		SamplerType getType();
-		std::string getName();
+		Sampler(SamplerType t_type, std::string t_name ) :
+			BlockSampler({t_type}, {t_name}) { }
 
 		/* sampler should:
 			1. update all relevant data parameters and output lists
@@ -83,18 +79,11 @@ namespace mcstat2 {
 		virtual vec sample() = 0;
 
 		// for printing acceptance rates and tuning parameters, etc. to Rcout
-		virtual void printStats() {};
-
-		// returns 1 or the size of sampled vectors; by default this is done by
-		// running the sample function, but inherited classes can overload this
-		virtual int getSize();
+		virtual void printStats() {}
 
 	protected:
 
-		// for initializing MCMC output containers
-		SamplerType type;
-		// for labeling the samples when sent back to R as a List object
-		std::string name;
+		virtual int getSize();
 
 	private:
 
@@ -106,7 +95,7 @@ namespace mcstat2 {
 		vec returnSamples(int i);
 		void printStats(int i);
 		int getSize(int i);
-		void refreshTypesAndNames();
+		// void refreshTypesAndNames();
 
 	};
 

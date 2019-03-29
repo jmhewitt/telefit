@@ -193,18 +193,6 @@ List mcstat2::GibbsSampler::getSamples() {
 	return res;
 }
 
-mcstat2::Sampler::SamplerType mcstat2::Sampler::getType() {
-	return type;
-}
-
-std::string mcstat2::Sampler::getName() {
-	return name;
-}
-
-int mcstat2::Sampler::getSize() {
-	return type == REAL ? 1 : sample().size();
-}
-
 mcstat2::BlockSampler::SamplerType mcstat2::BlockSampler::getType(int i) {
 	return types.at(i);
 }
@@ -213,6 +201,11 @@ std::string mcstat2::BlockSampler::getName(int i) {
 	return names.at(i);
 }
 
+mcstat2::BlockSampler::BlockSampler(std::vector<SamplerType> t_types,
+																		std::vector<std::string> t_names) {
+		types = t_types;
+		names = t_names;
+}
 
 void mcstat2::Sampler::drawSample() {
 	tsample = sample();
@@ -230,14 +223,12 @@ int mcstat2::Sampler::getSize(int i) {
 	return getSize();
 }
 
-int mcstat2::BlockSampler::getNumSamplers() {
-	if(types.size() == 0) refreshTypesAndNames();
-	return types.size();
+int mcstat2::Sampler::getSize() {
+	return getType(0) == REAL ? 1 : sample().size();
 }
 
-void mcstat2::Sampler::refreshTypesAndNames() {
-	types.push_back(type);
-	names.push_back(name);
+int mcstat2::BlockSampler::getNumSamplers() {
+	return types.size();
 }
 
 
@@ -245,17 +236,25 @@ void mcstat2::Sampler::refreshTypesAndNames() {
 // Rcpp exports
 //
 
+// helper function to create vector with n repeated SamplerType objects
+std::vector<mcstat2::BlockSampler::SamplerType> repeatTypes(
+	mcstat2::BlockSampler::SamplerType type, int n) {
+	std::vector<mcstat2::BlockSampler::SamplerType> r(n, type);
+	return r;
+}
+
 // [[Rcpp::depends(RcppArmadillo)]]
 
 class CountSampler : public mcstat2::Sampler {
 	private:
 		int i;
 	public:
-		CountSampler(std::string nom, int val) {
-			name = nom; type = REAL; i = val;
+		CountSampler(std::string nom, int val) : Sampler(REAL, nom) {
+ 			i = val;
 		}
 		arma::vec sample() { arma::vec s = {(double) i++}; return s;  }
 };
+
 
 class BlockCountSampler : public mcstat2::BlockSampler {
 	private:
@@ -265,10 +264,9 @@ class BlockCountSampler : public mcstat2::BlockSampler {
 
 	public:
 
-		BlockCountSampler(std::vector<std::string>& noms, double* vals) {
-			names = noms;
-			n = names.size();
-			for(int i=0; i<n; i++) types.push_back(REAL);
+		BlockCountSampler(std::vector<std::string>& noms, double* vals) :
+		 BlockSampler(repeatTypes(REAL, noms.size()), noms) {
+			n = noms.size();
 			v = vals;
 		}
 

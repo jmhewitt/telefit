@@ -1,18 +1,7 @@
 #include "RWSampler.h"
 #include "transformations.h"
 
-double logitProposal(double x, double min_x, double max_x, double sd) {
-	double w = max_x - min_x;
-	return mcstat2::invlogit( mcstat2::logit((x - min_x)/w) + R::rnorm(0, sd) ) * w + min_x;
-}
 
-double logProposal(double x, double sd) {
-	return exp( log(x) + R::rnorm(0, sd) );
-}
-
-double loglogJacobian(double x) { return -log( std::abs(x) ); }
-
-double loglogitJacobian(double x) { return -log( std::abs(x*(1.0-x)) ); }
 
 double mcstat2::RWSampler::getAcceptanceRate() { return accept; }
 
@@ -41,13 +30,15 @@ double mcstat2::RWSampler::sample(double x0) {
 			break;
 
 		case LOG:
-			x = logProposal(x0, sd);
-			logR = logR_posterior(x, x0) + loglogJacobian(x0) - loglogJacobian(x);
+			x = mcstat2::logProposal(x0, sd);
+			logR = logR_posterior(x, x0) +
+				mcstat2::loglogJacobian(x0) - mcstat2::loglogJacobian(x);
 			break;
 
 		case LOGIT:
-			x = logitProposal(x0, L, U, sd);
-			logR = logR_posterior(x, x0) + loglogitJacobian(x0) - loglogitJacobian(x);
+			x = mcstat2::logitProposal(x0, L, U, sd);
+			logR = logR_posterior(x, x0) +
+				mcstat2::loglogitJacobian(x0) - mcstat2::loglogitJacobian(x);
 			break;
 	}
 
@@ -68,9 +59,9 @@ double mcstat2::RWSampler::sample(double x0) {
 }
 
 arma::vec mcstat2::RWSampler::sample() {
-	vec r = vec(1);
-	r.at(0) = sample(current);
-	return r;
+	double x = mcstat2::RWSampler::sample(current);
+	arma::vec s = {x};
+	return s;
 }
 
 
@@ -100,21 +91,12 @@ class GammaRWSampler : public mcstat2::RWSampler {
 	public:
 
 		GammaRWSampler(double a, double b, double x0, double sd) :
-			RWSampler(sd, x0, 1, .44) {
+			RWSampler(sd, x0, 1, .44, "x", LOG) {
 			alpha = a;
 			beta = b;
 			am1 = alpha - 1;
 			logc = a * std::log(b) - std::lgamma(a);
-
-			name = "x";
-			propType = LOG;
 		}
-
-	arma::vec sample() {
-		double x = mcstat2::RWSampler::sample(current);
-		arma::vec s = {x};
-		return s;
-	}
 
 };
 
@@ -126,6 +108,9 @@ Rcpp::List test_rw_sampler(arma::vec params, double init, int nSamples) {
 	mcstat2::GibbsSampler sampler = mcstat2::GibbsSampler();
 	sampler.addSampler(cs);
 	sampler.run(nSamples);
+
+	Rcpp::Rcout << "Acceptance rate: " << cs.getAcceptanceRate() << std::endl <<
+		"sd: " << cs.getSd() << std::endl;
 
 	return sampler.getSamples();
 }
