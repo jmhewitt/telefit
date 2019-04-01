@@ -93,7 +93,7 @@ test_that("GLM posterior approximation: betas", {
   counts <- c(18,17,15,20,10,20,25,13,12)
   outcome <- gl(3,1,9)
   treatment <- gl(3,3)
-  x = model.matrix(counts ~ outcome + treatment)
+  x = stats::model.matrix(counts ~ outcome + treatment)
   
   # set dimensions
   n = 3
@@ -120,7 +120,7 @@ test_that("GLM posterior approximation: betas", {
   expect_lt(
     max(abs(o$par - r$mu),
         abs(t(chol(-o$hessian)) - r$L)),
-    1e-5
+    1e-3
   )
 })
 
@@ -136,7 +136,7 @@ test_that("GLM posterior approximation: etas", {
   counts <- c(18,17,15,20,10,20,25,13,12)
   outcome <- gl(3,1,9)
   treatment <- gl(3,3)
-  x = model.matrix(counts ~ outcome + treatment)
+  x = stats::model.matrix(counts ~ outcome + treatment)
   
   # set dimensions
   n = 3
