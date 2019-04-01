@@ -2,6 +2,12 @@
 
 using namespace Rcpp;
 
+std::vector<mcstat2::BlockSampler::SamplerType> mcstat2::repeatTypes(
+	mcstat2::BlockSampler::SamplerType type, int n) {
+	std::vector<mcstat2::BlockSampler::SamplerType> r(n, type);
+	return r;
+}
+
 mcstat2::MCMCCheckpoint::MCMCCheckpoint(int t_nSamples, int t_thin) {
 	nSamples = t_nSamples;
 	thin = t_thin;
@@ -236,12 +242,6 @@ int mcstat2::BlockSampler::getNumSamplers() {
 // Rcpp exports
 //
 
-// helper function to create vector with n repeated SamplerType objects
-std::vector<mcstat2::BlockSampler::SamplerType> repeatTypes(
-	mcstat2::BlockSampler::SamplerType type, int n) {
-	std::vector<mcstat2::BlockSampler::SamplerType> r(n, type);
-	return r;
-}
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
@@ -265,7 +265,7 @@ class BlockCountSampler : public mcstat2::BlockSampler {
 	public:
 
 		BlockCountSampler(std::vector<std::string>& noms, double* vals) :
-		 BlockSampler(repeatTypes(REAL, noms.size()), noms) {
+		 BlockSampler(mcstat2::repeatTypes(REAL, noms.size()), noms) {
 			n = noms.size();
 			v = vals;
 		}

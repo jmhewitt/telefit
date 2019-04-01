@@ -1,5 +1,22 @@
 context("Samplers")
 
+test_that("Sampling x ~ Normal(0, Sigma) via Block RW MH", {
+  set.seed(2000)
+  
+  params = c(.8,pi)
+  
+  nsamp = 1e4
+  x = .Call(`_telefit_test_blockrw_sampler`, params, c(1,1,2), rep(0,3),
+            rep(.1,3), nsamp)
+  
+  # test passes if RW-MC estimates of theoretical cor. and var. are < 5%
+  inds = (nsamp/2):nsamp
+  expect_lt(
+    max( abs( (cor(x$x1[inds], x$x2[inds]) - params[1])/params[1] ) * 100,
+         abs( (sd(x$x3[inds])-sqrt(params[2]))/sqrt(params[2])) * 100 ), 5
+  )
+})
+
 test_that("Sampling x ~ Gamma(a,b) via RW MH", {
   set.seed(2000)
   

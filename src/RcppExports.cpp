@@ -10,6 +10,21 @@
 
 using namespace Rcpp;
 
+// test_blockrw_sampler
+Rcpp::List test_blockrw_sampler(std::vector<double> params, std::vector<double> sd, std::vector<double> init, std::vector<double> C, int nSamples);
+RcppExport SEXP _telefit_test_blockrw_sampler(SEXP paramsSEXP, SEXP sdSEXP, SEXP initSEXP, SEXP CSEXP, SEXP nSamplesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<double> >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type sd(sdSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type init(initSEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type C(CSEXP);
+    Rcpp::traits::input_parameter< int >::type nSamples(nSamplesSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_blockrw_sampler(params, sd, init, C, nSamples));
+    return rcpp_result_gen;
+END_RCPP
+}
 // test_block_gibbs_sampler
 List test_block_gibbs_sampler(arma::vec inits, arma::vec block_inits, int n);
 RcppExport SEXP _telefit_test_block_gibbs_sampler(SEXP initsSEXP, SEXP block_initsSEXP, SEXP nSEXP) {
@@ -292,6 +307,7 @@ RcppExport SEXP r_svcfit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, S
 RcppExport SEXP r_svcpredict(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_telefit_test_blockrw_sampler", (DL_FUNC) &_telefit_test_blockrw_sampler, 5},
     {"_telefit_test_block_gibbs_sampler", (DL_FUNC) &_telefit_test_block_gibbs_sampler, 3},
     {"_telefit_test_gibbs_sampler", (DL_FUNC) &_telefit_test_gibbs_sampler, 2},
     {"_telefit_test_rw_sampler", (DL_FUNC) &_telefit_test_rw_sampler, 3},

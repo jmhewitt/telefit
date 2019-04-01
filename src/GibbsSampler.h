@@ -23,7 +23,6 @@ namespace mcstat2 {
 		void finish();
 	};
 
-
 	// abstract class for a sampler that can be used with mcstat::GibbsSampler
 	class BlockSampler {
 		public:
@@ -62,6 +61,9 @@ namespace mcstat2 {
 			std::vector<std::string> names;
 	};
 
+	// helper function to create vector with n repeated SamplerType objects
+	std::vector<BlockSampler::SamplerType> repeatTypes(
+		BlockSampler::SamplerType type, int n);
 
 	// abstract class for a sampler that can be used with mcstat::GibbsSampler
 	class Sampler : public BlockSampler  {

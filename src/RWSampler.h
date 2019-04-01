@@ -45,8 +45,9 @@ private:
 
 protected:
 
-	// return likelihood and prior, no jacobian; gets a copy of
-	// proposed value x and current value x0
+	// return ll(x) + pi(x) - ( ll(x0) + pi(x0) ), i.e., the log Metropolis
+	// ratio for the proposed value x relative to the current value x0; jacobians
+	// for sampling transformations are added within sampling function
 	virtual double logR_posterior(double x, double x0) = 0;
 
 	// run this code if the proposal is accepted
