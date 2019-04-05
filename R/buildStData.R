@@ -75,17 +75,8 @@ buildStData = function(X, Y, Z, tLabs, coords.r, coords.s=NULL, Q=NULL,
                                rows as X')}
   }
     
-  res = list(
-    tLabs = tLabs,
-    coords.s = coords.s,
-    coords.r = coords.r,
-    Q = Q,
-    X = X,
-    Y = Y,
-    Z = Z,
-    X.lab = X.lab,
-    Y.lab = Y.lab,
-    Z.lab = Z.lab
+  res = list(tLabs = tLabs, coords.s = coords.s, coords.r = coords.r, Q = Q,
+    X = X, Y = Y, Z = Z, X.lab = X.lab, Y.lab = Y.lab, Z.lab = Z.lab
   )
   
   if(is.null(Q)) { res$Q = NULL }
