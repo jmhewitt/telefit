@@ -14,7 +14,9 @@ eof(X, center = F, scale = F)
 \item{scale}{TRUE/FALSE to scale columns of X in call to prcomp}
 }
 \value{
-A list containing EOF patterns as columns, and their scores
+A list containing EOF patterns as columns, and their scores such that 
+ \code{X = patterns x t(scores)}.  Columns of \code{patterns} 
+ and columns of \code{scores} correspond to the same EOFs.
 }
 \description{
 Uses the stats::prcomp function to implement EOF decompositions of data
