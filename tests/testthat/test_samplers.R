@@ -1,5 +1,30 @@
 context("Samplers")
 
+test_that("Sampling x ~ Normal(0, Sigma) via sparse precisions", {
+  set.seed(2000)
+  
+  # build random covariance matrix
+  x = matrix(rnorm(1e4*30), ncol = 10)
+  Sigma = cov(x)
+  
+  # randomly add conditional independence, yielding sparse precision
+  Q = solve(Sigma)
+  inds = sample(which(upper.tri(Q)), size = .9 * sum(upper.tri(Q)))
+  Q[inds] = 0
+  Q = Q * t(Q)
+  Q = as(Q, 'dgCMatrix')
+  
+  # test sampler
+  nsamp = 1e4
+  x = .Call(`_telefit_test_spchol_sampler`, Q, nsamp)
+  
+  # test passes if sample covariance is converging toward true covariance
+  expect_lt(
+    norm(cov(x)-Sigma, 'F')/norm(Sigma, 'F') * 100, 5
+  )
+})
+
+
 test_that("Sampling x ~ Normal(0, Sigma) via Block RW MH", {
   set.seed(2000)
   

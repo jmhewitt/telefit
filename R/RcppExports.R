@@ -25,6 +25,14 @@ r_maternArray <- function(dist, scale, range, smoothness, nugget) {
     .Call(`_telefit_r_maternArray`, dist, scale, range, smoothness, nugget)
 }
 
+test_ldmvrnorm_spchol <- function(x, mu, Q) {
+    .Call(`_telefit_test_ldmvrnorm_spchol`, x, mu, Q)
+}
+
+test_spchol_sampler <- function(Q, nSamples) {
+    .Call(`_telefit_test_spchol_sampler`, Q, nSamples)
+}
+
 r_mc2_rinvwishart <- function(V, n) {
     .Call(`_telefit_r_mc2_rinvwishart`, V, n)
 }
@@ -65,6 +73,10 @@ test_ll <- function(y, lambda) {
     .Call(`_telefit_test_ll`, y, lambda)
 }
 
+test_ll_alt <- function(y, eta0, beta, x, n, t) {
+    .Call(`_telefit_test_ll_alt`, y, eta0, beta, x, n, t)
+}
+
 r_dgemkmm <- function(A, B, C) {
     .Call(`_telefit_r_dgemkmm`, A, B, C)
 }
@@ -79,5 +91,9 @@ r_rinvwishart <- function(V, n) {
 
 r_dgeikmm <- function(N, A, B) {
     .Call(`_telefit_r_dgeikmm`, N, A, B)
+}
+
+respglm_fit <- function(dknots, dzknots, W, nSamples, priors, inits, sds, C, Q, inits_eta0, inits_beta, Y, X, A, df) {
+    .Call(`_telefit_respglm_fit`, dknots, dzknots, W, nSamples, priors, inits, sds, C, Q, inits_eta0, inits_beta, Y, X, A, df)
 }
 

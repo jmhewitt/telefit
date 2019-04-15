@@ -23,7 +23,8 @@ namespace mcstat2 {
 				std::vector<double> t_C,
 				double t_alpha,
 				std::vector<double> t_L = std::vector<double>(),
-				std::vector<double> t_U = std::vector<double>()
+				std::vector<double> t_U = std::vector<double>(),
+				bool adapt = true
 			);
 
 			double getAcceptanceRate();
@@ -36,6 +37,7 @@ namespace mcstat2 {
 
 		private:
 
+			bool adaptStep;
 			int nSamples, dim;
 			double accept, alpha;
 			std::vector<double> sd, L, U, C, current;
@@ -59,6 +61,10 @@ namespace mcstat2 {
 
 			// run this code if the proposal is accepted
 			virtual void update() {};
+
+			// run this code after generating the proposal, but before the acceptance
+			// probability is computed.  function gets a copy of the proposed values.
+			virtual void preAcceptProb(const std::vector<double>& x) {};
 
 	};
 

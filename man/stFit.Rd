@@ -6,9 +6,9 @@
 \usage{
 stFit(stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y,
   Z = stData$Z, coords.s = stData$coords.s,
-  coords.r = stData$coords.r, rw.initsd = NULL, returnll = T,
-  miles = T, C = 1, alpha = 0.44, localOnly = F, varying = F,
-  remoteOnly = F, coords.knots)
+  coords.r = stData$coords.r, rw.initsd = NULL, returnll = TRUE,
+  miles = TRUE, C = 1, alpha = 0.44, localOnly = F,
+  varying = FALSE, remoteOnly = FALSE, coords.knots)
 }
 \arguments{
 \item{stData}{Object with class 'stData' containing data needed to fit this 

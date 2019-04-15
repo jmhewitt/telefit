@@ -372,13 +372,86 @@ mat mcstat2::mvrnorm_postKron(vec & t_y, mat & t_A, mat & t_B, int nSamples,
 	}
 }
 
+VectorXd mcstat2::mvrnorm_spchol(const SimplicialLLT<EigenSpMat>& prec) {
 
+  // extract decomposition components
+  int n = prec.matrixL().rows();
+
+  // generate independent normal variates
+  GetRNGstate();
+  vec x = randn(n,1);
+  PutRNGstate();
+
+  // map variates into eigen and compute r.v.
+  Map<VectorXd> xm(x.memptr(), n);
+  return prec.permutationP() * (prec.matrixL().transpose().solve(xm));
+}
+
+double mcstat2::ldmvrnorm_spchol(const VectorXd& x, const VectorXd& mu,
+  const SimplicialLLT<EigenSpMat>& prec) {
+    int k = x.size();
+    PermutationMatrix<Dynamic,Dynamic> P = prec.permutationP();
+    VectorXd u = P * (x-mu);
+    VectorXd z = prec.matrixL().transpose() * u;
+
+    // compute log determinant by manually pulling out the diagonal entries
+    double ldet = 0;
+    Eigen::SparseVector<double> e(k);
+    for(int i=0; i<k; i++) {
+      e.setZero();
+      e.insert(i) = 1;
+      Eigen::SparseVector<double> f = prec.matrixL() * e;
+      ldet += std::log(f.coeff(i));
+    }
+    ldet *=2;
+
+    return - .5 * (k*log2pi + z.dot(z) - ldet);
+}
+
+double mcstat2::ldigmrfKron(const VectorXd& x, const VectorXd& mu,
+  const LLT<MatrixXd>& lltSigmaA, double k, int df,
+  const SparseMatrix<double> Qab) {
+
+  VectorXd z = x - mu;
+
+  // dimension of Qa
+  int n1 = lltSigmaA.matrixL().rows();
+  // dimension of Qb
+  int n2 = Qab.rows() / n1;
+
+  return - .5 * ( z.transpose() * Qab * z -
+    n1 * (n2 - df) * std::log(k) +
+    2 * (n2 - df) * lltSigmaA.matrixLLT().diagonal().array().log().sum()
+    );
+}
 
 
 //
 // Rcpp exports
 //
 
+// [[Rcpp::export]]
+double test_ldmvrnorm_spchol(Eigen::VectorXd x, Eigen::VectorXd mu,
+  Eigen::SparseMatrix<double> Q) {
+    Eigen::SimplicialLLT<mcstat2::EigenSpMat> prec(Q);
+    return mcstat2::ldmvrnorm_spchol(x, mu, prec);
+}
+
+// [[Rcpp::export]]
+Eigen::MatrixXd test_spchol_sampler(Eigen::SparseMatrix<double> Q,
+  int nSamples) {
+
+  // decompose precision matrix
+  Eigen::SimplicialLLT<mcstat2::EigenSpMat> prec(Q);
+
+  // initialize return, then sample
+  MatrixXd samples(nSamples, Q.rows());
+  for(int i=0; i<nSamples; i++) {
+    samples.row(i) = mcstat2::mvrnorm_spchol(prec).transpose();
+  }
+
+  return samples;
+}
 
 // [[Rcpp::export]]
 arma::mat r_mc2_rinvwishart(arma::mat V, double n) {

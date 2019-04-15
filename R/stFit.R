@@ -56,8 +56,8 @@
 stFit = function( stData = NULL, priors, maxIt, X = stData$X, Y = stData$Y, 
                   Z = stData$Z, coords.s = stData$coords.s, 
                   coords.r = stData$coords.r, rw.initsd = NULL, 
-                  returnll = T, miles = T, C=1, alpha=.44, localOnly = F,
-                  varying = F, remoteOnly = F, coords.knots ) {
+                  returnll = TRUE, miles = TRUE, C=1, alpha=.44, localOnly = F,
+                  varying = FALSE, remoteOnly = FALSE, coords.knots ) {
   
   n = dim(X)[1]
   p = dim(X)[2]

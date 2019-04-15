@@ -43,20 +43,19 @@ struct Consts {
 			*dzknots; // matrix of distances from ocean locations to knots (nz x k)
 	MatrixXd *W, *A;  // EOF patterns and scores (nz x neofs), (neofs x t)
 	int nz, nEOFs, nknots, // number of ocean locations, EOF patterns, knots
-			n, nt, p; // number of areal units, timepoints, covariates
+			n, nt, p, // number of areal units, timepoints, covariates
+			df; // rank deficiency for GMRF structure Q
 	SparseMatrix<double> *Q; // GMRF structure for areal units
 };
 
 struct Priors {
-	double rho_L, rho_U, kappa_L, kappa_U; // bounds for spatial cov. priors
+	double rho_L, rho_U, kappa_a, kappa_b; // bounds for spatial cov. priors
+	double s_a, s_b; // prior parameters for sigmasq
 };
 
 struct Scratch {
-	mat R, c; // spatial structures for ocean covariance matrices
-	MatrixXd psi; // spatial structure for ocean covariance matrices
-	EigenSpMat SigmaInv; // precision matrix for areal units
+	SparseMatrix<double> eta0Prec; // prior prec. matrix for eta0
 	double lly, lleta0, llbeta, lltheta; // log-likelihood components
-	VectorXd eta0mu; // mean for gaussian approx. to full conditional posterior
 };
 
 struct Config {
@@ -64,47 +63,24 @@ struct Config {
 };
 
 
-// Deprecated
-// EigenSpMat buildEta0Prec(const EigenSpMat& SigmaInv, const MatrixXd& A,
-// 	const MatrixXd& psi) {
-// 	/* compute the prior precision matrix for eta0
-//
-// 		Parameters:
-// 			prec - (output) prior precision matrix
-// 			SigmaInv - precision matrix for areal units (n x n)
-// 			A - EOF scores, each column should contain all scores for one timepoint
-// 				(k x t)
-// 			psi - prior covariance for transformed teleconnection effects
-// 	*/
-//
-// 	int t = A.cols();
-// 	return kroneckerProduct(
-// 		(A.transpose() * psi * A + MatrixXd::Identity(t,t)).inverse(),
-// 		SigmaInv
-// 	);
-// }
-
-EigenSpMat buildEta0Prec(const EigenSpMat& SigmaInv, LLT<MatrixXd>& localLLT) {
+void buildEta0Prec(const EigenSpMat& SigmaInv,
+	const LLT<MatrixXd>& localLLT, EigenSpMat& prec) {
 	/* compute the prior precision matrix for eta0
 
 		Parameters:
-			prec - (output) prior precision matrix
 			SigmaInv - precision matrix for areal units (n x n)
-			A - EOF scores, each column should contain all scores for one timepoint
-				(k x t)
-			psi - prior covariance for transformed teleconnection effects
+			localLLT - LLT decomposition of A^t Psi A + I (eta0 covariance)
+			prec - (output) prior precision matrix for eta0
 	*/
-
 	int t = localLLT.matrixL().rows();
 	MatrixXd localPrec = localLLT.solve(MatrixXd::Identity(t,t));
-
-	return kroneckerProduct(localPrec, SigmaInv);
+	prec = kroneckerProduct(localPrec, SigmaInv);
 }
 
 
-LLT<MatrixXd> decomposeLocalCov(const MatrixXd& A, mat& R, mat& c,
-	const mat& d, const mat& dz, const MatrixXd& W, double scale, double range,
-	double smoothness) {
+void localCovLLT(const MatrixXd& A, mat& R, mat& c, const mat& d, const mat& dz,
+	const MatrixXd& W, double scale, double range, double smoothness,
+	LLT<MatrixXd>& llt) {
 	/* Compute LLT decomposition of A^t Psi A + I
 
 		 Parameters:
@@ -133,49 +109,45 @@ LLT<MatrixXd> decomposeLocalCov(const MatrixXd& A, mat& R, mat& c,
 	Map<MatrixXd> cmat(c.memptr(), c.n_rows, c.n_cols);
 	MatrixXd y = lltR.matrixL().solve(cmat.transpose() * W);
 
+	// compute and decompose local covariance for eta0
 	int t = A.cols();
-	LLT<MatrixXd> localLLT(
+	llt.compute(
 		A.transpose() * y.transpose() * y * A + MatrixXd::Identity(t,t)
 	);
-
-	return localLLT;
 }
 
-// Deprecated
-MatrixXd buildPsi(mat& R, mat& c, const mat& d, const mat& dz,
-	const MatrixXd& W, double scale, double range, double smoothness) {
-	/* compute entries in prior covariance matrix psi for transformed
-		 teleconnection effects. also updates R and c as side effects.
+class StateSampler : public mcstat2::BlockSampler {
 
-		 Parameters:
-		   psi - (output) prior covariance matrix
-			 R - pre-allocated storage for prior covariance matrix for teleconnection
-			 			effects at knot locations (k x k)
-			 c - pre-allocated storage for prior cross-covariances (nz x k)
-			 d - matrix of distances between knots (k x k)
-			 dz - matrix of distances from ocean locations to knots (nz x k)
-			 W - matrix of EOF patterns (nz x neofs)
-			 scale - Matern sill parameter
-			 range - Matern range parameter
-			 smoothness - Matern smoothness parameter
-	*/
+	public:
 
-	// build and decompose prior covariance for teleconnection effects at knots
-	maternCov(R, d, scale, range, smoothness, 0);
-	Map<MatrixXd> rmat(R.memptr(), R.n_rows, R.n_cols);
-	LLT<MatrixXd> lltR(rmat);
+		/* Extract likelihood and teleconnection effects, which are updated
+			throughout sampling */
 
-	// build and compute mapping onto EOF patterns
-	maternCov(c, dz, scale, range, smoothness, 0);
+		StateSampler(Config& t_cfg) :
+			BlockSampler({VECTOR, REAL}, {"eta0", "ll"}) {
+				cfg = &t_cfg;
+			}
 
-	Map<MatrixXd> cmat(c.memptr(), c.n_rows, c.n_cols);
-	MatrixXd y = lltR.matrixL().solve(cmat.transpose() * W);
+		void drawSample() { };
 
-	return y.transpose() * y;
-}
+		vec returnSamples(int i) {
+			vec s;
+			if(i==0) {
+				s = vec(cfg->params.eta0.data(), cfg->params.eta0.size());
+			} else if(i==1) {
+				s = vec(1);
+				s.at(0) = cfg->scratch.lly;
+			}
+			return s;
+		}
 
+		int getSize(int i) { return i==0 ? cfg->params.eta0.size() : 1; }
 
-// TODO: write function that computes likelihoods
+	private:
+
+		Config *cfg;
+
+};
 
 class TeleSampler : public mcstat2::BlockRWSampler {
 
@@ -188,14 +160,30 @@ class TeleSampler : public mcstat2::BlockRWSampler {
 
 		TeleSampler(Config& t_cfg, std::vector<double> sds,
 			std::vector<double> init, std::vector<double> C, double alpha,
-			std::vector<double> priors_L, std::vector<double> priors_U) :
-		BlockRWSampler({"kappa", "sigmasq", "rho"}, {LOGIT, LOG, LOGIT},
-			sds, init, C, alpha, priors_L, priors_U) {
+			std::vector<double> priors_L, std::vector<double> priors_U, bool adapt) :
+		BlockRWSampler({"kappa", "sigmasq", "rho"}, {LOG, LOG, LOGIT},
+			sds, init, C, alpha, priors_L, priors_U, adapt) {
+
+				// copy model configuration
 				cfg = &t_cfg;
 				prop = Config(t_cfg);
+
+				// pre-allocate space for covariance matrix and approx. components
 				R = mat(cfg->consts.nknots, cfg->consts.nknots, fill::zeros);
 				c = mat(cfg->consts.nz, cfg->consts.nknots, fill::zeros);
 				eta0mu = VectorXd(cfg->consts.n * cfg->consts.nt);
+
+				// pre-compute eta0 precision
+				SparseMatrix<double> SigmaInv = *(cfg->consts.Q) * cfg->params.kappa;
+				localCovLLT(*(cfg->consts.A), R, c, *(cfg->consts.dknots),
+					*(cfg->consts.dzknots), *(cfg->consts.W), cfg->params.sigmasq,
+					cfg->params.rho, cfg->params.nu, localLLT);
+				buildEta0Prec(SigmaInv, localLLT, cfg->scratch.eta0Prec);
+
+				// pre-compute eta0 density
+				cfg->scratch.lleta0 = mcstat2::ldigmrfKron(cfg->params.eta0,
+					eta0mu, localLLT, cfg->params.kappa, cfg->consts.df,
+					cfg->scratch.eta0Prec);
 		}
 
 	private:
@@ -203,65 +191,80 @@ class TeleSampler : public mcstat2::BlockRWSampler {
 		Config *cfg, prop;
 		mat R, c;
 		VectorXd eta0mu;
+		LLT<MatrixXd> localLLT;
+		double fwdll, backll;
 
 		double logR_posterior(const std::vector<double>& x,
 													const std::vector<double>& x0) {
 
-//prop.scratch.lltheta
+			// TODO: for adaptation purposes, localLLT *should* be updated
+			prop.scratch.lleta0 = mcstat2::ldigmrfKron(prop.params.eta0,
+				eta0mu, localLLT, x[0], prop.consts.df, prop.scratch.eta0Prec);
 
+			prop.scratch.lltheta =
+				mcstat2::ldinvgamma(x[1], prop.priors.s_a, prop.priors.s_b) +
+				mcstat2::ldinvgamma(x[0], prop.priors.kappa_a, prop.priors.kappa_b);
 
-			// pre-compute some of the proposal ll components
-			// prop.scratch.lleta0
-
-
-			// return likelihood ratio!
-			return 0;
+			return prop.scratch.lly + prop.scratch.lleta0 + prop.scratch.lltheta +
+			  backll -
+				(cfg->scratch.lly + cfg->scratch.lleta0 + cfg->scratch.lltheta + fwdll);
 		}
 
 		void preAcceptProb(const std::vector<double>& x) {
 
-			// compute covariance matrices
+			// extract proposals
 
-			SparseMatrix<double> SigmaInv = *prop.consts.Q * x[0];
+			prop.params.kappa = x[0];
+			prop.params.sigmasq = x[1];
+			prop.params.rho = x[2];
 
-			// MatrixXd psi = buildPsi(R, c, *(prop.consts.dknots),
-			// 	*(prop.consts.dzknots), *(prop.consts.W), x[1], x[2], cfg->params.nu);
+			// compute proposed covariance matrices for eta0
 
-			LLT<MatrixXd> localLLT = decomposeLocalCov(*(prop.consts.A), R, c,
-				*(prop.consts.dknots), *(prop.consts.dzknots), *(prop.consts.W),
-				x[1], x[2], cfg->params.nu);
+			SparseMatrix<double> SigmaInv = *prop.consts.Q * prop.params.kappa;
 
-			//EigenSpMat Qprior = buildEta0Prec(SigmaInv, *(prop.consts.A), psi);
-			EigenSpMat Qprior = buildEta0Prec(SigmaInv, localLLT);
+			localCovLLT(*(prop.consts.A), R, c, *(prop.consts.dknots),
+				*(prop.consts.dzknots), *(prop.consts.W), prop.params.sigmasq,
+				prop.params.rho, cfg->params.nu, localLLT);
+
+			buildEta0Prec(SigmaInv, localLLT, prop.scratch.eta0Prec);
 
 			// gaussian approximation to full conditional for teleconnection effects
 			SimplicialLLT<EigenSpMat> eta0CovL;
-			gaussian_approx_eta0(cfg->params.eta0.data(), Qprior, 1, eta0mu.data(),
-				eta0CovL, cfg->params.beta.data(), prop.data.Y->data(),
+			gaussian_approx_eta0(cfg->params.eta0.data(), prop.scratch.eta0Prec, 1,
+				eta0mu.data(), eta0CovL, cfg->params.beta.data(), prop.data.Y->data(),
 				prop.data.X->data(), prop.consts.n, prop.consts.nt, prop.consts.p,
 				mcstat2::glm::glmfamily::poisson);
-
-			// compute transition probabilities
 
 			// propose new teleconnection effects
 			prop.params.eta0 = eta0mu + mcstat2::mvrnorm_spchol(eta0CovL);
 
-			// compute likelihood
+			// pre-compute likelihood
 			prop.scratch.lly = mcstat2::glm::ll(prop.data.Y->data(),
 				prop.params.eta0.data(), cfg->params.beta.data(), prop.data.X->data(),
 				prop.consts.n, prop.consts.nt, prop.consts.p,
 				mcstat2::glm::glmfamily::poisson);
 
-			// TODO: figure out how to deal with the adaptation likelihoods. they
-			// might just be approximations since we won't consider updating the eta0
-			// each time as well since this involves some additional randomness
+			// compute forward transition probability for eta0
+			fwdll = mcstat2::ldmvrnorm_spchol(prop.params.eta0, eta0mu, eta0CovL);
 
+			// compute backward transition probability for eta0
+			gaussian_approx_eta0(prop.params.eta0.data(), cfg->scratch.eta0Prec, 1,
+				eta0mu.data(), eta0CovL, cfg->params.beta.data(), prop.data.Y->data(),
+				prop.data.X->data(), prop.consts.n, prop.consts.nt, prop.consts.p,
+				mcstat2::glm::glmfamily::poisson);
+			backll = mcstat2::ldmvrnorm_spchol(cfg->params.eta0, eta0mu, eta0CovL);
 		}
 
 		void update() {
-			// save updated model structures
+			cfg->params.kappa = prop.params.kappa;
+			cfg->params.sigmasq = prop.params.sigmasq;
+			cfg->params.rho = prop.params.rho;
+			cfg->params.eta0 = prop.params.eta0;
 
-			// compute updates to the additional model structures
+			cfg->scratch.lly = prop.scratch.lly;
+			cfg->scratch.lleta0 = prop.scratch.lleta0;
+			cfg->scratch.lltheta = prop.scratch.lltheta;
+			cfg->scratch.eta0Prec = prop.scratch.eta0Prec;
 		}
 };
 
@@ -270,16 +273,13 @@ class TeleSampler : public mcstat2::BlockRWSampler {
 // Rcpp exports
 //
 
-// TODO: include sparse matrix Q
-
-
 // [[Rcpp::export]]
 List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W,
 	int nSamples, List priors, std::vector<double>& inits,
 	std::vector<double>& sds, std::vector<double>& C,
 	Eigen::SparseMatrix<double>& Q, Eigen::VectorXd inits_eta0,
 	Eigen::VectorXd inits_beta, Eigen::VectorXd& Y, Eigen::MatrixXd& X,
-  Eigen::MatrixXd& A) {
+  Eigen::MatrixXd& A, int df) {
 		/* Sample covariance parameters and latent effects for RESP GLM model.
 
 			 Parameters:
@@ -299,15 +299,8 @@ List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W,
 				X - matrix of covariates
 				A - matrix of eof scores, each col. should have all scores for one
 					timepoint (neofs x t)
+				df - rank deficiency in Q
 		*/
-
-	/*    - Fixed effect samplers
-						* Metropolis step where the proposal distribution is the Gaussian
-							approximation proposal
-				- Extraction samplers
-					  * BlockSampler objects that extract the teleconnection effects and
-							likelihood from the model; this is a deterministic step
-	*/
 
 	// extract data
 
@@ -327,11 +320,14 @@ List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W,
 	cfg.consts.nt = Y.size() / cfg.consts.n;
 	cfg.consts.p = X.cols();
 	cfg.consts.A = &A;
+	cfg.consts.df = df;
 
-	cfg.priors.rho_L = as<double>(priors["rho_L"]);
-	cfg.priors.rho_U = as<double>(priors["rho_U"]);
-	cfg.priors.kappa_L = as<double>(priors["kappa_L"]);
-	cfg.priors.kappa_U = as<double>(priors["kappa_U"]);
+	cfg.priors.rho_L = priors["rho_L"];
+	cfg.priors.rho_U = priors["rho_U"];
+	cfg.priors.kappa_a = priors["kappa_a"];
+	cfg.priors.kappa_b = priors["kappa_b"];
+	cfg.priors.s_a = priors["sigmasq_a"];
+	cfg.priors.s_b = priors["sigmasq_b"];
 
 	cfg.params.nu = as<double>(priors["nu"]);
 	cfg.params.kappa = inits[0];
@@ -342,33 +338,26 @@ List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W,
 
 	// initialize scratch
 
-	/*
-	MatrixXd psi(cfg.consts.nEOFs, cfg.consts.nEOFs);
-	mat R(cfg.consts.nknots, cfg.consts.nknots, fill::zeros);
-	mat c(cfg.consts.nz, cfg.consts.nknots, fill::zeros);
-	SparseMatrix<double> SigmaInv = *cfg.consts.Q * cfg.params.kappa;
-	VectorXd eta0mu(cfg.consts.n * cfg.consts.nt);
-	SimplicialLLT<EigenSpMat> eta0CovL;
-
-	cfg.scratch.psi = psi;
-	cfg.scratch.R = R;
-	cfg.scratch.c = c;
-	cfg.scratch.SigmaInv = SigmaInv;
-	cfg.scratch.eta0mu = eta0mu;
-	*/
-
-	// buildPsi(psi, R, c, dknots, dzknots, W, cfg.params.sigmasq, cfg.params.rho,
-	// 	cfg.params.nu);
+	cfg.scratch.lly = - 1e6;
+	cfg.scratch.lleta0 = - 1e6;
+	cfg.scratch.llbeta = - 1e6;
+	cfg.scratch.lltheta = - 1e6;
 
 	// initialize samplers
 
-	TeleSampler ts = TeleSampler(cfg, sds, inits, C, .23,
-		{cfg.priors.kappa_L, 0, cfg.priors.rho_L},
-		{cfg.priors.kappa_U, 1, cfg.priors.rho_U});
+	bool adapt = *(std::max_element(C.begin(), C.end())) != 0 ? true : false;
+	TeleSampler ts = TeleSampler(cfg, sds, inits, C, .4,
+		{0, 0, cfg.priors.rho_L}, {0, 1, cfg.priors.rho_U}, adapt);
+
+  StateSampler ss = StateSampler(cfg);
 
 	mcstat2::GibbsSampler sampler = mcstat2::GibbsSampler();
 	sampler.addSampler(ts);
+	sampler.addSampler(ss);
 	sampler.run(nSamples);
+
+	Rcpp::Rcout << "kappa: " << ts.getSd(0) << " sigmasq: " << ts.getSd(1) <<
+		" rho: " << ts.getSd(2) << std::endl;
 
 	return sampler.getSamples();
 }

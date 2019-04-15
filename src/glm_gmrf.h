@@ -8,7 +8,7 @@
 #include <RcppEigen.h>
 
 // declares a column-major sparse matrix type of double
-typedef Eigen::SparseMatrix<double> SpMat;
+typedef Eigen::SparseMatrix<double> EigenSpMat;
 
 
 namespace mcstat2 {
@@ -33,6 +33,20 @@ namespace glm {
   double ll(const double* y, const double* eta, const int n,
     const glmfamily family);
 
+	/*
+		evaluate glm log-likelihood given covariate and random effects information
+
+		Parameters:
+		 y - observations
+		 eta0 - GLM random effects
+		 beta - values of beta (p x 1)
+		 x - covariate matrix (nt x p)
+		 n, t - number of locations and timepoints
+		 p - the dimension of p (i.e., number of coefficients in beta)
+		 family - specification of likelihood family
+	*/
+	double ll(const double* y, const double* eta0, const double* beta,
+		const double* x, int n, int t, int p, const glmfamily family);
 
     /*
      Implement extension of Rue and Held (2005) Section 4.4.1.  Compute a
@@ -64,9 +78,9 @@ namespace glm {
        n, t - number of locations and timepoints
 			 p - the dimension of p (i.e., number of coefficients in beta)
     */
-    void gaussian_approx_eta0(const double* eta0, const SpMat& Q, int it,
-			double* mu, Eigen::SimplicialLLT<SpMat>& prec_chol, const double* beta,
-			const double* y, const double* x, int n, int t, int p,
+    void gaussian_approx_eta0(const double* eta0, const EigenSpMat& Q, int it,
+			double* mu, Eigen::SimplicialLLT<EigenSpMat>& prec_chol,
+			const double* beta, const double* y, const double* x, int n, int t, int p,
 			const glmfamily family);
 
   /*

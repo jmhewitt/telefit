@@ -16,8 +16,13 @@ namespace mcstat2 {
 	using Eigen::SparseMatrix;
 	using Eigen::Dynamic;
 	using Eigen::MatrixXd;
+	using Eigen::VectorXd;
 	using Eigen::LLT;
 	using Eigen::Lower;
+	using Eigen::SimplicialLLT;
+
+	// declares a column-major sparse matrix type of double
+	typedef Eigen::SparseMatrix<double> EigenSpMat;
 
 	//
 	// densities
@@ -67,7 +72,7 @@ namespace mcstat2 {
 	 form for Q.
 
 	 Reference: Basic IGMRF density is eqn. 3.18 in Rue and Held (2005
-	 
+
 	 Parameters:
 	  x - vector at which to evaluate density
 		n - dimension of Q
@@ -78,6 +83,39 @@ namespace mcstat2 {
 	*/
 	double ldigmrfSp(double* x, int n, int k, const SparseMatrix<double>& R ,
 		double q, double ldetR);
+
+
+	/*
+		log density for intrinsic GMRF with mean mu and kronecker-structured
+		precision given by Qa x Qb.  Qa is the precision for a dense covariance
+		matrix, and Qb = k * R where k is a constant and R is the structural form
+		for an intrinsic GMRF dependence structure.
+
+		Parameters:
+			x - vector at which to evaluate density
+			mu - density location parameter
+			lltSigmaA - LLT decomposition for SigmaA = inv(Qa)
+			k - scale for Qb
+			df - rank deficiency of Qb
+			Qab - prior precision matrix Qa x Qb
+	*/
+	double ldigmrfKron(const VectorXd& x, const VectorXd& mu,
+		const LLT<MatrixXd>& lltSigmaA, double k, int df,
+		const SparseMatrix<double> Qab);
+
+
+	/*
+	 	log density for a multivariate normal r.v. x ~ N(mu, Sigma) where
+	  1) Sigma has a sparse precision matrix Q
+	  2) An Eigen::SimplicialLLT decomposition of Q is provided
+
+		Parameters:
+		  x - value at which to evaluate log density
+			mu - mean
+			prec - Eigen::SimplicialLLT decomposition of Q
+	*/
+	double ldmvrnorm_spchol(const VectorXd& x, const VectorXd& mu,
+		const SimplicialLLT<EigenSpMat>& prec);
 
 
 	//
@@ -148,6 +186,11 @@ namespace mcstat2 {
 	// Set precision=true if Qa = inv(A), Qb = inv(B) is provided instead.
 	mat mvrnorm_postKron(vec & y, mat & A, mat & B, int nSamples,
 						 bool precision);
+
+	// sample a mean zero multivariate normal r.v. x ~ N(0, Sigma) where
+	//  1) Sigma has a sparse precision matrix Q
+	//  2) An Eigen::SimplicialLLT decomposition of Q is provided
+	VectorXd mvrnorm_spchol(const SimplicialLLT<EigenSpMat>& prec);
 
 }
 

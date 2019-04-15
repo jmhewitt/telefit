@@ -1,3 +1,24 @@
+#' Counts of large storms in CA
+#'
+#' A dataset containing sample spatially-aggregated climate data from the 
+#' ERA-Interim and PRISM datasets.  The response comes from PRISM and 
+#' represents the number of large storms that occured within a HUC8 subbasin
+#' during California DJF winters.  The covariates come from ERA-Interim, 
+#' Colorado and Pacific Ocean (sea) surface temperatures; covariates are also 
+#' available that describe the size of the subbasins.
+#'
+#' @format A stData object with 33 years of observations
+#' 
+#' @source \url{http://prism.oregonstate.edu}
+#' @source \url{https://rda.ucar.edu/datasets/ds627.0/}
+#' 
+#' @examples
+#' 
+#' data("caprecip.counts")
+#' str(caprecip.counts)
+#' 
+"caprecip.counts"
+
 #' Standardized anomalies of CO Precipitation
 #'
 #' A dataset containing sample spatially-aggregated climate data from the 

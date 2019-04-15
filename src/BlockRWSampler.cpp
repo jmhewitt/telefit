@@ -16,7 +16,8 @@ mcstat2::BlockRWSampler::BlockRWSampler(
 	std::vector<double> t_C,
 	double t_alpha,
 	std::vector<double> t_L,
-	std::vector<double> t_U
+	std::vector<double> t_U,
+	bool t_adapt
 ) : BlockSampler(mcstat2::repeatTypes(REAL, names.size()), names) {
 
 	propTypes = t_propTypes;
@@ -24,6 +25,7 @@ mcstat2::BlockRWSampler::BlockRWSampler(
 	current = init_vals;
 	C = t_C;
 	alpha = t_alpha;
+	adaptStep = t_adapt;
 
 	// derived values
 	dim = names.size();
@@ -65,15 +67,17 @@ void mcstat2::BlockRWSampler::drawSample() {
 		}
 	}
 
+	// intermediate update of child class sampler state
+	preAcceptProb(x);
+
 	// accept/reject
-	
 	double logR = logAcceptProb(x, current);
 	bool accepted = log(R::runif(0,1)) <= std::min(logR, 0.0);
 
-	// adapt, then update
+	// adapt, then update child class sampler state
 
 	accept += ((accepted ? 1.0 : 0.0) - accept) / (double) (++nSamples);
-	adapt(x, current);
+	if(adaptStep) { adapt(x, current); }
 
 	if(accepted) {
 		update();

@@ -171,8 +171,9 @@ void mcstat2::glm::gaussian_approx_beta(const double* beta0, const double* Q,
 }
 
 void mcstat2::glm::gaussian_approx_eta0(const double* eta0,
-  const SpMat& Q, int it, double* mu, Eigen::SimplicialLLT<SpMat>& prec_chol,
-  const double* beta, const double* y, const double* x, int n, int t, int p,
+  const EigenSpMat& Q, int it, double* mu,
+  Eigen::SimplicialLLT<EigenSpMat>& prec_chol, const double* beta,
+  const double* y, const double* x, int n, int t, int p,
   const glmfamily family) {
 
   // map inputs/outputs
@@ -183,18 +184,47 @@ void mcstat2::glm::gaussian_approx_eta0(const double* eta0,
   memcpy(mu, eta0, sizeof(double)*nt);
   VectorXd b(nt);
   VectorXd C(nt);
-  SpMat Qm(Q);
+  EigenSpMat Qm(Q);
 
   // iterate to find mean and precision close to mode of target density
   for(int i=0; i<it; i++) {
     // Taylor-expand likelihood
     glm_taylor_eta0(b.data(), C.data(), beta, mu, x, y, n, t, p, family);
     // factor approximation's precision matrix
-    Qm.diagonal() = Q.diagonal() + C;
+    for(int j=0; j<Qm.rows(); j++)
+      Qm.coeffRef(j,j) = Q.coeff(j,j) + C[j];
     prec_chol.compute(Qm);
     // compute approximation's mean
     mvec = prec_chol.solve(b);
   }
+}
+
+/*
+  evaluate glm log-likelihood given covariate and random effects information
+
+  Parameters:
+   y - observations
+   eta0 - GLM random effects
+   beta - values of beta (p x 1)
+   x - covariate matrix (nt x p)
+   n, t - number of locations and timepoints
+   p - the dimension of p (i.e., number of coefficients in beta)
+   family - specification of likelihood family
+*/
+double mcstat2::glm::ll(const double* y, const double* eta0, const double* beta,
+  const double* x, int n, int t, int p, const glmfamily family) {
+
+  // map inputs/outputs
+  int nt = n*t;
+  Map<const MatrixXd> xmat(x,nt,p);
+  Map<const VectorXd> eta0vec(eta0,nt);
+  Map<const VectorXd> bmat(beta,p);
+
+  // build linear predictor
+  VectorXd eta = xmat * bmat + eta0vec;
+
+  // evaluate log-likelihood
+  return mcstat2::glm::ll(y, eta.data(), nt, family);
 }
 
 
@@ -212,13 +242,13 @@ List test_gaussian_approx_eta0(const Eigen::Map<Eigen::VectorXd> eta0,
 
   // initialize output
   VectorXd mu(n*t);
-  SimplicialLLT<SpMat> prec_chol;
+  SimplicialLLT<EigenSpMat> prec_chol;
 
   mcstat2::glm::gaussian_approx_eta0(eta0.data(), Q, it, mu.data(),
     prec_chol, beta.data(), y.data(), x.data(), n, t, p,
     mcstat2::glm::glmfamily::poisson);
 
-  SpMat L = prec_chol.matrixL();
+  EigenSpMat L = prec_chol.matrixL();
   return List::create(Named("mu")=mu, Named("L")=L);
 }
 
@@ -292,4 +322,11 @@ NumericVector test_ll(NumericVector y, NumericVector lambda) {
 	// evaluate likelihood
 	return wrap(mcstat2::glm::ll(y_data, lambda_data, n,
     mcstat2::glm::glmfamily::poisson));
+}
+
+// [[Rcpp::export]]
+double test_ll_alt(Eigen::VectorXd y, Eigen::VectorXd eta0,
+  Eigen::VectorXd beta, Eigen::MatrixXd x, int n, int t) {
+  return mcstat2::glm::ll(y.data(), eta0.data(), beta.data(),
+    x.data(), n, t, x.cols(), mcstat2::glm::glmfamily::poisson);
 }

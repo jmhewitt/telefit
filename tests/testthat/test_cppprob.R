@@ -1,5 +1,28 @@
 context("Custom C++ probability routines")
 
+
+test_that("Density x ~ Normal(mu, Sigma) with sparse precisions", {
+  set.seed(2000)
+  
+  # build random covariance matrix
+  x = matrix(rnorm(1e4*30), ncol = 10)
+  Sigma = cov(x)
+  
+  # randomly add conditional independence, yielding sparse precision
+  Q = solve(Sigma)
+  inds = sample(which(upper.tri(Q)), size = .9 * sum(upper.tri(Q)))
+  Q[inds] = 0
+  Q = Q * t(Q)
+  Q = as(Q, 'dgCMatrix')
+  
+  # test passes if c++ density matches known density
+  expect_equal(
+    mvtnorm::dmvnorm(x = x[1,], mean = x[2,], sigma = solve(Q), log = TRUE),
+    .Call(`_telefit_test_ldmvrnorm_spchol`, x[1,], x[2,], Q)
+  )
+})
+
+
 test_that("Evaluating probabilities for intervals of normal r.v.s", {
   set.seed(2018)
   
@@ -13,6 +36,24 @@ test_that("Evaluating probabilities for intervals of normal r.v.s", {
           qnorm(breaks[-c(1, length(breaks))], mu, sigma), mu, sigma)),
     diff(breaks),
     tolerance = 1e-3
+  )
+})
+
+
+test_that('Building GLM likelihood from covariates and random components', {
+  # run poisson GLM example from stats::glm
+  counts <- c(18,17,15,20,10,20,25,13,12)
+  outcome <- gl(3,1,9)
+  treatment <- gl(3,3)
+  d.AD <- data.frame(treatment, outcome, counts)
+  
+  x = stats::model.matrix(counts ~ outcome + treatment)
+  beta = rnorm(ncol(x))
+  eta0 = rnorm(nrow(x))
+  
+  expect_equal(
+    sum(dpois(counts, exp(x %*% beta + eta0), log = TRUE)),
+    .Call(`_telefit_test_ll_alt`, counts, eta0, beta, x, 3, 3)
   )
 })
 
