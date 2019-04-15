@@ -9,7 +9,7 @@
 #' @import foreach
 #' @importFrom fields rdist.earth
 #' @importFrom stats quantile
-#' @importFrom smolBayes wtdMix
+#' @importFrom bisque wMix wBuild
 #'
 #' @useDynLib telefit, .registration = TRUE
 #'
