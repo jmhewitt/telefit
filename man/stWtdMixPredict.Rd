@@ -74,9 +74,6 @@ cores to use to draw teleconnection and prediction samples}
 
 \item{w.control}{list of control parameters for the optimization used to 
 build the quadrature integration}
-
-\item{prob}{confidence level for approximate confidence intervals of
-teleconnection effects (only needed if returnAlphas==TRUE)}
 }
 \description{
 Predict response at new timepoints by using weighted mixtures to approximate

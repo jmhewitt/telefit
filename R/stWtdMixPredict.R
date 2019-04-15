@@ -8,7 +8,7 @@
 #'
 #' @import foreach
 #' @importFrom fields rdist.earth
-#' @importFrom stats quantile
+#' @importFrom stats quantile dnorm pnorm
 #' @importFrom bisque wMix wBuild
 #'
 #' @useDynLib telefit, .registration = TRUE
@@ -39,9 +39,6 @@
 #'  will be based (lon, lat)
 #' @param miles TRUE if covariance matrix distances should be in miles, FALSE
 #'  for kilometers
-
-#' @param prob confidence level for approximate confidence intervals of
-#'  teleconnection effects (only needed if returnAlphas==TRUE)
 #' @param ncores Since the teleconnection effects and posterior predictions can
 #'  be sampled in parallel, this parameter lets users specify the number of
 #'  cores to use to draw teleconnection and prediction samples
