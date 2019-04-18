@@ -30,7 +30,7 @@ test_that("Sampling x ~ Normal(0, Sigma) via Block RW MH", {
   
   params = c(.8,pi)
   
-  nsamp = 1e4
+  nsamp = 1e5
   x = .Call(`_telefit_test_blockrw_sampler`, params, c(1,1,2), rep(0,3),
             rep(.1,3), nsamp)
   
