@@ -72,6 +72,9 @@ respGLMfit = function( stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z,
     if(is.null(priors$sigmasq)) { 
       stop('Must specify prior parameters for covariance: sigmasq') 
     }
+    if(is.null(priors$beta)) {
+      stop("Must specify prior variances for regression coefficients: beta")
+    }
     
     # formatting for passing to C++
     priors$rho_L = priors$rho[1]
@@ -134,7 +137,7 @@ respGLMfit = function( stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z,
   
   # transform initial guesses for teleconnection effects
   eta0 = as.numeric(alpha0 %*% t(A))
-  
+  message(str(eta0))
   # compute rank deficiency in GMRF structural component
   df = nrow(Q) - qr(Q)$rank
   

@@ -7,7 +7,8 @@
 respGLMfit(stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z,
   coords.r = stData$coords.r, Q = stData$Q, miles = TRUE,
   sds = rep(1, 3), C = rep(0.1, 3), alpha0 = NULL, beta0 = NULL,
-  family = "poisson", coords.knots, nSamples, priors, inits)
+  family = "poisson", k = ncol(stData$Z), coords.knots, nSamples,
+  priors, inits)
 }
 \arguments{
 \item{stData}{Object with class 'stData' containing data needed to fit this 
@@ -31,7 +32,8 @@ for kilometers}
 samplers}
 
 \item{C}{scaling constants used to update proposal standard deviations for 
-covariance parameter RW samplers}
+covariance parameter RW samplers.  Set \code{C=rep(0,3)} to not adapt the 
+proposal sd's.}
 
 \item{alpha0}{matrix of initial parameters for teleconnection effects.  by 
 default will be the MLE fits for a marginal poisson regression.}
@@ -41,6 +43,9 @@ default will be the MLE fits for a marginal poisson regression.}
 
 \item{family}{the GLM likelihood to fit.  currently only accepts 'poisson'}
 
+\item{k}{number of ocean EOFs to use in fitting. this can induce dimension 
+reduction}
+
 \item{coords.knots}{matrix with coordinates where remote teleconnections
 will be based (lon, lat)}
 
@@ -48,7 +53,7 @@ will be based (lon, lat)}
 
 \item{priors}{list of prior distributions for model parameters.
 \describe{
-  \item{cov}{ list(nu=double, sigmasq=c(a,b), rho=c(L,U), kappa=c(L, U) )}
+  \item{cov}{ list(nu=double, sigmasq=c(a,b), rho=c(L,U), kappa=c(a, b) )}
 }}
 
 \item{inits}{initial values \code{c(kappa, sigmasq, rho)} for covariance 
@@ -58,31 +63,44 @@ parameters}
 Fit the remote effects spatial process (RESP) model
 }
 \examples{
-Rcpp::compileAttributes('r/temporal_LSigma/packages/telefit/')
-devtools::load_all('r/temporal_LSigma/packages/telefit/')
-devtools::document('r/temporal_LSigma/packages/telefit/')
+# Rcpp::compileAttributes('r/temporal_LSigma/packages/telefit/')
+# devtools::load_all('r/temporal_LSigma/packages/telefit/')
+# devtools::document('r/temporal_LSigma/packages/telefit/')
 # devtools::test('r/temporal_LSigma/packages/telefit/')
-
-
-data("caprecip.counts")
-data("coprecip.fit")
-
-# scale watershed areas for stability
-caprecip.counts$X[,3,] = scale(caprecip.counts$X[,3,1])
-
-devtools::load_all('r/temporal_LSigma/packages/telefit/')
-
-fit = respGLMfit( stData = caprecip.counts, 
-                  coords.knots = coprecip.fit$coords.knots,
-                  priors = list(
-                    nu = .5, sigmasq = c(2,1), rho = c(200,600), 
-                    kappa = c(.1,.9)
-                  ),
-                  nSamples = 1e1,
-                  inits = c(.5, 1, 500)
-                )
-  
-sweep(sweep(fit$psi, 1, sqrt(diag(fit$psi)), '/'),
-      2, sqrt(diag(fit$psi)), '/')
-
+# 
+# 
+# data("caprecip.counts")
+# data("coprecip.fit")
+# 
+# # scale watershed areas for stability
+# caprecip.counts$X[,3,] = scale(caprecip.counts$X[,3,1])
+# 
+# devtools::load_all('r/temporal_LSigma/packages/telefit/')
+# 
+# # scale watershed areas for stability
+# fit = respGLMfit( stData = caprecip.counts, 
+#                   coords.knots = coprecip.fit$coords.knots,
+#                   priors = list(
+#                     nu = .5, sigmasq = c(2,.1), rho = c(1,600), 
+#                     kappa = c(2,1/30), beta = rep(3, ncol(caprecip.counts$X))
+#                   ),
+#                   nSamples = 1e2,
+#                   inits = c(1e1, 1, 500),
+#                   sds = c(kappa = .5, ss = .25, rho = 1) * 0,
+#                   C = rep(0e4,3)
+#                 )
+#   
+# library(coda)
+# 
+# 1-rejectionRate(mcmc(fit$kappa))
+# 
+# plot(fit$ll, type='l')
+# plot(fit$kappa, type='l')
+# plot(fit$sigmasq, type='l')
+# plot(fit$rho, type='l')
+# plot(fit$beta[,1], type='l')
+# plot(fit$beta[,2], type='l')
+# plot(fit$beta[,3], type='l')
+# 
+# apply(fit$eta0,1,function(x) (sd(x)))
 }

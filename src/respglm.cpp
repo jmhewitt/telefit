@@ -51,6 +51,7 @@ struct Consts {
 struct Priors {
 	double rho_L, rho_U, kappa_a, kappa_b; // bounds for spatial cov. priors
 	double s_a, s_b; // prior parameters for sigmasq
+	double* beta_var; // prior variances for regression coefficients
 };
 
 struct Scratch {
@@ -149,6 +150,72 @@ class StateSampler : public mcstat2::BlockSampler {
 
 };
 
+class BetaSampler : public mcstat2::Sampler {
+
+	public:
+
+		BetaSampler(Config& t_cfg) : Sampler(VECTOR, "beta"){
+			cfg = &t_cfg;
+			prop_mu = VectorXd(cfg->consts.p);
+		}
+
+	private:
+
+		Config *cfg;
+		VectorXd prop_mu;
+		LLT<MatrixXd> prec_chol;
+
+		int getSize() { return cfg->consts.p; }
+
+		vec sample() {
+			// gaussian approximation to full conditional
+			gaussian_approx_beta(cfg->params.beta.data(), cfg->priors.beta_var,
+				cfg->consts.p, 1, prop_mu.data(), prec_chol, cfg->params.eta0.data(),
+		    cfg->data.Y->data(), cfg->data.X->data(), cfg->consts.n, cfg->consts.nt,
+				mcstat2::glm::glmfamily::poisson);
+
+			// propose new regression coefficients
+			VectorXd beta_prop = prop_mu + mcstat2::mvrnorm_precchol(prec_chol);
+
+			// compute proposal likelihood
+			double ll = mcstat2::glm::ll(cfg->data.Y->data(), cfg->params.eta0.data(),
+				beta_prop.data(), cfg->data.X->data(), cfg->consts.n, cfg->consts.nt,
+				cfg->consts.p, mcstat2::glm::glmfamily::poisson);
+
+			// evaluate prior at beta
+			double llbeta = 0;
+			double* betavals = beta_prop.data();
+			for(int i=0; i<cfg->consts.p; i++)
+				llbeta += R::dnorm(betavals[i], 0, std::sqrt(cfg->priors.beta_var[i]), 1);
+
+			// compute forward transition probability for beta
+			double fwdll = mcstat2::ldmvrnorm_chol(beta_prop, prop_mu, prec_chol);
+
+			// compute backward transition probability for beta
+			gaussian_approx_beta(beta_prop.data(), cfg->priors.beta_var,
+				cfg->consts.p, 1, prop_mu.data(), prec_chol, cfg->params.eta0.data(),
+		    cfg->data.Y->data(), cfg->data.X->data(), cfg->consts.n, cfg->consts.nt,
+				mcstat2::glm::glmfamily::poisson);
+			double backll =
+				mcstat2::ldmvrnorm_chol(cfg->params.beta, prop_mu, prec_chol);
+
+			// metropolis accept-reject
+			double logR = ll + llbeta + backll -
+				(cfg->scratch.lly + cfg->scratch.llbeta + fwdll);
+			bool accepted = log(R::runif(0,1)) <= std::min(logR, 0.0);
+
+			// update scratch, if necessary
+			if(accepted) {
+				cfg->params.beta = beta_prop;
+				cfg->scratch.lly = ll;
+				cfg->scratch.llbeta = llbeta;
+			}
+
+			// return sample
+			return arma::vec(cfg->params.beta.data(), cfg->consts.p);
+		}
+};
+
 class TeleSampler : public mcstat2::BlockRWSampler {
 
 	public:
@@ -197,26 +264,16 @@ class TeleSampler : public mcstat2::BlockRWSampler {
 		double logR_posterior(const std::vector<double>& x,
 													const std::vector<double>& x0) {
 
-			// TODO: for adaptation purposes, localLLT *should* be updated
-			prop.scratch.lleta0 = mcstat2::ldigmrfKron(prop.params.eta0,
-				eta0mu, localLLT, x[0], prop.consts.df, prop.scratch.eta0Prec);
-
-			prop.scratch.lltheta =
-				mcstat2::ldinvgamma(x[1], prop.priors.s_a, prop.priors.s_b) +
-				mcstat2::ldinvgamma(x[0], prop.priors.kappa_a, prop.priors.kappa_b);
-
-			return prop.scratch.lly + prop.scratch.lleta0 + prop.scratch.lltheta +
-			  backll -
-				(cfg->scratch.lly + cfg->scratch.lleta0 + cfg->scratch.lltheta + fwdll);
-		}
-
-		void preAcceptProb(const std::vector<double>& x) {
-
 			// extract proposals
 
 			prop.params.kappa = x[0];
 			prop.params.sigmasq = x[1];
 			prop.params.rho = x[2];
+
+			Rcpp::Rcout << "kappa: (" << x0[0] << ", " << x[0] << ") ss: (" <<
+				x0[1] << ", " << x[1] << ") rho (" << x0[2] << ", " << x[2] << ") " <<
+				getAcceptanceRate() <<
+				std::endl;
 
 			// compute proposed covariance matrices for eta0
 
@@ -253,6 +310,33 @@ class TeleSampler : public mcstat2::BlockRWSampler {
 				prop.data.X->data(), prop.consts.n, prop.consts.nt, prop.consts.p,
 				mcstat2::glm::glmfamily::poisson);
 			backll = mcstat2::ldmvrnorm_spchol(cfg->params.eta0, eta0mu, eta0CovL);
+
+			// TODO: for adaptation purposes, localLLT *should* be updated
+			prop.scratch.lleta0 = mcstat2::ldigmrfKron(prop.params.eta0,
+				eta0mu, localLLT, x[0], prop.consts.df, prop.scratch.eta0Prec);
+
+			prop.scratch.lltheta =
+				mcstat2::ldinvgamma(x[1], prop.priors.s_a, prop.priors.s_b) +
+				mcstat2::ldinvgamma(x[0], prop.priors.kappa_a, prop.priors.kappa_b);
+
+			return prop.scratch.lly + prop.scratch.lleta0 + prop.scratch.lltheta +
+			  backll -
+				(cfg->scratch.lly + cfg->scratch.lleta0 + cfg->scratch.lltheta + fwdll);
+		}
+
+		double logR_posterior_adapt(const std::vector<double>& x,
+																const std::vector<double>& x0) {
+
+			// TODO: for adaptation purposes, localLLT *should* be updated
+			double lleta0 = mcstat2::ldigmrfKron(prop.params.eta0,
+				eta0mu, localLLT, x[0], prop.consts.df, prop.scratch.eta0Prec);
+
+			double lltheta =
+				mcstat2::ldinvgamma(x[1], prop.priors.s_a, prop.priors.s_b) +
+				mcstat2::ldinvgamma(x[0], prop.priors.kappa_a, prop.priors.kappa_b);
+
+			return prop.scratch.lly + lleta0 + lltheta + backll -
+				(cfg->scratch.lly + cfg->scratch.lleta0 + cfg->scratch.lltheta + fwdll);
 		}
 
 		void update() {
@@ -273,6 +357,89 @@ class TeleSampler : public mcstat2::BlockRWSampler {
 // Rcpp exports
 //
 
+
+/*
+// [[Rcpp::export]]
+Eigen::VectorXd respglm_lik_prior(arma::mat& dknots, arma::mat& dzknots,
+	Eigen::MatrixXd& W, int nSamples, List priors, std::vector<double>& inits,
+	std::vector<double>& sds, std::vector<double>& C,
+	Eigen::SparseMatrix<double>& Q, Eigen::VectorXd eta0,
+	Eigen::VectorXd beta, Eigen::VectorXd& Y, Eigen::MatrixXd& X,
+  Eigen::MatrixXd& A, int df) {
+	/* Evaluates the RESP GLM likelihood at the passed parameters
+
+		 Return: VectorXd with entries c(log-likelihood, eta0_prior)
+	*/
+
+	// initialize return
+	//Eigen::VectorXd res(2);
+
+	// extract data
+/*
+	Config cfg = Config();
+
+	cfg.data.Y = &Y;
+	cfg.data.X = &X;
+
+	cfg.consts.dknots = &dknots;
+	cfg.consts.dzknots = &dzknots;
+	cfg.consts.W = &W;
+	cfg.consts.nz = W.rows();
+	cfg.consts.nEOFs = W.cols();
+	cfg.consts.nknots = dknots.n_rows;
+	cfg.consts.Q = &Q;
+	cfg.consts.n = Q.rows();
+	cfg.consts.nt = Y.size() / cfg.consts.n;
+	cfg.consts.p = X.cols();
+	cfg.consts.A = &A;
+	cfg.consts.df = df;
+
+	cfg.priors.rho_L = priors["rho_L"];
+	cfg.priors.rho_U = priors["rho_U"];
+	cfg.priors.kappa_a = priors["kappa_a"];
+	cfg.priors.kappa_b = priors["kappa_b"];
+	cfg.priors.s_a = priors["sigmasq_a"];
+	cfg.priors.s_b = priors["sigmasq_b"];
+
+	VectorXd beta_var = priors["beta"];
+	cfg.priors.beta_var = beta_var.data();
+
+	cfg.params.nu = as<double>(priors["nu"]);
+	cfg.params.kappa = inits[0];
+	cfg.params.sigmasq = inits[1];
+	cfg.params.rho = inits[2];
+	cfg.params.beta = beta;
+	cfg.params.eta0 = eta0;
+
+	mat R, c;
+	VectorXd eta0mu;
+	LLT<MatrixXd> localLLT;
+
+	// pre-allocate space for covariance matrix and approx. components
+	R = mat(cfg.consts.nknots, cfg.consts.nknots, fill::zeros);
+	c = mat(cfg.consts.nz, cfg.consts.nknots, fill::zeros);
+	eta0mu = VectorXd(cfg.consts.n * cfg.consts.nt);
+
+	// pre-compute eta0 precision
+	SparseMatrix<double> SigmaInv = *(cfg.consts.Q) * cfg.params.kappa;
+	localCovLLT(*(cfg.consts.A), R, c, *(cfg.consts.dknots),
+		*(cfg.consts.dzknots), *(cfg.consts.W), cfg.params.sigmasq,
+		cfg.params.rho, cfg.params.nu, localLLT);
+	buildEta0Prec(SigmaInv, localLLT, cfg.scratch.eta0Prec);
+
+	// compute eta0 density
+	res[1] = mcstat2::ldigmrfKron(cfg.params.eta0,
+		eta0mu, localLLT, cfg.params.kappa, cfg.consts.df,
+		cfg.scratch.eta0Prec);
+
+	// compute likelihood
+	res[0] =  mcstat2::glm::ll(Y.data(), eta0.data(), beta.data(), X.data(),
+		cfg.consts.n, cfg.consts.nt, cfg.consts.p,
+		mcstat2::glm::glmfamily::poisson);
+*/
+	//return res;
+//}
+
 // [[Rcpp::export]]
 List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W,
 	int nSamples, List priors, std::vector<double>& inits,
@@ -288,18 +455,18 @@ List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W,
 				 W - matrix of EOF patterns
 				 nSamples - number of posterior samples to draw
 				 priors - Rcpp::List containing parameterizations of priors; see
-				 	R documentation to get details of the list's structure
-				inits - vector containing initial values for  (kappa, sigmasq, rho)
-				sds - initial proposal sd's for random walk samplers
-				C - scaling factors for adapting RW proposal sd's
-				Q - GMRF structure for areal units
-				inits_eta0 - vector of initial values of loaded teleconnection effects
-				inits_beta - vector of initial values for regression coefficients
-				Y - vector of all observations
-				X - matrix of covariates
-				A - matrix of eof scores, each col. should have all scores for one
-					timepoint (neofs x t)
-				df - rank deficiency in Q
+				 R documentation to get details of the list's structure
+				 inits - vector containing initial values for  (kappa, sigmasq, rho)
+				 sds - initial proposal sd's for random walk samplers
+				 C - scaling factors for adapting RW proposal sd's
+				 Q - GMRF structure for areal units
+				 inits_eta0 - vector of initial values of loaded teleconnection effects
+				 inits_beta - vector of initial values for regression coefficients
+				 Y - vector of all observations
+				 X - matrix of covariates
+				 A - matrix of eof scores, each col. should have all scores for one
+				 	timepoint (neofs x t)
+				 df - rank deficiency in Q
 		*/
 
 	// extract data
@@ -329,10 +496,13 @@ List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W,
 	cfg.priors.s_a = priors["sigmasq_a"];
 	cfg.priors.s_b = priors["sigmasq_b"];
 
+	VectorXd beta_var = priors["beta"];
+	cfg.priors.beta_var = beta_var.data();
+
 	cfg.params.nu = as<double>(priors["nu"]);
 	cfg.params.kappa = inits[0];
-	cfg.params.rho = inits[1];
-	cfg.params.sigmasq = inits[2];
+	cfg.params.sigmasq = inits[1];
+	cfg.params.rho = inits[2];
 	cfg.params.beta = inits_beta;
 	cfg.params.eta0 = inits_eta0;
 
@@ -349,15 +519,19 @@ List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W,
 	TeleSampler ts = TeleSampler(cfg, sds, inits, C, .4,
 		{0, 0, cfg.priors.rho_L}, {0, 1, cfg.priors.rho_U}, adapt);
 
+	BetaSampler bs = BetaSampler(cfg);
+
   StateSampler ss = StateSampler(cfg);
 
 	mcstat2::GibbsSampler sampler = mcstat2::GibbsSampler();
 	sampler.addSampler(ts);
+	sampler.addSampler(bs);
 	sampler.addSampler(ss);
 	sampler.run(nSamples);
 
 	Rcpp::Rcout << "kappa: " << ts.getSd(0) << " sigmasq: " << ts.getSd(1) <<
-		" rho: " << ts.getSd(2) << std::endl;
+		" rho: " << ts.getSd(2) << std::endl <<
+		"acceptance rate: " << ts.getAcceptanceRate() << std::endl;
 
 	return sampler.getSamples();
 }

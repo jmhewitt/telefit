@@ -171,7 +171,7 @@ void mcstat2::glm::gaussian_approx_beta(const double* beta0, const double* Q,
 }
 
 void mcstat2::glm::gaussian_approx_eta0(const double* eta0,
-  const EigenSpMat& Q, int it, double* mu,
+  EigenSpMat& Q, int it, double* mu,
   Eigen::SimplicialLLT<EigenSpMat>& prec_chol, const double* beta,
   const double* y, const double* x, int n, int t, int p,
   const glmfamily family) {
@@ -186,6 +186,34 @@ void mcstat2::glm::gaussian_approx_eta0(const double* eta0,
   VectorXd C(nt);
   EigenSpMat Qm(Q);
 
+/*
+  // TODO: these steps should be common across all calls to the function, so
+  // as an optimization routine, we could consider modifying the function so
+  // that these values are passed in
+
+  std::vector<double*> diag_Qm(Qm.rows(), NULL);
+  std::vector<double*> diag_Q(Qm.rows(), NULL);
+  for(int i=0; i<Qm.rows(); i++) {
+    diag_Qm[i] = &Qm.coeffRef(i,i);
+    diag_Q[i] = &Q.coeffRef(i,i);
+  }
+
+  prec_chol.analyzePattern(Qm);
+
+  // update the diagonal entry list
+  // check to see if entries are really moved instead?
+  // avoiding this check may have diminishing returns
+  for(int i=0; i<Qm.rows(); i++) {
+    diag_Qm[i] = &Qm.coeffRef(i,i);
+  }
+
+  // we spend a lot of time in this step.  coeffref and
+  // analyze take up half of the remaining time.  additionally, it looks like
+  // the call to factorize may not be recognizing the decomposition
+
+  // END TODO
+*/
+
   // iterate to find mean and precision close to mode of target density
   for(int i=0; i<it; i++) {
     // Taylor-expand likelihood
@@ -193,6 +221,7 @@ void mcstat2::glm::gaussian_approx_eta0(const double* eta0,
     // factor approximation's precision matrix
     for(int j=0; j<Qm.rows(); j++)
       Qm.coeffRef(j,j) = Q.coeff(j,j) + C[j];
+      //*diag_Qm[j] = *diag_Q[j] + C[j];
     prec_chol.compute(Qm);
     // compute approximation's mean
     mvec = prec_chol.solve(b);
@@ -236,7 +265,7 @@ double mcstat2::glm::ll(const double* y, const double* eta0, const double* beta,
 
 // [[Rcpp::export]]
 List test_gaussian_approx_eta0(const Eigen::Map<Eigen::VectorXd> eta0,
-  const Eigen::Map<Eigen::SparseMatrix<double>> Q, int it,
+  Eigen::SparseMatrix<double> Q, int it,
   const Eigen::Map<Eigen::VectorXd> beta, const Eigen::Map<Eigen::VectorXd> y,
   const Eigen::Map<Eigen::MatrixXd> x, int n, int t, int p) {
 

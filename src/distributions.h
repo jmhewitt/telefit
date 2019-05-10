@@ -117,6 +117,13 @@ namespace mcstat2 {
 	double ldmvrnorm_spchol(const VectorXd& x, const VectorXd& mu,
 		const SimplicialLLT<EigenSpMat>& prec);
 
+	/*
+	  log density for a multivariate normal r.v. x ~ N(mu, Sigma) where
+		an Eigen::LLT decomposition of inv(Sigma) is provided
+	*/
+	double ldmvrnorm_chol(const VectorXd& x, const VectorXd& mu,
+		const LLT<MatrixXd>& prec);
+
 
 	//
 	// probabilities
@@ -191,6 +198,10 @@ namespace mcstat2 {
 	//  1) Sigma has a sparse precision matrix Q
 	//  2) An Eigen::SimplicialLLT decomposition of Q is provided
 	VectorXd mvrnorm_spchol(const SimplicialLLT<EigenSpMat>& prec);
+
+	// sample a mean zero multivariate normal r.v. x ~ N(0, Sigma) where
+	//  an Eigen::LLT decomposition of inv(Sigma) is provided
+	VectorXd mvrnorm_precchol(const LLT<MatrixXd>& prec_chol);
 
 }
 

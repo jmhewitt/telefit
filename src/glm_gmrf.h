@@ -78,7 +78,7 @@ namespace glm {
        n, t - number of locations and timepoints
 			 p - the dimension of p (i.e., number of coefficients in beta)
     */
-    void gaussian_approx_eta0(const double* eta0, const EigenSpMat& Q, int it,
+    void gaussian_approx_eta0(const double* eta0, EigenSpMat& Q, int it,
 			double* mu, Eigen::SimplicialLLT<EigenSpMat>& prec_chol,
 			const double* beta, const double* y, const double* x, int n, int t, int p,
 			const glmfamily family);

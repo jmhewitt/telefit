@@ -1,5 +1,21 @@
 context("Custom C++ probability routines")
 
+test_that("Density x ~ Normal(mu, Sigma) with dense precisions", {
+  set.seed(2000)
+  
+  # build random covariance matrix
+  x = matrix(rnorm(1e1*30), ncol = 5)
+  Sigma = cov(x)
+  
+  # randomly add conditional independence, yielding sparse precision
+  Q = solve(Sigma)
+  
+  # test passes if c++ density matches known density
+  expect_equal(
+    mvtnorm::dmvnorm(x = x[1,], mean = x[2,], sigma = Sigma, log = TRUE),
+    .Call(`_telefit_test_ldmvrnorm_chol`, x[1,], x[2,], Q)
+  )
+})
 
 test_that("Density x ~ Normal(mu, Sigma) with sparse precisions", {
   set.seed(2000)

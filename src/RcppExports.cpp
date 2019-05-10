@@ -90,6 +90,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_ldmvrnorm_chol
+double test_ldmvrnorm_chol(Eigen::VectorXd x, Eigen::VectorXd mu, Eigen::MatrixXd Q);
+RcppExport SEXP _telefit_test_ldmvrnorm_chol(SEXP xSEXP, SEXP muSEXP, SEXP QSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type Q(QSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_ldmvrnorm_chol(x, mu, Q));
+    return rcpp_result_gen;
+END_RCPP
+}
+// test_mvrnorm_prec
+Eigen::MatrixXd test_mvrnorm_prec(Eigen::MatrixXd prec, int n);
+RcppExport SEXP _telefit_test_mvrnorm_prec(SEXP precSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type prec(precSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_mvrnorm_prec(prec, n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // test_ldmvrnorm_spchol
 double test_ldmvrnorm_spchol(Eigen::VectorXd x, Eigen::VectorXd mu, Eigen::SparseMatrix<double> Q);
 RcppExport SEXP _telefit_test_ldmvrnorm_spchol(SEXP xSEXP, SEXP muSEXP, SEXP QSEXP) {
@@ -188,13 +213,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // test_gaussian_approx_eta0
-List test_gaussian_approx_eta0(const Eigen::Map<Eigen::VectorXd> eta0, const Eigen::Map<Eigen::SparseMatrix<double>> Q, int it, const Eigen::Map<Eigen::VectorXd> beta, const Eigen::Map<Eigen::VectorXd> y, const Eigen::Map<Eigen::MatrixXd> x, int n, int t, int p);
+List test_gaussian_approx_eta0(const Eigen::Map<Eigen::VectorXd> eta0, Eigen::SparseMatrix<double> Q, int it, const Eigen::Map<Eigen::VectorXd> beta, const Eigen::Map<Eigen::VectorXd> y, const Eigen::Map<Eigen::MatrixXd> x, int n, int t, int p);
 RcppExport SEXP _telefit_test_gaussian_approx_eta0(SEXP eta0SEXP, SEXP QSEXP, SEXP itSEXP, SEXP betaSEXP, SEXP ySEXP, SEXP xSEXP, SEXP nSEXP, SEXP tSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type eta0(eta0SEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::SparseMatrix<double>> >::type Q(QSEXP);
+    Rcpp::traits::input_parameter< Eigen::SparseMatrix<double> >::type Q(QSEXP);
     Rcpp::traits::input_parameter< int >::type it(itSEXP);
     Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type y(ySEXP);
@@ -376,6 +401,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_telefit_test_rw_sampler", (DL_FUNC) &_telefit_test_rw_sampler, 3},
     {"_telefit_r_maternCov", (DL_FUNC) &_telefit_r_maternCov, 5},
     {"_telefit_r_maternArray", (DL_FUNC) &_telefit_r_maternArray, 5},
+    {"_telefit_test_ldmvrnorm_chol", (DL_FUNC) &_telefit_test_ldmvrnorm_chol, 3},
+    {"_telefit_test_mvrnorm_prec", (DL_FUNC) &_telefit_test_mvrnorm_prec, 2},
     {"_telefit_test_ldmvrnorm_spchol", (DL_FUNC) &_telefit_test_ldmvrnorm_spchol, 3},
     {"_telefit_test_spchol_sampler", (DL_FUNC) &_telefit_test_spchol_sampler, 2},
     {"_telefit_r_mc2_rinvwishart", (DL_FUNC) &_telefit_r_mc2_rinvwishart, 2},

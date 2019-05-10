@@ -25,6 +25,14 @@ r_maternArray <- function(dist, scale, range, smoothness, nugget) {
     .Call(`_telefit_r_maternArray`, dist, scale, range, smoothness, nugget)
 }
 
+test_ldmvrnorm_chol <- function(x, mu, Q) {
+    .Call(`_telefit_test_ldmvrnorm_chol`, x, mu, Q)
+}
+
+test_mvrnorm_prec <- function(prec, n) {
+    .Call(`_telefit_test_mvrnorm_prec`, prec, n)
+}
+
 test_ldmvrnorm_spchol <- function(x, mu, Q) {
     .Call(`_telefit_test_ldmvrnorm_spchol`, x, mu, Q)
 }

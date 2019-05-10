@@ -1,5 +1,23 @@
 context("Samplers")
 
+test_that("Sampling x ~ Normal(0, Sigma) via dense precision", {
+  set.seed(2000)
+  
+  # build random covariance matrix
+  x = matrix(rnorm(1e2), ncol = 5)
+  Sigma = cov(x)
+  
+  Q = solve(Sigma)
+  
+  # test sampler
+  nsamp = 1e5
+  x = .Call(`_telefit_test_mvrnorm_prec`, Q, nsamp)
+  
+  expect_lt(
+    norm(cov(x)-Sigma, 'F')/norm(Sigma, 'F') * 100, 5
+  )
+})
+
 test_that("Sampling x ~ Normal(0, Sigma) via sparse precisions", {
   set.seed(2000)
   

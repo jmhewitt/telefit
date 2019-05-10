@@ -67,11 +67,8 @@ void mcstat2::BlockRWSampler::drawSample() {
 		}
 	}
 
-	// intermediate update of child class sampler state
-	preAcceptProb(x);
-
 	// accept/reject
-	double logR = logAcceptProb(x, current);
+	double logR = logAcceptProb(x, current, false);
 	bool accepted = log(R::runif(0,1)) <= std::min(logR, 0.0);
 
 	// adapt, then update child class sampler state
@@ -87,10 +84,10 @@ void mcstat2::BlockRWSampler::drawSample() {
 }
 
 double mcstat2::BlockRWSampler::logAcceptProb(
-	const std::vector<double>& x, const std::vector<double>& x0) {
+	const std::vector<double>& x, const std::vector<double>& x0, bool adaptprob) {
 
 	// compute likelihood ratio
-	double logR = logR_posterior(x, x0);
+	double logR = adaptprob ? logR_posterior_adapt(x, x0) : logR_posterior(x, x0);
 
 	// add jacobians
 	for(int i=0; i<dim; i++) {
@@ -123,7 +120,7 @@ void mcstat2::BlockRWSampler::adapt(
 		xpartial[i] = x[i];
 
 		sd[i] *= std::exp(
-			C[i] / commonScale * (std::exp(logAcceptProb(xpartial, x0)) - alpha)
+			C[i] / commonScale * (std::exp(logAcceptProb(xpartial, x0, true)) - alpha)
 		);
 
 		xpartial[i] = x0[i];

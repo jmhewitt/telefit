@@ -48,7 +48,8 @@ namespace mcstat2 {
 
 			// compute log-acceptance probability for the pair (x,x0)
 			double logAcceptProb(const std::vector<double>& x,
-													 const std::vector<double>& x0);
+													 const std::vector<double>& x0,
+												 	 bool adaptprob);
 
 		protected:
 
@@ -59,12 +60,16 @@ namespace mcstat2 {
 			virtual double logR_posterior(const std::vector<double>& x,
 																		const std::vector<double>& x0) = 0;
 
+			// compute logR_posterior during RW proposal sd. adaptation.  declaration
+			// as virtual allows implementing classes to compute adaptation logR
+			// without modifying state of the implementing class.
+			virtual double logR_posterior_adapt(
+				const std::vector<double>& x, const std::vector<double>& x0) {
+					return logR_posterior(x,x0);
+			}
+
 			// run this code if the proposal is accepted
 			virtual void update() {};
-
-			// run this code after generating the proposal, but before the acceptance
-			// probability is computed.  function gets a copy of the proposed values.
-			virtual void preAcceptProb(const std::vector<double>& x) {};
 
 	};
 

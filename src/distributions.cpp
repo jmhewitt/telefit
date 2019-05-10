@@ -408,6 +408,16 @@ double mcstat2::ldmvrnorm_spchol(const VectorXd& x, const VectorXd& mu,
     return - .5 * (k*log2pi + z.dot(z) - ldet);
 }
 
+double mcstat2::ldmvrnorm_chol(const VectorXd& x, const VectorXd& mu,
+  const LLT<MatrixXd>& prec) {
+  int k = x.size();
+  VectorXd u = x-mu;
+  VectorXd z = prec.matrixL().transpose() * u;
+
+  double ldet = 2 * prec.matrixLLT().diagonal().array().log().sum();
+  return - .5 * (k*log2pi + z.dot(z) - ldet);
+}
+
 double mcstat2::ldigmrfKron(const VectorXd& x, const VectorXd& mu,
   const LLT<MatrixXd>& lltSigmaA, double k, int df,
   const SparseMatrix<double> Qab) {
@@ -425,10 +435,41 @@ double mcstat2::ldigmrfKron(const VectorXd& x, const VectorXd& mu,
     );
 }
 
+VectorXd mcstat2::mvrnorm_precchol(const LLT<MatrixXd>& prec_chol) {
+  // extract decomposition components
+  int n = prec_chol.matrixL().rows();
+
+  // generate independent normal variates
+  GetRNGstate();
+  vec x = randn(n,1);
+  PutRNGstate();
+
+  // map variates into eigen and compute r.v.
+  Map<VectorXd> xm(x.memptr(), n);
+  return prec_chol.matrixL().transpose().solve(xm);
+}
+
 
 //
 // Rcpp exports
 //
+
+// [[Rcpp::export]]
+double test_ldmvrnorm_chol(Eigen::VectorXd x, Eigen::VectorXd mu,
+  Eigen::MatrixXd Q) {
+    Eigen::LLT<Eigen::MatrixXd> prec(Q);
+    return mcstat2::ldmvrnorm_chol(x, mu, prec);
+}
+
+
+// [[Rcpp::export]]
+Eigen::MatrixXd test_mvrnorm_prec(Eigen::MatrixXd prec, int n) {
+  LLT<MatrixXd> prec_chol(prec);
+  MatrixXd x(n, prec.rows());
+  for(int i=0; i<n; i++)
+    x.row(i) = mcstat2::mvrnorm_precchol(prec_chol);
+  return x;
+}
 
 // [[Rcpp::export]]
 double test_ldmvrnorm_spchol(Eigen::VectorXd x, Eigen::VectorXd mu,
