@@ -131,13 +131,12 @@ respGLMfit = function( stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z,
         alpha0[i,] = fit.alpha$coefficients
       }
     }
-  } else if(dim(alpha0) != c(nrow(Y), k)) {
+  } else if(any(dim(alpha0) != c(nrow(Y), k))) {
     stop('Initial alpha matrix has wrong dimensions')
   }
   
   # transform initial guesses for teleconnection effects
   eta0 = as.numeric(alpha0 %*% t(A))
-  message(str(eta0))
   # compute rank deficiency in GMRF structural component
   df = nrow(Q) - qr(Q)$rank
   
