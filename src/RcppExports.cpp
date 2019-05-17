@@ -388,8 +388,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // respglm_fit
-List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W, int nSamples, List priors, std::vector<double>& inits, std::vector<double>& sds, std::vector<double>& C, Eigen::SparseMatrix<double>& Q, Eigen::VectorXd inits_eta0, Eigen::VectorXd inits_beta, Eigen::VectorXd& Y, Eigen::MatrixXd& X, Eigen::MatrixXd& A, int df);
-RcppExport SEXP _telefit_respglm_fit(SEXP dknotsSEXP, SEXP dzknotsSEXP, SEXP WSEXP, SEXP nSamplesSEXP, SEXP priorsSEXP, SEXP initsSEXP, SEXP sdsSEXP, SEXP CSEXP, SEXP QSEXP, SEXP inits_eta0SEXP, SEXP inits_betaSEXP, SEXP YSEXP, SEXP XSEXP, SEXP ASEXP, SEXP dfSEXP) {
+List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W, int nSamples, List priors, std::vector<double>& inits, std::vector<double>& sds, std::vector<double>& C, Eigen::SparseMatrix<double>& Q, Eigen::VectorXd inits_eta0, Eigen::VectorXd inits_beta, Eigen::VectorXd& Y, Eigen::MatrixXd& X, Eigen::MatrixXd& A, int df, int thin);
+RcppExport SEXP _telefit_respglm_fit(SEXP dknotsSEXP, SEXP dzknotsSEXP, SEXP WSEXP, SEXP nSamplesSEXP, SEXP priorsSEXP, SEXP initsSEXP, SEXP sdsSEXP, SEXP CSEXP, SEXP QSEXP, SEXP inits_eta0SEXP, SEXP inits_betaSEXP, SEXP YSEXP, SEXP XSEXP, SEXP ASEXP, SEXP dfSEXP, SEXP thinSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -408,7 +408,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type X(XSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type A(ASEXP);
     Rcpp::traits::input_parameter< int >::type df(dfSEXP);
-    rcpp_result_gen = Rcpp::wrap(respglm_fit(dknots, dzknots, W, nSamples, priors, inits, sds, C, Q, inits_eta0, inits_beta, Y, X, A, df));
+    Rcpp::traits::input_parameter< int >::type thin(thinSEXP);
+    rcpp_result_gen = Rcpp::wrap(respglm_fit(dknots, dzknots, W, nSamples, priors, inits, sds, C, Q, inits_eta0, inits_beta, Y, X, A, df, thin));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -446,7 +447,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_telefit_r_rinvwishart", (DL_FUNC) &_telefit_r_rinvwishart, 2},
     {"_telefit_r_dgeikmm", (DL_FUNC) &_telefit_r_dgeikmm, 3},
     {"_telefit_respglm_lik_prior", (DL_FUNC) &_telefit_respglm_lik_prior, 13},
-    {"_telefit_respglm_fit", (DL_FUNC) &_telefit_respglm_fit, 15},
+    {"_telefit_respglm_fit", (DL_FUNC) &_telefit_respglm_fit, 16},
     {"r_ll",                        (DL_FUNC) &r_ll,                        20},
     {"r_stpcomposition",            (DL_FUNC) &r_stpcomposition,            27},
     {"r_stpfit",                    (DL_FUNC) &r_stpfit,                    36},

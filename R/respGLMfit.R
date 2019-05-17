@@ -42,6 +42,7 @@
 #' @param k number of ocean EOFs to use in fitting. this can induce dimension 
 #'  reduction
 #' @param eta0 (optional) initial values of loaded teleconnection effects.
+#' @param thin amount by which the Gibbs sampler will thin its output
 #'  
 #' @example examples/respGLMfit.R
 #' 
@@ -51,7 +52,8 @@ respGLMfit = function( stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z,
                        coords.r = stData$coords.r, Q = stData$Q, miles = TRUE, 
                        sds = rep(1,3), C = rep(.1,3), alpha0 = NULL, 
                        beta0 = NULL, family = 'poisson', k = ncol(stData$Z),
-                       coords.knots, nSamples, priors, inits, eta0 = NULL) {
+                       coords.knots, nSamples, priors, inits, eta0 = NULL,
+                       thin = 1) {
   
   # verify family
   if(family!='poisson') { 
@@ -153,7 +155,7 @@ respGLMfit = function( stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z,
   df = nrow(Q) - qr(Q)$rank
   
   res = .Call(`_telefit_respglm_fit`, dknots, dzknots, W, as.integer(nSamples), 
-              priors, inits, sds, C, Q, eta0, beta0, Yl, Xl, t(A), df)
+              priors, inits, sds, C, Q, eta0, beta0, Yl, Xl, t(A), df, thin)
   
   class(res) = 'respGLMfit'
   res

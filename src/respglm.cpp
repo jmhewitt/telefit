@@ -505,7 +505,7 @@ List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W,
 	std::vector<double>& sds, std::vector<double>& C,
 	Eigen::SparseMatrix<double>& Q, Eigen::VectorXd inits_eta0,
 	Eigen::VectorXd inits_beta, Eigen::VectorXd& Y, Eigen::MatrixXd& X,
-  Eigen::MatrixXd& A, int df) {
+  Eigen::MatrixXd& A, int df, int thin) {
 		/* Sample covariance parameters and latent effects for RESP GLM model.
 
 			 Parameters:
@@ -526,6 +526,7 @@ List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W,
 				 A - matrix of eof scores, each col. should have all scores for one
 				 	timepoint (neofs x t)
 				 df - rank deficiency in Q
+				 thin - thinning for Gibbs sampler
 		*/
 
 	// extract data
@@ -586,10 +587,12 @@ List respglm_fit(arma::mat& dknots, arma::mat& dzknots, Eigen::MatrixXd& W,
   StateSampler ss = StateSampler(cfg);
 
 	mcstat2::GibbsSampler sampler = mcstat2::GibbsSampler();
+	sampler.setThinning(thin);
 	sampler.addSampler(ts);
 	//sampler.addSampler(bs);
 	sampler.addSampler(ss);
 	sampler.run(nSamples);
+
 
 	Rcpp::Rcout << "kappa: " << ts.getSd(0) << " sigmasq: " << ts.getSd(1) <<
 		" rho: " << ts.getSd(2) << std::endl <<
