@@ -126,8 +126,8 @@ class StateSampler : public mcstat2::BlockSampler {
 			throughout sampling */
 
 		StateSampler(Config& t_cfg) :
-			BlockSampler({VECTOR, REAL, VECTOR, VECTOR, VECTOR}, {"eta0", "ll",
-			"telelR", "eta0prop", "eta0propmu"}) {
+			BlockSampler({VECTOR, REAL, VECTOR, VECTOR}, {"eta0", "ll",
+			"telelR", "eta0prop"}) {
 				cfg = &t_cfg;
 			}
 
@@ -302,7 +302,7 @@ class TeleSampler : public mcstat2::BlockRWSampler {
 
 			// gaussian approximation to full conditional for teleconnection effects
 			SimplicialLLT<EigenSpMat> eta0CovL;
-			gaussian_approx_eta0(cfg->params.eta0.data(), prop.scratch.eta0Prec, 20,
+			gaussian_approx_eta0(cfg->params.eta0.data(), prop.scratch.eta0Prec, 5,
 				eta0mu.data(), eta0CovL, cfg->params.beta.data(), prop.data.Y->data(),
 				prop.data.X->data(), prop.consts.n, prop.consts.nt, prop.consts.p,
 				mcstat2::glm::glmfamily::poisson);
@@ -329,7 +329,7 @@ class TeleSampler : public mcstat2::BlockRWSampler {
 
 			// compute backward transition probability for eta0
 			SimplicialLLT<EigenSpMat> eta0CovL_bll;
-			gaussian_approx_eta0(prop.params.eta0.data(), cfg->scratch.eta0Prec, 20,
+			gaussian_approx_eta0(prop.params.eta0.data(), cfg->scratch.eta0Prec, 5,
 				eta0mu_bk.data(), eta0CovL_bll, cfg->params.beta.data(),
 				prop.data.Y->data(),
 				prop.data.X->data(), prop.consts.n, prop.consts.nt, prop.consts.p,
