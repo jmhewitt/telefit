@@ -116,7 +116,6 @@ respGLMfit = function( stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z,
     if(family=='poisson') {
       fit.beta = glm.fit(x = Xl, y = Yl, family = poisson())
       beta0 = fit.beta$coefficients
-      browser()
     }
   } else if(length(beta0) != ncol(Xl)) { 
     stop('Initial beta vector must have ncol(X) parameters')
