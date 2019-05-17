@@ -46,8 +46,6 @@
 #'  
 #' @example examples/respGLMfit.R
 #' 
-
-
 respGLMfit = function( stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z, 
                        coords.r = stData$coords.r, Q = stData$Q, miles = TRUE, 
                        sds = rep(1,3), C = rep(.1,3), alpha0 = NULL, 

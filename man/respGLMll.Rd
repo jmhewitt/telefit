@@ -2,13 +2,14 @@
 % Please edit documentation in R/respGLMll.R
 \name{respGLMll}
 \alias{respGLMll}
-\title{Log-likelihood for the GLM remote effects spatial process (RESP) model}
+\title{Log-likelihood and prior densities for the GLM remote effects spatial 
+process (RESP) model}
 \usage{
 respGLMll(stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z,
   coords.r = stData$coords.r, Q = stData$Q, miles = TRUE,
-  sds = rep(1, 3), C = rep(0.1, 3), alpha0 = NULL, beta0 = NULL,
-  family = "poisson", k = ncol(stData$Z), coords.knots, nSamples,
-  priors, inits)
+  alpha0 = NULL, beta0 = NULL, family = "poisson",
+  k = ncol(stData$Z), coords.knots, nSamples, priors, inits,
+  eta0 = NULL)
 }
 \arguments{
 \item{stData}{Object with class 'stData' containing data needed to fit this 
@@ -27,13 +28,6 @@ were observed (lon, lat)}
 
 \item{miles}{TRUE if covariance matrix distances should be in miles, FALSE 
 for kilometers}
-
-\item{sds}{initial proposal standard deviations for covariance parameter RW 
-samplers}
-
-\item{C}{scaling constants used to update proposal standard deviations for 
-covariance parameter RW samplers.  Set \code{C=rep(0,3)} to not adapt the 
-proposal sd's.}
 
 \item{alpha0}{matrix of initial parameters for teleconnection effects.  by 
 default will be the MLE fits for a marginal poisson regression.}
@@ -58,9 +52,12 @@ will be based (lon, lat)}
 
 \item{inits}{initial values \code{c(kappa, sigmasq, rho)} for covariance 
 parameters}
+
+\item{eta0}{(optional) specify loaded teleconnection effects}
 }
 \description{
-Log-likelihood for the GLM remote effects spatial process (RESP) model
+Log-likelihood and prior densities for the GLM remote effects spatial 
+process (RESP) model
 }
 \examples{
 # Rcpp::compileAttributes('r/temporal_LSigma/packages/telefit/')

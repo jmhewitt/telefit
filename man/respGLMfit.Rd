@@ -8,7 +8,7 @@ respGLMfit(stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z,
   coords.r = stData$coords.r, Q = stData$Q, miles = TRUE,
   sds = rep(1, 3), C = rep(0.1, 3), alpha0 = NULL, beta0 = NULL,
   family = "poisson", k = ncol(stData$Z), coords.knots, nSamples,
-  priors, inits)
+  priors, inits, eta0 = NULL, thin = 1)
 }
 \arguments{
 \item{stData}{Object with class 'stData' containing data needed to fit this 
@@ -58,6 +58,10 @@ will be based (lon, lat)}
 
 \item{inits}{initial values \code{c(kappa, sigmasq, rho)} for covariance 
 parameters}
+
+\item{eta0}{(optional) initial values of loaded teleconnection effects.}
+
+\item{thin}{amount by which the Gibbs sampler will thin its output}
 }
 \description{
 Fit the remote effects spatial process (RESP) model
