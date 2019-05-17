@@ -101,6 +101,10 @@ r_dgeikmm <- function(N, A, B) {
     .Call(`_telefit_r_dgeikmm`, N, A, B)
 }
 
+respglm_lik_prior <- function(dknots, dzknots, W, nSamples, priors, inits, Q, eta0, beta, Y, X, A, df) {
+    .Call(`_telefit_respglm_lik_prior`, dknots, dzknots, W, nSamples, priors, inits, Q, eta0, beta, Y, X, A, df)
+}
+
 respglm_fit <- function(dknots, dzknots, W, nSamples, priors, inits, sds, C, Q, inits_eta0, inits_beta, Y, X, A, df) {
     .Call(`_telefit_respglm_fit`, dknots, dzknots, W, nSamples, priors, inits, sds, C, Q, inits_eta0, inits_beta, Y, X, A, df)
 }

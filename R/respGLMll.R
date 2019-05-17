@@ -1,4 +1,5 @@
-#' Fit the remote effects spatial process (RESP) model
+#' Log-likelihood and prior densities for the GLM remote effects spatial 
+#' process (RESP) model
 #' 
 #' @export
 #' 
@@ -29,11 +30,6 @@
 #'    }
 #' @param inits initial values \code{c(kappa, sigmasq, rho)} for covariance 
 #'  parameters
-#' @param sds initial proposal standard deviations for covariance parameter RW 
-#'  samplers
-#' @param C scaling constants used to update proposal standard deviations for 
-#'  covariance parameter RW samplers.  Set \code{C=rep(0,3)} to not adapt the 
-#'  proposal sd's.
 #' @param alpha0 matrix of initial parameters for teleconnection effects.  by 
 #'  default will be the MLE fits for a marginal poisson regression.
 #' @param beta0 vector of initial parameters for regression coefficients. by 
@@ -41,15 +37,15 @@
 #' @param family the GLM likelihood to fit.  currently only accepts 'poisson'  
 #' @param k number of ocean EOFs to use in fitting. this can induce dimension 
 #'  reduction
-#' @param eta0 (optional) initial values of loaded teleconnection effects.
+#' @param eta0 (optional) specify loaded teleconnection effects
 #'  
 #' @example examples/respGLMfit.R
 #' 
 
 
-respGLMfit = function( stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z, 
+respGLMll = function( stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z, 
                        coords.r = stData$coords.r, Q = stData$Q, miles = TRUE, 
-                       sds = rep(1,3), C = rep(.1,3), alpha0 = NULL, 
+                       alpha0 = NULL, 
                        beta0 = NULL, family = 'poisson', k = ncol(stData$Z),
                        coords.knots, nSamples, priors, inits, eta0 = NULL) {
   
@@ -116,7 +112,6 @@ respGLMfit = function( stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z,
     if(family=='poisson') {
       fit.beta = glm.fit(x = Xl, y = Yl, family = poisson())
       beta0 = fit.beta$coefficients
-      browser()
     }
   } else if(length(beta0) != ncol(Xl)) { 
     stop('Initial beta vector must have ncol(X) parameters')
@@ -126,36 +121,39 @@ respGLMfit = function( stData = NULL, X = stData$X, Y = stData$Y, Z = stData$Z,
     )
   }
   
-  if(is.null(eta0)) {
-    
-    # check initial teleconnection coefficient values
-    if(is.null(alpha0)) {
-      if(family=='poisson') {
-        alpha0 = matrix(NA, nrow = nrow(Y), ncol = k)
-        offsets = matrix(fit.beta$linear.predictors, nrow = nrow(Y))
-        for(i in 1:nrow(Y)) {
-          fit.alpha = glm.fit(x = A, y = Y[i,], family = poisson(), 
-                              offset = offsets[i,])
-          alpha0[i,] = fit.alpha$coefficients
-        }
+  # check initial teleconnection coefficient values
+  if(is.null(alpha0)) {
+    if(family=='poisson') {
+      alpha0 = matrix(NA, nrow = nrow(Y), ncol = k)
+      offsets = matrix(fit.beta$linear.predictors, nrow = nrow(Y))
+      for(i in 1:nrow(Y)) {
+        fit.alpha = glm.fit(x = A, y = Y[i,], family = poisson(), 
+                            offset = offsets[i,])
+        alpha0[i,] = fit.alpha$coefficients
       }
-    } else if(any(dim(alpha0) != c(nrow(Y), k))) {
-      stop('Initial alpha matrix has wrong dimensions')
     }
+  } else if(any(dim(alpha0) != c(nrow(Y), k))) {
+    stop('Initial alpha matrix has wrong dimensions')
+  }
   
+  if(is.null(eta0)) {
     # transform initial guesses for teleconnection effects
     eta0 = as.numeric(alpha0 %*% t(A))
-  } else if (all(!is.null(alpha0), !is.null(eta0))) { 
-    warning('Initial alpha matrix is ignored because initial eta0 vector is
-            also provided.')
+  } else if(length(eta0) != length(Yl)) {
+    stop('Initial eta0 vector has wrong dimension')
   }
   
   # compute rank deficiency in GMRF structural component
   df = nrow(Q) - qr(Q)$rank
   
-  res = .Call(`_telefit_respglm_fit`, dknots, dzknots, W, as.integer(nSamples), 
-              priors, inits, sds, C, Q, eta0, beta0, Yl, Xl, t(A), df)
+  res = .Call(`_telefit_respglm_lik_prior`, dknots, dzknots, W, 
+              as.integer(nSamples), priors, inits, Q, eta0, beta0, Yl, 
+              Xl, t(A), df)
   
-  class(res) = 'respGLMfit'
-  res
+  names(res) = c('ll', 'deta0', 'dbeta0')
+  
+  list(res = res,
+       eta0 = eta0, 
+       beta0 = beta0,
+       inits = inits)
 }
