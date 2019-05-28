@@ -20,7 +20,8 @@
 #' @param t Timepoint from which to extract data from X, Y, and Z.  If NULL,
 #'  then all timepoints will be used.
 #' @param D.s c(xmin, xmax, ymin, ymax) region from which to extract data from 
-#'  X and Y
+#'  X and Y, or a SpatialPolygonsXXX object containing boundaries of regions to
+#'  extract areal data from.
 #' @param D.r c(xmin, xmax, ymin, ymax) region from which to extract data from Z
 #' @param intercept If TRUE, an intercept will be added to the design matrix
 #' @param mask.s SpatialGridDataFrame to be used as a mask when extracting data
@@ -105,8 +106,17 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
     slope = rep(slope, length(X))
   }
   
-  # convert local bounds to extent object
-  D.s = extent(D.s)
+  # convert local bounds to extent object if not extracting areal data
+  if(is.numeric(D.s)) {
+    D.s = extent(D.s)
+  }
+  
+  # convert remote bounds to extent object if not extracting areal data
+  for(i in 1:length(D.r)) {
+    if(is.numeric(D.r[[i]])) {
+      D.r[[i]] = extent(D.r[[i]])
+    }
+  }
   
   # save time labels before they are converted to column indices
   if(is.null(t)) {
@@ -147,11 +157,16 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   # build local design matrices for each timepoint
   o = options('na.action')
   options(na.action = 'na.pass')
-  
   X.mat = foreach(tt = t, .combine = 'abind3') %do% {
     
     # extract data from each predictor
-    x = foreach(x = X, .combine='cbind') %do% { x@data@values[, tt, drop =FALSE] }
+    x = foreach(x = X, .combine='cbind') %do% { 
+      if(class(x)=='RasterBrick') { 
+        x@data@values[, tt, drop =FALSE] 
+      } else if(startsWith(class(x), 'SpatialPolygons')) {
+        x@data[, tt, drop =FALSE] 
+      }
+    }
     
     # if a formula is not specified, add intercept if requested; return data
     if(!is.null(formula)) {
@@ -184,11 +199,15 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
     matrix(z@data@values[, t, drop =FALSE], ncol = length(t)) 
   }
 
-  # extract response data
-  Y.mat = Y@data@values[,t, drop =FALSE]
+  # extract response data and coordinates
+  if(class(Y)=='RasterBrick') { 
+    Y.mat = Y@data@values[,t, drop =FALSE]
+    coords.s = coordinates(Y)
+  } else if(startsWith(class(Y), 'SpatialPolygons')) {
+    Y.mat = as.matrix(Y@data[,t, drop =FALSE])
+  }
   
-  # extract coordinates
-  coords.s = coordinates(Y)
+  # extract remote coordinates
   coords.r = foreach(z = Z, .combine = 'rbind') %do% { coordinates(z) }
   
   # remove remote covariates that have NA data
@@ -200,28 +219,35 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   complete.data = complete.cases(Y.mat)
   Y.mat = matrix(Y.mat[complete.data,], ncol=length(t))
   X.mat = X.mat[complete.data,,, drop = FALSE]
-  coords.s = coords.s[complete.data,]
+  if(class(Y)=='RasterBrick') {
+    coords.s = coords.s[complete.data,]
+  }
   
   # remove local coordinates that have NA covariates
-  complete.data = complete.cases(X.mat[,,1])
+  complete.data = complete.cases(matrix(X.mat[,,1], nrow = nrow(Y.mat)))
   for(i in 2:dim(X.mat)[3]) { 
-    complete.data = complete.data & complete.cases(X.mat[,,i])
+    complete.data = complete.data & 
+      complete.cases(matrix(X.mat[,,i], nrow = nrow(Y.mat)))
   }
   Y.mat = matrix(Y.mat[complete.data,], ncol=length(t))
   X.mat = X.mat[complete.data,,, drop = FALSE]
-  coords.s = coords.s[complete.data,]
-  
+  if(class(Y)=='RasterBrick') {
+    coords.s = coords.s[complete.data,]
+  }
   
   # build return object
     
   res = list(
     tLabs = tLabs,
-    coords.s = coords.s,
     coords.r = coords.r,
     X = X.mat,
     Y = Y.mat,
     Z = Z.mat
   )
+  
+  if(class(Y)=='RasterBrick') {
+    res$coords.s = coords.s
+  }
   
   res$X.lab = X.lab
   res$Y.lab = Y.lab

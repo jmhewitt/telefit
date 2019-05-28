@@ -10,7 +10,8 @@ extractRegion(sgdf, extent, type = "response", aggfact = NULL,
 \arguments{
 \item{sgdf}{SpatialGridDataFrame containing data to extract}
 
-\item{extent}{raster::extent object featuring region to extract}
+\item{extent}{raster::extent object featuring region to extract, or a 
+SpatialPolygonsXXX object used for extracting areal data}
 
 \item{type}{whether to return the raw data, anomalies (data minus temporal 
 average at each location), standardized anomalies (anomalies divided by

@@ -28,7 +28,8 @@ each SpatialGridDataFrame}
 then all timepoints will be used.}
 
 \item{D.s}{c(xmin, xmax, ymin, ymax) region from which to extract data from 
-X and Y}
+X and Y, or a SpatialPolygonsXXX object containing boundaries of regions to
+extract areal data from.}
 
 \item{D.r}{c(xmin, xmax, ymin, ymax) region from which to extract data from Z}
 
