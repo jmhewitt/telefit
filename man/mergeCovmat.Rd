@@ -4,8 +4,16 @@
 \alias{mergeCovmat}
 \title{Combine sample covariance matrices from two samples}
 \usage{
-mergeCovmat(A.cov.xy, B.cov.xy, A.mean.x, A.mean.y, B.mean.x, B.mean.y,
-  A.n, B.n)
+mergeCovmat(
+  A.cov.xy,
+  B.cov.xy,
+  A.mean.x,
+  A.mean.y,
+  B.mean.x,
+  B.mean.y,
+  A.n,
+  B.n
+)
 }
 \arguments{
 \item{A.cov.xy}{sample covariance matrix from the first sample, 'A'}

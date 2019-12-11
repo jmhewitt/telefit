@@ -72,7 +72,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
                           aspect = F, aspect.categories=4, slope=F,
                           colnames.X=NULL, formula=NULL) {
               
-  if(class(X)!='list')
+  if(!inherits(X, 'list'))
     X = list(X)
   
   if(is.null(X.lab))
@@ -84,7 +84,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   if(is.null(Z.lab))
     Z.lab = 'Z'
   
-  if(class(Z)!='list') {
+  if(!inherits(Z,'list')) {
     Z = list(Z)
     D.r = list(D.r)
     mask.r = list(mask.r)
@@ -161,7 +161,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
     
     # extract data from each predictor
     x = foreach(x = X, .combine='cbind') %do% { 
-      if(class(x)=='RasterBrick') { 
+      if(inherits(x, 'RasterBrick')) { 
         x@data@values[, tt, drop =FALSE] 
       } else if(startsWith(class(x), 'SpatialPolygons')) {
         x@data[, tt, drop =FALSE] 
@@ -200,7 +200,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   }
 
   # extract response data and coordinates
-  if(class(Y)=='RasterBrick') { 
+  if(inherits(Y,'RasterBrick')) { 
     Y.mat = Y@data@values[,t, drop =FALSE]
     coords.s = coordinates(Y)
   } else if(startsWith(class(Y), 'SpatialPolygons')) {
@@ -219,7 +219,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   complete.data = complete.cases(Y.mat)
   Y.mat = matrix(Y.mat[complete.data,], ncol=length(t))
   X.mat = X.mat[complete.data,,, drop = FALSE]
-  if(class(Y)=='RasterBrick') {
+  if(inherits(Y,'RasterBrick')) {
     coords.s = coords.s[complete.data,]
   }
   
@@ -231,7 +231,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
   }
   Y.mat = matrix(Y.mat[complete.data,], ncol=length(t))
   X.mat = X.mat[complete.data,,, drop = FALSE]
-  if(class(Y)=='RasterBrick') {
+  if(inherits(Y,'RasterBrick')) {
     coords.s = coords.s[complete.data,]
   }
   
@@ -245,7 +245,7 @@ extractStData = function( X, Y, Z, t=NULL, D.s, D.r, mask.s = NULL, mask.r = NUL
     Z = Z.mat
   )
   
-  if(class(Y)=='RasterBrick') {
+  if(inherits(Y,'RasterBrick')) {
     res$coords.s = coords.s
   }
   

@@ -4,8 +4,7 @@
 \alias{coef.stPredict}
 \title{Compute point estimates for parameters from posterior samples}
 \usage{
-\method{coef}{stPredict}(object, stFit, stData, burn = 1,
-  type = "eof-alpha_knots", ...)
+\method{coef}{stPredict}(object, stFit, stData, burn = 1, type = "eof-alpha_knots", ...)
 }
 \arguments{
 \item{object}{stPredict object containing posterior estimates of alphas}

@@ -4,14 +4,32 @@
 \alias{plot.stData}
 \title{Plot stData objects}
 \usage{
-\method{plot}{stData}(x, type = "response", t = NULL, p = NULL,
-  map = "world", region = ".", coord.s = NULL, coord.r = NULL,
-  zlim = NULL, fill.lab = NULL,
-  lab.teleconnection = expression(alpha), fill.lab.width = 20,
-  category.breaks = NULL, coords.knots = NULL, signif.telecon = F,
-  dots = NULL, pattern = 1, lwd = 1.75, cutoff = 0.9,
-  signif.level = 0.05, alpha = 0.2, zmid = 0, contour = c(F, F),
-  ...)
+\method{plot}{stData}(
+  x,
+  type = "response",
+  t = NULL,
+  p = NULL,
+  map = "world",
+  region = ".",
+  coord.s = NULL,
+  coord.r = NULL,
+  zlim = NULL,
+  fill.lab = NULL,
+  lab.teleconnection = expression(alpha),
+  fill.lab.width = 20,
+  category.breaks = NULL,
+  coords.knots = NULL,
+  signif.telecon = F,
+  dots = NULL,
+  pattern = 1,
+  lwd = 1.75,
+  cutoff = 0.9,
+  signif.level = 0.05,
+  alpha = 0.2,
+  zmid = 0,
+  contour = c(F, F),
+  ...
+)
 }
 \arguments{
 \item{x}{Object of class stData to plot.}

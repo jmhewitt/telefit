@@ -4,8 +4,16 @@
 \alias{plot.teleCor}
 \title{Plots teleconnection correlation maps}
 \usage{
-\method{plot}{teleCor}(x, signif = F, coord.s = NULL, map = "world",
-  region = ".", zlim = NULL, dots = NULL, ...)
+\method{plot}{teleCor}(
+  x,
+  signif = F,
+  coord.s = NULL,
+  map = "world",
+  region = ".",
+  zlim = NULL,
+  dots = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{object of class teleCor, containing pointwise correlations}

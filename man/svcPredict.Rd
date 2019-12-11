@@ -4,8 +4,16 @@
 \alias{svcPredict}
 \title{Make predictions using a fitted varying coefficient model}
 \usage{
-svcPredict(fit, Xn = NULL, Zn = NULL, stData = NULL,
-  stDataNew = NULL, burn = 0, cat.probs = c(1/3, 2/3), conf = 0.95)
+svcPredict(
+  fit,
+  Xn = NULL,
+  Zn = NULL,
+  stData = NULL,
+  stDataNew = NULL,
+  burn = 0,
+  cat.probs = c(1/3, 2/3),
+  conf = 0.95
+)
 }
 \arguments{
 \item{fit}{svcFit object containing posterior samples}

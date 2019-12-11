@@ -4,12 +4,30 @@
 \alias{extractStData}
 \title{Basic extraction of SpatialGridDataFrame data for teleconnection analysis}
 \usage{
-extractStData(X, Y, Z, t = NULL, D.s, D.r, mask.s = NULL,
-  mask.r = NULL, aggfact.s = NULL, aggfact.r = NULL, intercept = T,
-  type.s = "response", type.r = "response", type.s.y = "response",
-  X.lab = NULL, Y.lab = NULL, Z.lab = NULL, aspect = F,
-  aspect.categories = 4, slope = F, colnames.X = NULL,
-  formula = NULL)
+extractStData(
+  X,
+  Y,
+  Z,
+  t = NULL,
+  D.s,
+  D.r,
+  mask.s = NULL,
+  mask.r = NULL,
+  aggfact.s = NULL,
+  aggfact.r = NULL,
+  intercept = T,
+  type.s = "response",
+  type.r = "response",
+  type.s.y = "response",
+  X.lab = NULL,
+  Y.lab = NULL,
+  Z.lab = NULL,
+  aspect = F,
+  aspect.categories = 4,
+  slope = F,
+  colnames.X = NULL,
+  formula = NULL
+)
 }
 \arguments{
 \item{X}{SpatialGridDataFrame with local covariates.  If X is a list, each

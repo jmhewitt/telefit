@@ -112,12 +112,12 @@ plot.stData = function( x, type='response', t=NULL, p=NULL,
     p=2
   
   if(!is.null(stData$Y)) {
-    if(class(stData$Y)!='matrix')
+    if(!inherits(stData$Y, 'matrix'))
       stData$Y = matrix(stData$Y, nrow = nrow(stData$coords.s))  
   }
   
   if(!is.null(stData$Y.cat)) {
-    if(class(stData$Y.cat)!='matrix')
+    if(!inherits(stData$Y.cat, 'matrix'))
       stData$Y.cat = matrix(stData$Y.cat, nrow = nrow(stData$coords.s))  
   }
   
@@ -422,7 +422,7 @@ plot.stData = function( x, type='response', t=NULL, p=NULL,
   }
   
   # wrap fill label
-  if(class(lab.col)!='expression') {
+  if(!inherits(lab.col, 'expression')) {
     lab.col = str_wrap(lab.col, width=fill.lab.width)
   }
   

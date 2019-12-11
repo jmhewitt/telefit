@@ -3,7 +3,6 @@
 \docType{package}
 \name{telefit}
 \alias{telefit}
-\alias{telefit-package}
 \title{Tools for modeling teleconnections}
 \description{
 The package \pkg{telefit} provides functions for fitting the remote 

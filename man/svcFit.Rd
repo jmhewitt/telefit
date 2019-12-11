@@ -4,8 +4,20 @@
 \alias{svcFit}
 \title{Fit a spatially varying coefficient model}
 \usage{
-svcFit(y, X, z, coords, miles = T, priors, nSamples, thin = 1,
-  rw.initsd = 0.1, inits = list(), C = 1, alpha = 0.44)
+svcFit(
+  y,
+  X,
+  z,
+  coords,
+  miles = T,
+  priors,
+  nSamples,
+  thin = 1,
+  rw.initsd = 0.1,
+  inits = list(),
+  C = 1,
+  alpha = 0.44
+)
 }
 \arguments{
 \item{y}{vector containing responses for each timepoint.  vector is blocked

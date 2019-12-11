@@ -4,8 +4,13 @@
 \alias{teleCor}
 \title{Pointwise correlations for an exploratory teleconnection analysis}
 \usage{
-teleCor(stData = NULL, Y = stData$Y, Z = stData$Z,
-  coords.s = stData$coords.s, coords.r = stData$coords.r)
+teleCor(
+  stData = NULL,
+  Y = stData$Y,
+  Z = stData$Z,
+  coords.s = stData$coords.s,
+  coords.r = stData$coords.r
+)
 }
 \arguments{
 \item{stData}{stData object containing data to analyze}

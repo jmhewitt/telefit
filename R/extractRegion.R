@@ -45,7 +45,7 @@ extractRegion = function(sgdf, extent,
     sgdf = mask(sgdf, brick(mask))
 
   # extract data
-  if(class(extent)=='Extent') {
+  if(inherits(extent,'Extent')) {
     
     # extract and aggregate the data
     if(!is.null(aggfact) && aggfact > 1)
@@ -112,9 +112,9 @@ extractRegion = function(sgdf, extent,
   }
   
   # reassemble data
-  if(class(extent)=='Extent') { 
+  if(inherits(extent,'Extent')) { 
     # restore matrix structure to data
-    if(class(dat)!='matrix') {
+    if(!inherits(dat,'matrix')) {
       dat = matrix(dat, ncol=1)
     }
     sgdf@data@values = dat

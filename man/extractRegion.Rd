@@ -4,8 +4,16 @@
 \alias{extractRegion}
 \title{Extract region from a SpatialGridDataFrame}
 \usage{
-extractRegion(sgdf, extent, type = "response", aggfact = NULL,
-  mask = NULL, aspect = F, aspect.categories = NULL, slope = F)
+extractRegion(
+  sgdf,
+  extent,
+  type = "response",
+  aggfact = NULL,
+  mask = NULL,
+  aspect = F,
+  aspect.categories = NULL,
+  slope = F
+)
 }
 \arguments{
 \item{sgdf}{SpatialGridDataFrame containing data to extract}
