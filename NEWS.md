@@ -1,8 +1,9 @@
-# telefit x.x.x (TBD)
+# telefit 1.0.3 (2020-02-03)
 
 ## Enhancements
 
-* extractStData can use SpatialPolygon objects to extract and aggregate data
+* Removing dependencies on orphaned packages (doRNG, SDMTools)
+
 
 # telefit 1.0.2 (2019-12-11)
 

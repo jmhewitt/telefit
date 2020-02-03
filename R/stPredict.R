@@ -9,7 +9,6 @@
 #' @export
 #' 
 #' @importFrom coda mcmc HPDinterval
-#' @import doRNG
 #' @importFrom itertools ichunk
 #' @import foreach
 #' @importFrom fields rdist.earth
@@ -142,7 +141,7 @@ stPredict = function( stFit, stData, stDataNew, burn = 1, prob = .95,
                          .export = c('Xl', 'Z', 'Yl', 'Dy', 'Dz_knots', 
                           'Dz_to_knots', 'p', 'n', 'r', 'r_knots', 't',  'stFit', 
                           'Xlnew', 'Znew', 'localOnly', 'returnFullAlphas', 
-                          'W', 'category.breaks') ) %dorng% {
+                          'W', 'category.breaks') ) %dopar% {
     inds = unlist(inds)            
                            
     if(stFit$varying) {

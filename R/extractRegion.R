@@ -8,7 +8,6 @@
 #'  were computed
 #'  
 #' @importFrom raster brick mask aggregate crop scale extract
-#' @importFrom SDMTools aspect slope
 #' 
 #' @param sgdf SpatialGridDataFrame containing data to extract
 #' @param type whether to return the raw data, anomalies (data minus temporal 
@@ -51,24 +50,24 @@ extractRegion = function(sgdf, extent,
     if(!is.null(aggfact) && aggfact > 1)
       sgdf = aggregate(sgdf, fact=aggfact)
     
-    if(aspect) {
-      for(i in 1:sgdf@data@nlayers) {
-        # compute aspects
-        sgdf[[i]] = aspect(sgdf[[i]], latlon = T)
-        # classify aspects
-        if(!is.null(aspect.categories)) {
-          sgdf[[i]]@data@values = as.numeric(
-            cut((sgdf[[i]]@data@values + 180/aspect.categories) %% 360, 
-                seq(0, 360, length.out = aspect.categories+1))
-          )
-        }
-      }
-    } else if(slope) {
-      for(i in 1:sgdf@data@nlayers) {
-        # compute slopes
-        sgdf[[i]] = slope(sgdf[[i]], latlon = T)
-      }
-    }
+    # if(aspect) {
+    #   for(i in 1:sgdf@data@nlayers) {
+    #     # compute aspects
+    #     sgdf[[i]] = aspect(sgdf[[i]], latlon = T)
+    #     # classify aspects
+    #     if(!is.null(aspect.categories)) {
+    #       sgdf[[i]]@data@values = as.numeric(
+    #         cut((sgdf[[i]]@data@values + 180/aspect.categories) %% 360, 
+    #             seq(0, 360, length.out = aspect.categories+1))
+    #       )
+    #     }
+    #   }
+    # } else if(slope) {
+    #   for(i in 1:sgdf@data@nlayers) {
+    #     # compute slopes
+    #     sgdf[[i]] = slope(sgdf[[i]], latlon = T)
+    #   }
+    # }
     
     # crop data
     sgdf = raster::crop(sgdf, extent)
